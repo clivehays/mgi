@@ -3,9 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manager Gap Index | Clover ERA</title>
-    <meta name="description" content="Calculate your Manager Gap Index score. Find out how wide the gap is between what your managers can see and what their teams are actually experiencing.">
+    <title>Calculate Your Turnover Cost | Free Employee Turnover Calculator | Clover ERA</title>
+    <meta name="description" content="Calculate the true cost of employee turnover in 4 minutes. Most companies underestimate by 4x. See your hidden costs across six impact layers including productivity loss, recruitment, and institutional knowledge drain.">
+    <meta name="keywords" content="calculate cost of employee turnover, employee turnover calculator, employee replacement cost calculator, preventable turnover cost, how much does it cost to replace an employee, turnover impact on profit">
     <link rel="canonical" href="https://mgi.cloverera.com/assessment/">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <script src="https://www.google.com/recaptcha/api.js?render=6LdIIpUsAAAAAKNwfMUkIss9AjyOxla2HVi3TrX4"></script>
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mgi.cloverera.com/assessment/">
+    <meta property="og:title" content="Calculate Your True Turnover Cost | Free Employee Turnover Calculator">
+    <meta property="og:description" content="Most companies track turnover rate but miss the real cost. This free calculator reveals the hidden cost across six impact layers. Takes 4 minutes.">
+    <meta property="og:image" content="https://mgi.cloverera.com/images/Clover-era-new-logo-1.png">
+    <meta property="og:site_name" content="Clover ERA">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Calculate Your True Turnover Cost | Free Calculator">
+    <meta name="twitter:description" content="Most companies track turnover rate but miss the real cost. This free calculator reveals the hidden cost across six impact layers.">
+    <meta name="twitter:image" content="https://mgi.cloverera.com/images/Clover-era-new-logo-1.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Employee Turnover Cost Calculator - Manager Gap Index",
+        "description": "Calculate the true cost of employee turnover across six hidden impact layers. Most companies underestimate by 4x. Free, takes 4 minutes.",
+        "url": "https://mgi.cloverera.com/assessment/",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "creator": {
+            "@type": "Organization",
+            "name": "Clover ERA",
+            "url": "https://cloverera.com",
+            "sameAs": [
+                "https://www.linkedin.com/company/clover-era"
+            ]
+        }
+    }
+    </script>
+
     <style>
         /* ===== RESET & BASE ===== */
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -507,11 +555,11 @@
             height: 12px;
             border-radius: 6px;
             background: linear-gradient(to right,
-                var(--teal) 0%, var(--teal) 20%,
-                #7DD87D 20%, #7DD87D 40%,
+                var(--red) 0%, var(--red) 20%,
+                var(--coral) 20%, var(--coral) 40%,
                 var(--amber) 40%, var(--amber) 60%,
-                var(--coral) 60%, var(--coral) 80%,
-                var(--red) 80%, var(--red) 100%
+                #7DD87D 60%, #7DD87D 80%,
+                #00C896 80%, #00C896 100%
             );
             margin-bottom: 8px;
         }
@@ -986,12 +1034,13 @@
             <h1>Find out how wide your Manager Gap is.</h1>
             <p class="subhead">The Manager Gap Index scores your organisation across five dimensions and calculates the full operational cost of the gap across six impact layers. It also detects whether the tools your organisation is currently using to understand your teams are producing genuine signal or managed performance.</p>
             <div class="benchmark-box">
-                <strong>Most mid-market companies score between 58 and 74 on the Manager Gap Index.</strong><br>
+                <strong>Most mid-market companies score between 26 and 42 on the Manager Gap Index.</strong><br>
                 That range costs an average of $6-9M per year in total operational impact. Most of it invisible on the day the score is taken.
             </div>
+            <p style="font-size:0.85rem;color:#888;margin-top:8px;">Score of 100 = fully closed gap. Score of 0 = fully exposed.</p>
             <p class="time-indicator">Takes 4 minutes.</p>
             <button class="btn-primary" onclick="startAssessment()" aria-label="Start the Manager Gap Index assessment">Calculate My MGI Score</button>
-            <p class="footer-note">No email required. Results are generated instantly and stay in your browser.</p>
+            <p class="footer-note">Results are generated instantly and stay in your browser.</p>
         </div>
     </div>
 </div>
@@ -1042,7 +1091,7 @@
         <!-- Section 5: Cost Exposure -->
         <div class="assessment-section" id="section-5" style="display:none">
             <h2 class="section-title">What is the gap actually costing you?</h2>
-            <p class="section-desc">Enter your organisation's numbers. These are used to calculate your full cost exposure across six impact layers. Nothing is stored or transmitted.</p>
+            <p class="section-desc">Enter your organisation's numbers. These are used to calculate your full cost exposure across six impact layers.</p>
 
             <div class="input-group">
                 <label for="input-headcount">Total number of employees</label>
@@ -1075,6 +1124,34 @@
                 <div class="input-error" id="error-disengagement">Enter a number between 1 and 100.</div>
             </div>
 
+            <div class="input-group">
+                <label for="input-industry">Industry</label>
+                <select id="input-industry" class="email-gate-input" aria-label="Industry" style="padding:14px 16px;font-size:16px;background:var(--charcoal);color:var(--white);border:1px solid rgba(255,255,255,0.12);border-radius:8px;width:100%;appearance:none;-webkit-appearance:none;cursor:pointer;background-image:url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%278%27 viewBox=%270 0 12 8%27%3E%3Cpath fill=%27%23888%27 d=%27M1 1l5 5 5-5%27/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 16px center;">
+                    <option value="">Select your industry</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Financial Services">Financial Services</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Manufacturing">Manufacturing</option>
+                    <option value="Retail">Retail</option>
+                    <option value="Professional Services">Professional Services</option>
+                    <option value="Education">Education</option>
+                    <option value="Construction">Construction</option>
+                    <option value="Real Estate">Real Estate</option>
+                    <option value="Energy">Energy</option>
+                    <option value="Telecommunications">Telecommunications</option>
+                    <option value="Media & Entertainment">Media & Entertainment</option>
+                    <option value="Hospitality">Hospitality</option>
+                    <option value="Transportation & Logistics">Transportation & Logistics</option>
+                    <option value="Government & Public Sector">Government & Public Sector</option>
+                    <option value="Non-Profit">Non-Profit</option>
+                    <option value="Pharmaceutical">Pharmaceutical</option>
+                    <option value="Insurance">Insurance</option>
+                    <option value="Legal">Legal</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" id="input-industry-other" class="email-gate-input" placeholder="Please specify your industry" aria-label="Other industry" style="display:none;margin-top:8px;padding:14px 16px;font-size:16px;background:var(--charcoal);color:var(--white);border:1px solid rgba(255,255,255,0.12);border-radius:8px;width:100%;">
+            </div>
+
             <div class="helper-text">Regrettable departures: those who left voluntarily and you would have preferred to keep. Industry average: 55-65% of voluntary turnover. If unsure, use 60%. Disengagement rate default of 55% is based on Gallup's 2025 State of the Global Workplace report.</div>
 
             <button class="btn-primary full-width" style="margin-top:24px" onclick="calculateScore()">Calculate My Score</button>
@@ -1091,9 +1168,9 @@
         <p class="score-interpretation" id="interpretationDisplay"></p>
         <p class="surveillance-reveal-line" id="surveillanceRevealLine">Surveillance False Confidence also detected. See full breakdown for details.</p>
         <div class="email-gate" id="emailGate">
-            <p class="email-gate-prompt">Enter your email to receive your full MGI PDF report and see your detailed breakdown.</p>
+            <p class="email-gate-prompt">Enter your business email to see your detailed breakdown.</p>
             <div class="email-gate-input-wrap">
-                <input type="email" id="emailInput" class="email-gate-input" placeholder="you@company.com" aria-label="Email address for MGI report" autocomplete="email">
+                <input type="email" id="emailInput" class="email-gate-input" placeholder="you@company.com" aria-label="Business email address for MGI report" autocomplete="email">
                 <div class="email-gate-error" id="emailError">Please enter a valid email address.</div>
             </div>
         </div>
@@ -1111,7 +1188,7 @@
                     <div class="score-bar-marker" id="scoreBarMarker"></div>
                 </div>
                 <div class="score-bar-labels">
-                    <span>0 Closed</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100 Exposed</span>
+                    <span>0 Exposed</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100 Closed</span>
                 </div>
             </div>
 
@@ -1133,7 +1210,7 @@
                 <h2>Why the Manager Gap exists</h2>
                 <p class="why-gap-subtitle">The Manager Gap is not a management failure. It is a structural problem created by three industries, all running simultaneously, none of them connected.</p>
                 <p><strong>The first is the survey industry.</strong> Engagement platforms, pulse survey tools, and people analytics dashboards collect signal from your teams and produce a score. The score is presented as a measure of manager effectiveness and team health. In practice, it is a measure of how safe employees felt when they answered the question. In small teams, employees know they can be identified from aggregate responses. Many believe their answers may influence their appraisal. So they give the safe answer. For example a score arrives at 7.4 and leadership makes decisions about the people layer of their business based on data that is structurally biased toward the positive.</p>
-                <p><strong>The second is the training industry.</strong> Manager development programmes, leadership workshops, and cohort learning journeys operate independently of the survey system. They are not designed from survey findings. They are selected from vendor catalogues or commissioned by budget cycle. A manager attends a workshop and returns to a team with no knowledge of what the last survey actually found. The training was not built from the signal. The signal did not flow into the curriculum. Research by Michael Beer at Harvard Business School confirmed this in 2016: most training spend fails not because the content is wrong but because the learning is entirely disconnected from the actual conditions managers return to.</p>
+                <p><strong>The second is the training industry.</strong> Manager development programs, leadership workshops, and cohort learning journeys operate independently of the survey system. They are not designed from survey findings. They are selected from vendor catalogues or commissioned by budget cycle. A manager attends a workshop and returns to a team with no knowledge of what the last survey actually found. The training was not built from the signal. The signal did not flow into the curriculum. Research by Michael Beer at Harvard Business School confirmed this in 2016: most training spend fails not because the content is wrong but because the learning is entirely disconnected from the actual conditions managers return to.</p>
                 <p><strong>The third is the AI surveillance industry.</strong> A new category of tool monitors employee communications: Teams messages, email threads, call transcripts, Slack activity. It produces dashboards purporting to show team health, collaboration patterns, and sentiment. When employees discover these tools are in place, and they always discover this, they migrate authentic conversation to unmonitored channels. WhatsApp. Signal. In person. The monitored channel becomes a performance surface. The dashboard captures managed communication, not genuine team experience. The organisation believes it now has more visibility. It has less.</p>
                 <p>Three systems. Three sets of vendors. Three budget lines. Not one of them is telling the organisation what its teams are actually experiencing.</p>
                 <p class="emphasis">That is the Manager Gap.</p>
@@ -1185,6 +1262,7 @@
                 <h2 id="ctaHeadline">Your Manager Gap costs you $0 every year.</h2>
                 <p class="cta-sub">Want to talk through what this means?</p>
                 <a href="https://calendly.com/clive-hays-cloverera/15-mins-what-s-driving-it" class="btn-primary" style="margin-bottom:16px" target="_blank" rel="noopener">15 Minutes with Clive</a><br>
+                <button class="print-link" onclick="downloadPDF()" style="margin-bottom:12px">Download PDF Report</button><br>
                 <button class="share-link" onclick="shareResults()">Share these results</button>
             </div>
         </div>
@@ -1221,7 +1299,6 @@
         <!-- 4h: Footer -->
         <div class="results-footer">
             <p>Manager Gap Index is a proprietary scoring model developed by Clover ERA. Cost calculations are estimates based on published research multipliers applied to the inputs provided. Actual costs vary. Results are calculated locally in your browser. No data is stored or transmitted. &copy; Clover ERA 2026.</p>
-            <button class="print-link" onclick="downloadPDF()">Download PDF Report</button>
         </div>
     </div>
 </div>
@@ -1262,12 +1339,16 @@
                 disengagementRate: 55
             }
         },
-        scores: { visibility: 0, action: 0, accountability: 0, strain: 0, costExposure: 0, total: 0 },
+        scores: {
+            visibility: 0, action: 0, accountability: 0, strain: 0, costExposure: 0, total: 0,
+            displayVisibility: 0, displayAction: 0, displayAccountability: 0, displayStrain: 0, displayCostExposure: 0, displayTotal: 0
+        },
         layers: { l1: 0, l2: 0, l3: 0, l4: 0, l5: 0, l6: 0, total: 0 },
         flags: { promotionRisk: false, innovationSuppression: false, surveillanceFalseConfidence: false },
         classification: '',
         classificationColour: '',
-        userEmail: ''
+        userEmail: '',
+        industry: ''
     };
 
     // ===== QUESTION DATA =====
@@ -1500,6 +1581,10 @@
         c.customerFacingPercent = parseFloat(document.getElementById('input-customer').value);
         c.disengagementRate = parseFloat(document.getElementById('input-disengagement').value);
 
+        var industrySelect = document.getElementById('input-industry');
+        var industryOther = document.getElementById('input-industry-other');
+        mgiState.industry = industrySelect.value === 'Other' ? (industryOther.value.trim() || 'Other') : industrySelect.value;
+
         mgiState.scores.visibility = mgiState.answers.visibility.reduce(function(s, y) { return s + (y ? 0 : 4); }, 0);
         mgiState.scores.action = mgiState.answers.action.reduce(function(s, y) { return s + (y ? 0 : 5); }, 0);
         mgiState.scores.accountability = mgiState.answers.accountability.reduce(function(s, y) { return s + (y ? 0 : 5); }, 0);
@@ -1551,10 +1636,11 @@
         mgiState.scores.total = mgiState.scores.visibility + mgiState.scores.action + mgiState.scores.accountability + mgiState.scores.strain + mgiState.scores.costExposure;
 
         var total = mgiState.scores.total;
-        if (total <= 20) { mgiState.classification = 'Closed'; mgiState.classificationColour = '#46AEB8'; }
-        else if (total <= 40) { mgiState.classification = 'Narrow'; mgiState.classificationColour = '#46AEB8'; }
-        else if (total <= 60) { mgiState.classification = 'Open'; mgiState.classificationColour = '#F5A623'; }
-        else if (total <= 80) { mgiState.classification = 'Critical'; mgiState.classificationColour = '#E84040'; }
+        var displayTotal = 100 - total;
+        if (displayTotal >= 80) { mgiState.classification = 'Closed'; mgiState.classificationColour = '#00C896'; }
+        else if (displayTotal >= 60) { mgiState.classification = 'Narrow'; mgiState.classificationColour = '#00C896'; }
+        else if (displayTotal >= 40) { mgiState.classification = 'Open'; mgiState.classificationColour = '#F5A623'; }
+        else if (displayTotal >= 20) { mgiState.classification = 'Critical'; mgiState.classificationColour = '#E84040'; }
         else { mgiState.classification = 'Exposed'; mgiState.classificationColour = '#E84040'; }
 
         var cfHeadcount = c.headcount * (c.customerFacingPercent / 100);
@@ -1573,11 +1659,20 @@
         mgiState.scores.total = mgiState.scores.visibility + mgiState.scores.action + mgiState.scores.accountability + mgiState.scores.strain + mgiState.scores.costExposure;
 
         total = mgiState.scores.total;
-        if (total <= 20) { mgiState.classification = 'Closed'; mgiState.classificationColour = '#46AEB8'; }
-        else if (total <= 40) { mgiState.classification = 'Narrow'; mgiState.classificationColour = '#46AEB8'; }
-        else if (total <= 60) { mgiState.classification = 'Open'; mgiState.classificationColour = '#F5A623'; }
-        else if (total <= 80) { mgiState.classification = 'Critical'; mgiState.classificationColour = '#E84040'; }
+        var displayTotal2 = 100 - total;
+        if (displayTotal2 >= 80) { mgiState.classification = 'Closed'; mgiState.classificationColour = '#00C896'; }
+        else if (displayTotal2 >= 60) { mgiState.classification = 'Narrow'; mgiState.classificationColour = '#00C896'; }
+        else if (displayTotal2 >= 40) { mgiState.classification = 'Open'; mgiState.classificationColour = '#F5A623'; }
+        else if (displayTotal2 >= 20) { mgiState.classification = 'Critical'; mgiState.classificationColour = '#E84040'; }
         else { mgiState.classification = 'Exposed'; mgiState.classificationColour = '#E84040'; }
+
+        // v4: Invert for display — high score = good, low score = bad
+        mgiState.scores.displayTotal = 100 - mgiState.scores.total;
+        mgiState.scores.displayVisibility = 20 - mgiState.scores.visibility;
+        mgiState.scores.displayAction = 20 - mgiState.scores.action;
+        mgiState.scores.displayAccountability = 20 - mgiState.scores.accountability;
+        mgiState.scores.displayStrain = 20 - mgiState.scores.strain;
+        mgiState.scores.displayCostExposure = 20 - mgiState.scores.costExposure;
 
         showReveal();
     };
@@ -1598,7 +1693,7 @@
         classEl.textContent = mgiState.classification;
 
         var interp = {
-            'Closed': 'Your organisation has strong visibility infrastructure. The Manager Gap is narrow and your operational risk is low.',
+            'Closed': 'Your organisation has strong visibility infrastructure. The Manager Gap is narrow and your operational risk is at its structural minimum.',
             'Narrow': 'There are gaps in your management visibility layer, but they are addressable with targeted intervention before they compound.',
             'Open': 'Your managers are operating with significant blind spots. The tools meant to provide visibility are not capturing genuine team signal.',
             'Critical': 'Your Manager Gap is wide. Your current people infrastructure is producing false confidence. The probability of accelerating attrition in the next 90 days is high.',
@@ -1614,9 +1709,9 @@
 
         var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (prefersReduced) {
-            scoreEl.textContent = mgiState.scores.total;
+            scoreEl.textContent = mgiState.scores.displayTotal;
         } else {
-            var target = mgiState.scores.total;
+            var target = mgiState.scores.displayTotal;
             var duration = 1500;
             var start = null;
             function countUp(ts) {
@@ -1670,8 +1765,32 @@
             emailError.classList.add('visible');
             return;
         }
-        mgiState.userEmail = val;
-        showResults();
+        revealBtn.disabled = true;
+        revealBtn.textContent = 'Verifying...';
+        grecaptcha.ready(function() {
+            grecaptcha.execute('6LdIIpUsAAAAAKNwfMUkIss9AjyOxla2HVi3TrX4', { action: 'submit_email' }).then(function(token) {
+                fetch('/api/verify-recaptcha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token })
+                }).then(function(res) { return res.json(); }).then(function(data) {
+                    if (data.success) {
+                        mgiState.userEmail = val;
+                        saveMGIResults();
+                        showResults();
+                    } else {
+                        emailError.textContent = 'Verification failed. Please try again.';
+                        emailError.classList.add('visible');
+                        revealBtn.disabled = false;
+                        revealBtn.textContent = 'See full breakdown';
+                    }
+                }).catch(function() {
+                    mgiState.userEmail = val;
+                    saveMGIResults();
+                    showResults();
+                });
+            });
+        });
     };
 
     // ===== RESULTS DETAIL =====
@@ -1690,7 +1809,7 @@
     }
 
     function populateResults() {
-        var total = mgiState.scores.total;
+        var total = mgiState.scores.displayTotal;
         var colour = mgiState.classificationColour;
         var totalCost = mgiState.layers.total;
 
@@ -1700,7 +1819,7 @@
         document.getElementById('resultScore').style.color = colour;
         document.getElementById('resultClassification').textContent = mgiState.classification;
         document.getElementById('resultCost').textContent = formatCost(totalCost);
-        document.getElementById('resultCost').style.color = total > 60 ? '#E84040' : (total > 40 ? '#F5A623' : '#E07A5F');
+        document.getElementById('resultCost').style.color = total < 40 ? '#E84040' : (total < 60 ? '#F5A623' : '#E07A5F');
 
         document.getElementById('ctaHeadline').textContent = 'Your Manager Gap costs you ' + formatCost(totalCost) + ' every year.';
 
@@ -1753,18 +1872,18 @@
         document.getElementById('layerTotalValue').textContent = formatCost(totalCost);
 
         var dims = [
-            { name: 'Visibility', score: mgiState.scores.visibility, max: 20, interp: getInterp('visibility', mgiState.scores.visibility) },
-            { name: 'Action', score: mgiState.scores.action, max: 20, interp: getInterp('action', mgiState.scores.action) },
-            { name: 'Accountability', score: mgiState.scores.accountability, max: 20, interp: getInterp('accountability', mgiState.scores.accountability) },
-            { name: 'Strain Multiplier', score: mgiState.scores.strain, max: 20, interp: getInterp('strain', mgiState.scores.strain) },
-            { name: 'Cost Exposure', score: mgiState.scores.costExposure, max: 20, interp: getInterp('costExposure', mgiState.scores.costExposure) }
+            { name: 'Visibility', score: mgiState.scores.displayVisibility, max: 20, interp: getInterp('visibility', mgiState.scores.displayVisibility) },
+            { name: 'Action', score: mgiState.scores.displayAction, max: 20, interp: getInterp('action', mgiState.scores.displayAction) },
+            { name: 'Accountability', score: mgiState.scores.displayAccountability, max: 20, interp: getInterp('accountability', mgiState.scores.displayAccountability) },
+            { name: 'Strain Multiplier', score: mgiState.scores.displayStrain, max: 20, interp: getInterp('strain', mgiState.scores.displayStrain) },
+            { name: 'Cost Exposure', score: mgiState.scores.displayCostExposure, max: 20, interp: getInterp('costExposure', mgiState.scores.displayCostExposure) }
         ];
 
         var dimContainer = document.getElementById('dimensionBreakdown');
         dimContainer.innerHTML = '';
         dims.forEach(function(d) {
             var pct = (d.score / d.max) * 100;
-            var barColour = pct <= 25 ? '#46AEB8' : (pct <= 60 ? '#F5A623' : '#E84040');
+            var barColour = pct >= 75 ? '#00C896' : (pct >= 40 ? '#F5A623' : '#E84040');
             var row = document.createElement('div');
             row.className = 'dimension-row';
             row.innerHTML =
@@ -1778,40 +1897,40 @@
         });
     }
 
-    function getInterp(dim, score) {
+    function getInterp(dim, displayScore) {
         var interps = {
             visibility: [
-                [4, 'Strong visibility. Your managers have real-time genuine signal from their teams.'],
-                [12, 'Partial visibility. Signal exists but may be delayed, aggregated, or structurally biased.'],
-                [20, 'Low visibility. Your managers are largely operating without genuine team signal.']
+                [7, 'Low visibility. Your managers are largely operating without genuine team signal.'],
+                [15, 'Partial visibility. Signal exists but may be delayed, aggregated, or structurally biased.'],
+                [20, 'Strong visibility. Your managers have real-time genuine signal from their teams.']
             ],
             action: [
-                [5, 'Strong action infrastructure. Managers receive specific, contextual guidance.'],
-                [14, 'Partial action support. Some guidance exists but it is generic or delayed.'],
-                [20, 'Low action support. Managers determine their own response to signals they cannot trust.']
+                [5, 'Low action support. Managers determine their own response to signals they cannot trust.'],
+                [15, 'Partial action support. Some guidance exists but it is generic or delayed.'],
+                [20, 'Strong action infrastructure. Managers receive specific, contextual guidance.']
             ],
             accountability: [
-                [5, 'Strong accountability loop. Actions are tracked and connected to outcome.'],
-                [14, 'Partial accountability. Some tracking exists but the loop is incomplete.'],
-                [20, 'No accountability loop. Whether actions are taken is invisible to the organisation.']
+                [5, 'No accountability loop. Whether actions are taken is invisible to the organisation.'],
+                [15, 'Partial accountability. Some tracking exists but the loop is incomplete.'],
+                [20, 'Strong accountability loop. Actions are tracked and connected to outcome.']
             ],
             strain: [
-                [5, 'Low strain. Your organisation is not under acute people pressure right now.'],
-                [14, 'Moderate strain. One or more structural factors are widening the gap.'],
-                [20, 'High strain. Multiple factors are compressing your management layer simultaneously.']
+                [5, 'High strain. Multiple factors are compressing your management layer simultaneously.'],
+                [15, 'Moderate strain. One or more structural factors are widening the gap.'],
+                [20, 'Low strain. Your organisation is not under acute people pressure right now.']
             ],
             costExposure: [
-                [4, 'Cost exposure under $500K annually.'],
-                [8, 'Cost exposure between $500K and $1M annually.'],
-                [12, 'Cost exposure between $1M and $3M annually.'],
-                [16, 'Cost exposure between $3M and $6M annually. This is a board-level number.'],
-                [20, 'Cost exposure exceeds $6M annually. The most common range in organisations that have not measured this before.']
+                [0, 'Cost exposure exceeds $6M annually. The most common range in organisations that have not measured this before.'],
+                [4, 'Cost exposure between $3M and $6M annually. This is a board-level number.'],
+                [8, 'Cost exposure between $1M and $3M annually.'],
+                [12, 'Cost exposure between $500K and $1M annually.'],
+                [16, 'Cost exposure under $500K annually.']
             ]
         };
         var ranges = interps[dim];
         var result = '';
         for (var i = 0; i < ranges.length; i++) {
-            if (score <= ranges[i][0]) { result = ranges[i][1]; break; }
+            if (displayScore <= ranges[i][0]) { result = ranges[i][1]; break; }
         }
         if (!result) result = ranges[ranges.length - 1][1];
 
@@ -1836,14 +1955,14 @@
     // ===== SHARE =====
     window.shareResults = function() {
         var L = mgiState.layers;
-        var hash = '#score=' + mgiState.scores.total +
+        var hash = '#score=' + mgiState.scores.displayTotal +
             '&class=' + encodeURIComponent(mgiState.classification) +
             '&cost=' + Math.round(L.total) +
-            '&v=' + mgiState.scores.visibility +
-            '&a=' + mgiState.scores.action +
-            '&ac=' + mgiState.scores.accountability +
-            '&s=' + mgiState.scores.strain +
-            '&ce=' + mgiState.scores.costExposure +
+            '&v=' + mgiState.scores.displayVisibility +
+            '&a=' + mgiState.scores.displayAction +
+            '&ac=' + mgiState.scores.displayAccountability +
+            '&s=' + mgiState.scores.displayStrain +
+            '&ce=' + mgiState.scores.displayCostExposure +
             '&l1=' + Math.round(L.l1) +
             '&l2=' + Math.round(L.l2) +
             '&l3=' + Math.round(L.l3) +
@@ -1882,12 +2001,21 @@
         });
         if (!params.score) return false;
 
-        mgiState.scores.total = parseInt(params.score) || 0;
-        mgiState.scores.visibility = parseInt(params.v) || 0;
-        mgiState.scores.action = parseInt(params.a) || 0;
-        mgiState.scores.accountability = parseInt(params.ac) || 0;
-        mgiState.scores.strain = parseInt(params.s) || 0;
-        mgiState.scores.costExposure = parseInt(params.ce) || 0;
+        mgiState.scores.displayTotal = parseInt(params.score) || 0;
+        mgiState.scores.displayVisibility = parseInt(params.v) || 0;
+        mgiState.scores.displayAction = parseInt(params.a) || 0;
+        mgiState.scores.displayAccountability = parseInt(params.ac) || 0;
+        mgiState.scores.displayStrain = parseInt(params.s) || 0;
+        mgiState.scores.displayCostExposure = parseInt(params.ce) || 0;
+
+        // Derive raw scores from display scores for flag calculations
+        mgiState.scores.visibility = 20 - mgiState.scores.displayVisibility;
+        mgiState.scores.action = 20 - mgiState.scores.displayAction;
+        mgiState.scores.accountability = 20 - mgiState.scores.displayAccountability;
+        mgiState.scores.strain = 20 - mgiState.scores.displayStrain;
+        mgiState.scores.costExposure = 20 - mgiState.scores.displayCostExposure;
+        mgiState.scores.total = 100 - mgiState.scores.displayTotal;
+
         mgiState.layers.l1 = parseInt(params.l1) || 0;
         mgiState.layers.l2 = parseInt(params.l2) || 0;
         mgiState.layers.l3 = parseInt(params.l3) || 0;
@@ -1906,10 +2034,10 @@
         }
         mgiState.flags.innovationSuppression = suppIdx > 0.6;
 
-        var t = mgiState.scores.total;
-        if (t <= 20) mgiState.classificationColour = '#46AEB8';
-        else if (t <= 40) mgiState.classificationColour = '#46AEB8';
-        else if (t <= 60) mgiState.classificationColour = '#F5A623';
+        var t = mgiState.scores.displayTotal;
+        if (t >= 80) mgiState.classificationColour = '#00C896';
+        else if (t >= 60) mgiState.classificationColour = '#00C896';
+        else if (t >= 40) mgiState.classificationColour = '#F5A623';
         else mgiState.classificationColour = '#E84040';
 
         mgiState.currentSection = 7;
@@ -1932,8 +2060,63 @@
 })();
 </script>
 
+<!-- Supabase for storing MGI results -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function() {
+    var SUPABASE_URL = 'https://drugebiitlcjkknjfxeh.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRydWdlYmlpdGxjamtrbmpmeGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NjY1MDQsImV4cCI6MjA3ODM0MjUwNH0.HaYY0UxEC4cYyC3V4O0RyIkm7JTljnQapUnaeBoXba8';
+    var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Industry "Other" toggle
+    var indSelect = document.getElementById('input-industry');
+    var indOther = document.getElementById('input-industry-other');
+    if (indSelect && indOther) {
+        indSelect.addEventListener('change', function() {
+            indOther.style.display = indSelect.value === 'Other' ? 'block' : 'none';
+            if (indSelect.value !== 'Other') indOther.value = '';
+        });
+    }
+
+    window.saveMGIResults = function() {
+        var s = window.mgiState;
+        if (!s || !s.userEmail) return;
+        var c = s.answers.cost;
+        sb.from('mgi_results').insert({
+            email: s.userEmail,
+            industry: s.industry || null,
+            headcount: c.headcount || null,
+            avg_salary: c.avgSalary || null,
+            turnover_rate: c.turnoverRate || null,
+            regrettable_percent: c.regrettablePercent || null,
+            customer_facing_percent: c.customerFacingPercent || null,
+            disengagement_rate: c.disengagementRate || null,
+            mgi_score: s.scores.displayTotal,
+            classification: s.classification,
+            total_cost: s.layers.total,
+            layer_l1: s.layers.l1,
+            layer_l2: s.layers.l2,
+            layer_l3: s.layers.l3,
+            layer_l4: s.layers.l4,
+            layer_l5: s.layers.l5,
+            layer_l6: s.layers.l6,
+            score_visibility: s.scores.displayVisibility,
+            score_action: s.scores.displayAction,
+            score_accountability: s.scores.displayAccountability,
+            score_strain: s.scores.displayStrain,
+            score_cost_exposure: s.scores.displayCostExposure,
+            flag_promotion_risk: s.flags.promotionRisk,
+            flag_innovation_suppression: s.flags.innovationSuppression,
+            flag_surveillance_false_confidence: s.flags.surveillanceFalseConfidence
+        }).then(function(res) {
+            if (res.error) console.error('MGI save error:', res.error);
+        });
+    };
+})();
+</script>
+
 <!-- jsPDF for PDF report generation -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
 <script>
 function downloadPDF() {
     if (!window.jspdf || !window.jspdf.jsPDF) {
@@ -1944,9 +2127,12 @@ function downloadPDF() {
     var jsPDF = window.jspdf.jsPDF;
     var doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     var W = 210;
+    var H = 297;
     var margin = 20;
     var usable = W - margin * 2;
     var y = 0;
+    var bottomMargin = 20;
+    var maxY = H - bottomMargin;
 
     var teal = [70, 174, 184];
     var coral = [224, 122, 95];
@@ -1955,12 +2141,15 @@ function downloadPDF() {
     var amber = [245, 166, 35];
     var red = [232, 64, 64];
     var white = [255, 255, 255];
+    var warmWhite = [253, 251, 247];
 
     var s = window.mgiState || {};
-    var score = s.scores ? s.scores.total : 0;
+    var score = s.scores ? s.scores.displayTotal : 0;
     var cls = s.classification || 'N/A';
-    var clsColour = score <= 40 ? teal : (score <= 60 ? amber : red);
+    var clsColour = score >= 60 ? [0, 200, 150] : (score >= 40 ? amber : red);
     var totalCost = s.layers ? s.layers.total : 0;
+    var costColour = score < 40 ? red : (score < 60 ? amber : coral);
+    var dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
     function fmtCost(v) {
         if (v >= 10000000) return '$' + Math.round(v / 1000000) + 'M';
@@ -1968,20 +2157,61 @@ function downloadPDF() {
         return '$' + Math.round(v).toLocaleString('en-US');
     }
 
-    doc.setFillColor(dark[0], dark[1], dark[2]);
-    doc.rect(0, 0, W, 32, 'F');
-    doc.setTextColor(white[0], white[1], white[2]);
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Clover ERA', margin, 14);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(teal[0], teal[1], teal[2]);
-    doc.text('MANAGER GAP INDEX REPORT', margin, 23);
-    doc.setTextColor(180, 180, 180);
-    doc.text(new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), W - margin, 23, { align: 'right' });
-    y = 44;
+    function drawHeader(isFirst) {
+        if (isFirst) {
+            doc.setFillColor(dark[0], dark[1], dark[2]);
+            doc.rect(0, 0, W, 32, 'F');
+            doc.setTextColor(white[0], white[1], white[2]);
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Clover ERA', margin, 14);
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(teal[0], teal[1], teal[2]);
+            doc.text('MANAGER GAP INDEX REPORT', margin, 23);
+            doc.setTextColor(180, 180, 180);
+            doc.text(dateStr, W - margin, 23, { align: 'right' });
+            return 52;
+        } else {
+            doc.setFillColor(dark[0], dark[1], dark[2]);
+            doc.rect(0, 0, W, 18, 'F');
+            doc.setTextColor(white[0], white[1], white[2]);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Clover ERA', margin, 8);
+            doc.setFontSize(7);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(teal[0], teal[1], teal[2]);
+            doc.text('MANAGER GAP INDEX REPORT', margin, 14);
+            doc.setTextColor(180, 180, 180);
+            doc.text(dateStr, W - margin, 14, { align: 'right' });
+            return 26;
+        }
+    }
 
+    function checkPage(needed) {
+        if (y + needed > maxY) {
+            doc.addPage();
+            y = drawHeader(false);
+        }
+    }
+
+    function drawWrappedText(text, fontSize, fontStyle, colour, lineHeight) {
+        doc.setFontSize(fontSize);
+        doc.setFont('helvetica', fontStyle);
+        doc.setTextColor(colour[0], colour[1], colour[2]);
+        var lines = doc.splitTextToSize(text, usable);
+        for (var i = 0; i < lines.length; i++) {
+            checkPage(lineHeight);
+            doc.text(lines[i], margin, y);
+            y += lineHeight;
+        }
+    }
+
+    // ===== PAGE 1: HEADER =====
+    y = drawHeader(true);
+
+    // Score + Classification
     doc.setFontSize(42);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(clsColour[0], clsColour[1], clsColour[2]);
@@ -1993,9 +2223,9 @@ function downloadPDF() {
     doc.text('MGI Score (0-100)', margin, y + 7);
     y += 18;
 
+    // Total Cost
     doc.setFontSize(28);
     doc.setFont('helvetica', 'bold');
-    var costColour = score > 60 ? red : (score > 40 ? amber : coral);
     doc.setTextColor(costColour[0], costColour[1], costColour[2]);
     doc.text(fmtCost(totalCost), margin, y);
     doc.setFontSize(10);
@@ -2003,21 +2233,67 @@ function downloadPDF() {
     doc.text('Total Annual Cost of Your Manager Gap', margin + 56, y);
     y += 14;
 
+    // Horizontal rule
     doc.setDrawColor(220, 220, 220);
     doc.setLineWidth(0.3);
     doc.line(margin, y, W - margin, y);
+    y += 12;
+
+    // ===== WHY THE MANAGER GAP EXISTS =====
+    checkPage(20);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(dark[0], dark[1], dark[2]);
+    doc.text('Why the Manager Gap exists', margin, y);
+    y += 8;
+
+    // Subtitle
+    drawWrappedText('The Manager Gap is not a management failure. It is a structural problem created by three industries, all running simultaneously, none of them connected.', 9, 'bolditalic', midGrey, 4.5);
+    y += 4;
+
+    // Paragraph 1
+    drawWrappedText('The first is the survey industry. Engagement platforms, pulse survey tools, and people analytics dashboards collect signal from your teams and produce a score. The score is presented as a measure of manager effectiveness and team health. In practice, it is a measure of how safe employees felt when they answered the question. In small teams, employees know they can be identified from aggregate responses. Many believe their answers may influence their appraisal. So they give the safe answer. For example a score arrives at 7.4 and leadership makes decisions about the people layer of their business based on data that is structurally biased toward the positive.', 9, 'normal', dark, 4.5);
+    y += 4;
+
+    // Paragraph 2
+    drawWrappedText('The second is the training industry. Manager development programs, leadership workshops, and cohort learning journeys operate independently of the survey system. They are not designed from survey findings. They are selected from vendor catalogues or commissioned by budget cycle. A manager attends a workshop and returns to a team with no knowledge of what the last survey actually found. The training was not built from the signal. The signal did not flow into the curriculum. Research by Michael Beer at Harvard Business School confirmed this in 2016: most training spend fails not because the content is wrong but because the learning is entirely disconnected from the actual conditions managers return to.', 9, 'normal', dark, 4.5);
+    y += 4;
+
+    // Paragraph 3
+    drawWrappedText('The third is the AI surveillance industry. A new category of tool monitors employee communications: Teams messages, email threads, call transcripts, Slack activity. It produces dashboards purporting to show team health, collaboration patterns, and sentiment. When employees discover these tools are in place, and they always discover this, they migrate authentic conversation to unmonitored channels. WhatsApp. Signal. In person. The monitored channel becomes a performance surface. The dashboard captures managed communication, not genuine team experience. The organisation believes it now has more visibility. It has less.', 9, 'normal', dark, 4.5);
+    y += 4;
+
+    // Paragraph 4
+    drawWrappedText('Three systems. Three sets of vendors. Three budget lines. Not one of them is telling the organisation what its teams are actually experiencing.', 9, 'normal', dark, 4.5);
+    y += 6;
+
+    // Emphasis 1
+    checkPage(8);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(teal[0], teal[1], teal[2]);
+    doc.text('That is the Manager Gap.', margin, y);
+    y += 7;
+
+    // Emphasis 2
+    drawWrappedText('Your MGI Score measures how wide that gap is in your organisation right now, and calculates the total annual cost of operating with it open.', 9, 'bold', dark, 4.5);
     y += 10;
+
+    // ===== THE SIX COST LAYERS =====
+    doc.addPage();
+    y = drawHeader(false);
 
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(dark[0], dark[1], dark[2]);
     doc.text('The Six Cost Layers', margin, y);
-    y += 8;
+    y += 10;
 
     var layerNames = ['Regrettable Attrition', 'Disengagement Tax', 'Manager Drag', 'Promotion Risk', 'Innovation Suppression', 'Customer Impact'];
     var layerKeys = ['l1', 'l2', 'l3', 'l4', 'l5', 'l6'];
 
     layerKeys.forEach(function(key, idx) {
+        checkPage(28);
         var cost = s.layers ? s.layers[key] : 0;
         var pct = totalCost > 0 ? Math.round((cost / totalCost) * 100) : 0;
         var barColour = cost > 2000000 ? red : (cost > 500000 ? amber : teal);
@@ -2028,7 +2304,7 @@ function downloadPDF() {
         doc.text(layerNames[idx], margin, y);
         doc.setTextColor(barColour[0], barColour[1], barColour[2]);
         doc.text(fmtCost(cost), W - margin, y, { align: 'right' });
-        y += 4;
+        y += 5;
 
         doc.setFillColor(235, 235, 235);
         doc.roundedRect(margin, y, usable, 4, 1, 1, 'F');
@@ -2036,18 +2312,19 @@ function downloadPDF() {
             doc.setFillColor(barColour[0], barColour[1], barColour[2]);
             doc.roundedRect(margin, y, Math.max(usable * (pct / 100), 2), 4, 1, 1, 'F');
         }
-        y += 5;
+        y += 8;
 
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(midGrey[0], midGrey[1], midGrey[2]);
-        doc.text(pct + '% of total', margin, y + 2);
+        doc.text(pct + '% of total', margin, y);
 
         if (key === 'l4' && s.flags && s.flags.promotionRisk) {
             y += 5;
             doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
             doc.setTextColor(amber[0], amber[1], amber[2]);
-            doc.text('Promotion Risk Detected', margin, y + 2);
+            doc.text('Promotion Risk Detected', margin, y);
         }
         if (key === 'l5') {
             if (s.flags && s.flags.surveillanceFalseConfidence) {
@@ -2055,25 +2332,27 @@ function downloadPDF() {
                 doc.setFontSize(8);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(amber[0], amber[1], amber[2]);
-                doc.text('Surveillance False Confidence Detected', margin, y + 2);
+                doc.text('Surveillance False Confidence Detected', margin, y);
                 y += 4;
                 doc.setFontSize(7);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(midGrey[0], midGrey[1], midGrey[2]);
-                doc.text('AI monitoring tools detected. Signal quality compromised by channel migration.', margin, y + 2);
+                doc.text('AI monitoring tools detected. Signal quality compromised by channel migration.', margin, y);
             }
             if (s.flags && s.flags.innovationSuppression) {
                 y += 5;
                 doc.setFontSize(8);
-                doc.setFont('helvetica', 'normal');
+                doc.setFont('helvetica', 'bold');
                 doc.setTextColor(amber[0], amber[1], amber[2]);
-                doc.text('Low Psychological Safety Detected', margin, y + 2);
+                doc.text('Low Psychological Safety Detected', margin, y);
             }
         }
 
         y += 10;
     });
 
+    // Total cost line
+    checkPage(12);
     doc.setDrawColor(dark[0], dark[1], dark[2]);
     doc.setLineWidth(0.5);
     doc.line(margin, y, W - margin, y);
@@ -2084,21 +2363,30 @@ function downloadPDF() {
     doc.text('Total Annual Cost', margin, y);
     doc.setTextColor(costColour[0], costColour[1], costColour[2]);
     doc.text(fmtCost(totalCost), W - margin, y, { align: 'right' });
-    y += 12;
+    y += 14;
+
+    // ===== DIMENSION BREAKDOWN =====
+    checkPage(20);
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, W - margin, y);
+    y += 10;
 
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(dark[0], dark[1], dark[2]);
     doc.text('Dimension Breakdown', margin, y);
-    y += 8;
+    y += 10;
 
     var dimNames = ['Visibility', 'Action', 'Accountability', 'Strain Multiplier', 'Cost Exposure'];
     var dimKeys = ['visibility', 'action', 'accountability', 'strain', 'costExposure'];
 
+    var displayKeys = ['displayVisibility', 'displayAction', 'displayAccountability', 'displayStrain', 'displayCostExposure'];
     dimKeys.forEach(function(key, idx) {
-        var dimScore = s.scores ? s.scores[key] : 0;
+        checkPage(16);
+        var dimScore = s.scores ? s.scores[displayKeys[idx]] : 0;
         var pct = (dimScore / 20) * 100;
-        var barColour = pct <= 25 ? teal : (pct <= 60 ? amber : red);
+        var barColour = pct >= 75 ? [0, 200, 150] : (pct >= 40 ? amber : red);
 
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
@@ -2107,7 +2395,7 @@ function downloadPDF() {
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(midGrey[0], midGrey[1], midGrey[2]);
         doc.text(dimScore + ' / 20', W - margin, y, { align: 'right' });
-        y += 4;
+        y += 5;
 
         doc.setFillColor(235, 235, 235);
         doc.roundedRect(margin, y, usable, 3.5, 1, 1, 'F');
@@ -2115,19 +2403,153 @@ function downloadPDF() {
             doc.setFillColor(barColour[0], barColour[1], barColour[2]);
             doc.roundedRect(margin, y, Math.max(usable * (pct / 100), 2), 3.5, 1, 1, 'F');
         }
-        y += 9;
+        y += 10;
     });
 
-    y = 276;
+    // ===== WHAT CLOSES THE GAP =====
+    checkPage(20);
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, W - margin, y);
+    y += 10;
+
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(dark[0], dark[1], dark[2]);
+    doc.text('What Closes The Gap', margin, y);
+    y += 10;
+
+    var cards = [
+        {
+            title: 'See',
+            text: 'Clover ERA surfaces anonymous team-level signals across six behavioural dimensions. Daily, in real time. Team-level patterns, never individual responses. Nothing to triangulate. Genuine anonymity by architecture, not by policy.'
+        },
+        {
+            title: 'Act',
+            text: 'Every signal triggers a specific recommendation. A micro-action for this week. A mini-action for this month. A worksheet for the conversation that needs to happen. Action in the flow of work, not a course to complete later, not a generic tip.'
+        },
+        {
+            title: 'Track',
+            text: 'Every action is logged. Every recommendation is followed up. Thirty days later, sixty days later, you can see whether the signal shifted. Not an engagement score. A measurable change in the team-level indicator that predicted the problem.'
+        }
+    ];
+
+    cards.forEach(function(card) {
+        checkPage(30);
+
+        // Card background
+        doc.setFontSize(9);
+        var textLines = doc.splitTextToSize(card.text, usable - 16);
+        var cardHeight = 12 + (textLines.length * 4.2) + 6;
+        checkPage(cardHeight);
+
+        doc.setFillColor(warmWhite[0], warmWhite[1], warmWhite[2]);
+        doc.roundedRect(margin, y - 2, usable, cardHeight, 2, 2, 'F');
+        doc.setDrawColor(220, 220, 220);
+        doc.setLineWidth(0.2);
+        doc.roundedRect(margin, y - 2, usable, cardHeight, 2, 2, 'S');
+
+        // Card title
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(teal[0], teal[1], teal[2]);
+        doc.text(card.title, margin + 8, y + 5);
+        y += 12;
+
+        // Card text
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(dark[0], dark[1], dark[2]);
+        for (var i = 0; i < textLines.length; i++) {
+            doc.text(textLines[i], margin + 8, y);
+            y += 4.2;
+        }
+        y += 8;
+    });
+
+    // ===== CTA SECTION =====
+    checkPage(32);
+    y += 4;
+    doc.setFillColor(teal[0], teal[1], teal[2]);
+    doc.roundedRect(margin, y, usable, 28, 2, 2, 'F');
+
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(white[0], white[1], white[2]);
+    doc.text('Your Manager Gap costs you ' + fmtCost(totalCost) + ' every year.', W / 2, y + 9, { align: 'center' });
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Want to talk through what this means?', W / 2, y + 16, { align: 'center' });
+
+    doc.setFontSize(8);
+    doc.text('15 Minutes with Clive: calendly.com/clive-hays-cloverera/15-mins-what-s-driving-it', W / 2, y + 23, { align: 'center' });
+    y += 38;
+
+    // ===== RESEARCH SOURCES =====
+    checkPage(30);
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, W - margin, y);
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(dark[0], dark[1], dark[2]);
+    doc.text('Research Sources', margin, y);
+    y += 6;
+
+    var sources = [
+        '1. Gallup. (2025). State of the Global Workplace: 2025 Report.',
+        '2. Gallup. (Various years). State of the American Workplace. (1.5x salary multiplier; 18%/34% disengagement cost; 70% engagement variance attributable to manager)',
+        '3. Perceptyx Center for Workforce Transformation. (2025). The Great Management Meltdown.',
+        '4. Google. (2015, updated 2022). Project Aristotle: Re:Work Team Effectiveness Research.',
+        '5. Edmondson, A.C. (1999). Psychological safety and learning behavior in work teams. Administrative Science Quarterly, 44(2), 350-383.',
+        '6. Edmondson, A.C. & Lei, Z. (2014). Psychological safety: The history, renaissance, and future. Annual Review of Organizational Psychology, 1, 23-43.',
+        '7. Edmondson, A.C. & Detert, J. (Harvard Business School). Employee voice research. (85% withhold information)',
+        '8. Beer, M., Finnstrom, M. & Schrader, D. (2016). The great training robbery. Harvard Business School Working Paper 16-121.',
+        '9. Gartner / CEB. New manager failure rate research. (60% fail within 24 months)',
+        '10. Center for Creative Leadership. (2024). First-time manager research.',
+        '11. Wharton School. (2024). People Management for Emerging Leaders research.',
+        '12. Heskett, J.L. et al. (1994). Putting the service-profit chain to work. HBR, 72(2), 164-174.',
+        '13. Bain & Company. Customer retention and profitability research. (5% retention = 25-95% profit increase)',
+        '14. Training Industry. (2020). Employee productivity under ineffective managers. (10-52% unproductive time)',
+        '15. Journal of Applied Psychology. (2023). Psychological safety and innovation output. (27% higher innovation)',
+        '16. McKinsey & Company. (2024). Psychological safety workplace survey. (26% of employees)',
+        '17. Work Institute. (2024). Employee exit and retention analysis. (63% of exits attributed to management factors)'
+    ];
+
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(midGrey[0], midGrey[1], midGrey[2]);
+
+    sources.forEach(function(src) {
+        var srcLines = doc.splitTextToSize(src, usable);
+        for (var i = 0; i < srcLines.length; i++) {
+            checkPage(3.5);
+            doc.text(srcLines[i], margin, y);
+            y += 3.5;
+        }
+        y += 1;
+    });
+
+    // ===== DISCLAIMER =====
+    y += 6;
+    checkPage(14);
     doc.setDrawColor(220, 220, 220);
     doc.setLineWidth(0.3);
     doc.line(margin, y, W - margin, y);
     y += 5;
+
+    var disclaimer = 'Manager Gap Index is a proprietary scoring model developed by Clover ERA. Cost calculations are estimates based on published research multipliers applied to the inputs provided. Actual costs vary. Results are calculated locally in your browser. No data is stored or transmitted. \u00A9 Clover ERA 2026.';
     doc.setFontSize(7);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(midGrey[0], midGrey[1], midGrey[2]);
-    doc.text('Manager Gap Index is a proprietary scoring model developed by Clover ERA. Cost calculations are estimates based on published', margin, y);
-    doc.text('research multipliers applied to inputs provided. Actual costs vary. cloverera.com', margin, y + 3.5);
+    var discLines = doc.splitTextToSize(disclaimer, usable);
+    for (var i = 0; i < discLines.length; i++) {
+        doc.text(discLines[i], margin, y);
+        y += 3.5;
+    }
 
     doc.save('MGI-Report-' + cls + '-' + score + '.pdf');
     } catch (e) {
