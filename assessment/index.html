@@ -1391,13 +1391,13 @@
         1: {
             name: 'Visibility',
             questions: [
-                'Do your managers receive structured anonymous feedback from their teams more than once per quarter?',
-                'Is that feedback broken down by behavioural dimension, not just a single satisfaction score?',
-                'Do managers receive team feedback within 7 days of it being collected?',
-                'Can managers see trend data: how the signal has changed over time?',
+                'Do your managers receive structured, anonymous feedback from their teams more than once per quarter?',
+                'Does your feedback system produce a single overall score rather than breaking results down by behavioural dimension?',
+                'Does it typically take more than 7 days for managers to receive team feedback after it is collected?',
+                'Can managers see trend data showing how their team\'s signal has changed over time?',
                 'In your current feedback system, can employees be identified?'
             ],
-            invertedQuestions: [4],
+            invertedQuestions: [1, 2, 4],
             yesScore: 0, noScore: 4,
             flagQuestion: {
                 text: 'Does your organisation use AI tools that monitor employee communications to understand team health or productivity?',
@@ -1407,31 +1407,34 @@
         2: {
             name: 'Action',
             questions: [
-                'Do managers receive a specific recommended action tied to the team signal, not a generic management tip?',
-                'Do managers receive specific guidance at the point they need it, not in a separate training system?',
-                'Do managers have structured support for difficult conversations: worksheets, frameworks, prompts?',
-                'Is the action system differentiated by dimension? Different actions for a communication gap versus an enablement gap?'
+                'When a team signal drops, does the manager receive a specific recommended action tied to that signal?',
+                'Is manager development delivered through scheduled programmes rather than in direct response to team signals?',
+                'Do managers have structured support for difficult conversations: worksheets, frameworks, or prompts?',
+                'Do managers receive the same general development content regardless of what their specific team data shows?'
             ],
+            invertedQuestions: [1, 3],
             yesScore: 0, noScore: 5
         },
         3: {
             name: 'Accountability',
             questions: [
-                'Are manager actions logged and tracked by the organisation?',
-                'Does the manager\'s manager have visibility of whether actions were taken?',
-                'Is there a feedback loop that connects the action taken to the team signal that follows?',
-                'Are managers held accountable for team health outcomes, not just business performance metrics?'
+                'Do managers have regular one-to-ones with their direct reports?',
+                'Could a manager ignore team feedback for a full quarter without anyone in leadership noticing?',
+                'Is there a closed feedback loop connecting the action a manager took to the team signal that followed?',
+                'Are managers primarily evaluated on business output with no formal accountability for team health outcomes?'
             ],
+            invertedQuestions: [1, 3],
             yesScore: 0, noScore: 5
         },
         4: {
             name: 'Strain Multiplier',
             questions: [
                 'Has your organisation gone through a restructure or layoff in the last 18 months?',
-                'Has headcount grown more than 20% in the last 24 months?',
+                'Has your headcount remained stable, growing less than 20% over the last 24 months?',
                 'Were most of your managers promoted because they were good at their previous job?',
-                'Is voluntary turnover currently running above 12% annually?'
+                'Is your voluntary turnover currently running below 12% annually?'
             ],
+            invertedQuestions: [1, 3],
             yesScore: 5, noScore: 0
         }
     };
@@ -1622,10 +1625,22 @@
         var industryOther = document.getElementById('input-industry-other');
         mgiState.industry = industrySelect.value === 'Other' ? (industryOther.value.trim() || 'Other') : industrySelect.value;
 
-        mgiState.scores.visibility = mgiState.answers.visibility.reduce(function(s, y, i) { return s + (i === 4 ? (y ? 4 : 0) : (y ? 0 : 4)); }, 0);
-        mgiState.scores.action = mgiState.answers.action.reduce(function(s, y) { return s + (y ? 0 : 5); }, 0);
-        mgiState.scores.accountability = mgiState.answers.accountability.reduce(function(s, y) { return s + (y ? 0 : 5); }, 0);
-        mgiState.scores.strain = mgiState.answers.strain.reduce(function(s, y) { return s + (y ? 5 : 0); }, 0);
+        var visInv = [1, 2, 4];
+        mgiState.scores.visibility = mgiState.answers.visibility.reduce(function(s, y, i) {
+            return s + (visInv.indexOf(i) >= 0 ? (y ? 4 : 0) : (y ? 0 : 4));
+        }, 0);
+        var actInv = [1, 3];
+        mgiState.scores.action = mgiState.answers.action.reduce(function(s, y, i) {
+            return s + (actInv.indexOf(i) >= 0 ? (y ? 5 : 0) : (y ? 0 : 5));
+        }, 0);
+        var accInv = [1, 3];
+        mgiState.scores.accountability = mgiState.answers.accountability.reduce(function(s, y, i) {
+            return s + (accInv.indexOf(i) >= 0 ? (y ? 5 : 0) : (y ? 0 : 5));
+        }, 0);
+        var strInv = [1, 3];
+        mgiState.scores.strain = mgiState.answers.strain.reduce(function(s, y, i) {
+            return s + (strInv.indexOf(i) >= 0 ? (y ? 0 : 5) : (y ? 5 : 0));
+        }, 0);
 
         var SURVEILLANCE_FLAG = mgiState.answers.surveillanceFlag;
         mgiState.flags.surveillanceFalseConfidence = SURVEILLANCE_FLAG;
