@@ -1105,18 +1105,18 @@
             </div>
             <div class="input-group">
                 <label for="input-turnover">Current voluntary turnover rate (%)</label>
-                <input type="number" id="input-turnover" aria-label="Current voluntary turnover rate percentage" placeholder="e.g. 14" min="1" max="100">
-                <div class="input-error" id="error-turnover">Enter a number between 1 and 100.</div>
+                <input type="number" id="input-turnover" aria-label="Current voluntary turnover rate percentage" placeholder="e.g. 14" min="0" max="100">
+                <div class="input-error" id="error-turnover">Enter a number between 0 and 100.</div>
             </div>
             <div class="input-group">
                 <label for="input-regrettable">Estimated % of departures that were regrettable (%)</label>
-                <input type="number" id="input-regrettable" aria-label="Of your voluntary departures, what percentage were people you would have preferred to keep" placeholder="e.g. 60" min="1" max="100">
-                <div class="input-error" id="error-regrettable">Enter a number between 1 and 100.</div>
+                <input type="number" id="input-regrettable" aria-label="Of your voluntary departures, what percentage were people you would have preferred to keep" placeholder="e.g. 60" min="0" max="100">
+                <div class="input-error" id="error-regrettable">Enter a number between 0 and 100.</div>
             </div>
             <div class="input-group">
                 <label for="input-customer">Approximate % of employees in customer-facing roles</label>
-                <input type="number" id="input-customer" aria-label="Percentage of employees in customer-facing roles" placeholder="e.g. 35" min="1" max="100">
-                <div class="input-error" id="error-customer">Enter a number between 1 and 100.</div>
+                <input type="number" id="input-customer" aria-label="Percentage of employees in customer-facing roles" placeholder="e.g. 35" min="0" max="100">
+                <div class="input-error" id="error-customer">Enter a number between 0 and 100.</div>
             </div>
             <div class="input-group">
                 <label for="input-disengagement">Estimated % of employees not fully engaged (default: 55%)</label>
@@ -1555,9 +1555,9 @@
         var fields = [
             { id: 'headcount', min: 1, max: Infinity },
             { id: 'salary', min: 1, max: Infinity },
-            { id: 'turnover', min: 1, max: 100 },
-            { id: 'regrettable', min: 1, max: 100 },
-            { id: 'customer', min: 1, max: 100 },
+            { id: 'turnover', min: 0, max: 100 },
+            { id: 'regrettable', min: 0, max: 100 },
+            { id: 'customer', min: 0, max: 100 },
             { id: 'disengagement', min: 1, max: 100 }
         ];
         fields.forEach(function(f) {
