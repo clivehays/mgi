@@ -616,6 +616,32 @@
             color: var(--mid-grey);
         }
 
+        /* ===== UNDERSTANDING YOUR MANAGER GAP COST ===== */
+        .understanding-cost-section {
+            margin-bottom: 48px;
+            padding: 40px 0;
+            border-top: 1px solid var(--border-dark-on-light);
+            border-bottom: 1px solid var(--border-dark-on-light);
+        }
+        .understanding-cost-section h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--near-black);
+            margin-bottom: 24px;
+            letter-spacing: -0.02em;
+        }
+        .understanding-cost-section p {
+            font-size: 16px;
+            line-height: 1.75;
+            color: var(--mid-grey-dark);
+            margin-bottom: 16px;
+        }
+        .understanding-cost-section p:last-child { margin-bottom: 0; }
+        .understanding-cost-section p.emphasis {
+            color: var(--near-black);
+            font-weight: 600;
+        }
+
         /* ===== WHY THE GAP EXISTS ===== */
         .why-gap-section {
             margin-bottom: 48px;
@@ -1205,7 +1231,16 @@
                 </div>
             </div>
 
-            <!-- 4b: Why The Gap Exists (three-system framing) -->
+            <!-- 4b: Understanding Your Manager Gap Cost -->
+            <div class="understanding-cost-section">
+                <h2>Understanding Your Manager Gap Cost</h2>
+                <p>This number represents the total operational cost your organisation carries because of the gap between what your managers can see about their teams and what those teams are actually experiencing. It is not a number you will find on a single budget line. It is distributed across your existing cost base in two ways.</p>
+                <p>Roughly half sits inside your current spend as reduced output from people already on your payroll. Disengaged employees producing at 66 to 82 cents on the dollar. Managers spending time managing around problems they cannot see instead of leading through them. Teams that have stopped raising issues because nothing changed last time. This cost is already in your budget. You are already paying it. It is showing up as underperformance, not as a line item.</p>
+                <p>The other half is opportunity your organisation is not capturing because the environment is suppressing it. Innovation that isn't surfacing because psychological safety is low. Revenue that engaged customer-facing teams would generate but disengaged teams do not. Retention of people who would stay if their manager could see what was happening and act on it in time. This cost is invisible because it represents what should be happening but isn't.</p>
+                <p class="emphasis">Neither half requires new budget to address. The spend is already there. The opportunity is already there. The Manager Gap is the reason both are leaking.</p>
+            </div>
+
+            <!-- 4c: Why The Gap Exists (three-system framing) -->
             <div class="why-gap-section">
                 <h2>Why the Manager Gap exists</h2>
                 <p class="why-gap-subtitle">The Manager Gap is not a management failure. It is a structural problem created by three industries, all running simultaneously, none of them connected.</p>
@@ -2234,6 +2269,32 @@ function downloadPDF() {
     doc.setTextColor(midGrey[0], midGrey[1], midGrey[2]);
     doc.text('Total Annual Cost of Your Manager Gap', margin + 56, y);
     y += 14;
+
+    // Horizontal rule
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, W - margin, y);
+    y += 12;
+
+    // ===== UNDERSTANDING YOUR MANAGER GAP COST =====
+    checkPage(20);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(dark[0], dark[1], dark[2]);
+    doc.text('Understanding Your Manager Gap Cost', margin, y);
+    y += 8;
+
+    drawWrappedText('This number represents the total operational cost your organisation carries because of the gap between what your managers can see about their teams and what those teams are actually experiencing. It is not a number you will find on a single budget line. It is distributed across your existing cost base in two ways.', 9, 'normal', dark, 4.5);
+    y += 4;
+
+    drawWrappedText('Roughly half sits inside your current spend as reduced output from people already on your payroll. Disengaged employees producing at 66 to 82 cents on the dollar. Managers spending time managing around problems they cannot see instead of leading through them. Teams that have stopped raising issues because nothing changed last time. This cost is already in your budget. You are already paying it. It is showing up as underperformance, not as a line item.', 9, 'normal', dark, 4.5);
+    y += 4;
+
+    drawWrappedText('The other half is opportunity your organisation is not capturing because the environment is suppressing it. Innovation that isn\'t surfacing because psychological safety is low. Revenue that engaged customer-facing teams would generate but disengaged teams do not. Retention of people who would stay if their manager could see what was happening and act on it in time. This cost is invisible because it represents what should be happening but isn\'t.', 9, 'normal', dark, 4.5);
+    y += 4;
+
+    drawWrappedText('Neither half requires new budget to address. The spend is already there. The opportunity is already there. The Manager Gap is the reason both are leaking.', 9, 'bold', dark, 4.5);
+    y += 8;
 
     // Horizontal rule
     doc.setDrawColor(220, 220, 220);
