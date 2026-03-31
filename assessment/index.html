@@ -2358,9 +2358,12 @@ function downloadPDF() {
     y += 10;
 
     // ===== THE SIX COST LAYERS =====
-    doc.addPage();
-    y = drawHeader(false);
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, W - margin, y);
+    y += 12;
 
+    checkPage(20);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(dark[0], dark[1], dark[2]);
