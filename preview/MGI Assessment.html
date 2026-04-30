@@ -1,0 +1,1655 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Manager Gap Index Assessment — Clover ERA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="robots" content="noindex, nofollow">
+<meta name="description" content="The Manager Gap Index assessment. Five sections, four minutes. Get your MGI score and the full annual cost across six impact layers." />
+
+<link rel="icon" type="image/png" href="assets/clover-era-logo.png">
+
+  <link rel="canonical" href="https://mgi.cloverera.com/assessment/">
+  <meta property="og:title" content="Manager Gap Index Assessment — Clover ERA">
+  <meta property="og:description" content="The Manager Gap Index assessment. Five sections, four minutes. Get your MGI score and the full annual cost across six impact layers.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mgi.cloverera.com/assessment/">
+  <meta property="og:site_name" content="Clover ERA">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://cloverera.com/assets/og/mgi-assessment.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:alt" content="Clover ERA — Manager Gap Index Assessment">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Manager Gap Index Assessment — Clover ERA">
+  <meta name="twitter:description" content="The Manager Gap Index assessment. Five sections, four minutes. Get your MGI score and the full annual cost across six impact layers.">
+  <meta name="twitter:image" content="https://cloverera.com/assets/og/mgi-assessment.png">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,300;1,8..60,400&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --paper: #F1ECE3;
+    --paper-2: #E8E2D6;
+    --ink: #17161A;
+    --ink-2: #2B2926;
+    --ink-mute: #6F6A60;
+    --rule: #C9C2B4;
+    --rule-soft: #D9D3C5;
+    --accent: #2196F3;
+    --accent-body: #2196F3;
+    --warn: #B8410E;
+    --good: #2D7A3E;
+  }
+  *{ box-sizing: border-box; }
+  html, body{ margin:0; padding:0; background: var(--paper); color: var(--ink); }
+  body{
+    font-family: "Inter Tight", system-ui, -apple-system, sans-serif;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body::before{
+    content:""; position: fixed; inset: 0;
+    background-image:
+      radial-gradient(rgba(0,0,0,0.025) 1px, transparent 1px),
+      radial-gradient(rgba(0,0,0,0.018) 1px, transparent 1px);
+    background-size: 3px 3px, 7px 7px;
+    background-position: 0 0, 1px 2px;
+    pointer-events: none; mix-blend-mode: multiply; opacity: 0.7; z-index: 0;
+  }
+  a{ color: inherit; }
+
+  .mono{
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-mute); font-weight: 500;
+  }
+  .serif{ font-family: "Source Serif 4", Georgia, serif; }
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    position: relative; z-index: 2;
+    max-width: 1180px; margin: 0 auto;
+    padding: 22px 56px 18px;
+    display:flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid var(--ink);
+  }
+  .wordmark{
+    font-family: "Source Serif 4", Georgia, serif; font-style: italic;
+    font-weight: 400; font-size: 19px;
+    letter-spacing: -0.01em; color: var(--ink); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .wordmark .mark{ width: 26px; height: 26px; display: inline-block; flex: 0 0 26px; }
+  .wordmark .dot{ color: var(--accent); }
+  nav.primary{
+    display:flex; align-items: baseline; gap: 30px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  nav.primary a{ color: var(--ink-mute); text-decoration: none; transition: color 120ms ease; }
+  nav.primary a:hover{ color: var(--ink); }
+  nav.primary a.cta{
+    color: var(--accent-body);
+    border-bottom: 1px solid var(--accent-body);
+    padding-bottom: 2px;
+  }
+
+  main{ position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 56px; }
+
+  /* ---------- screen system ---------- */
+  .screen{ display: none; }
+  .screen.active{ display: block; }
+
+  /* ---------- COVER ---------- */
+  section.cover{
+    padding: 96px 0 120px;
+    max-width: 760px;
+  }
+  .cover .eyebrow{ margin-bottom: 36px; }
+  h1.cover-title{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(40px, 6.0vw, 64px);
+    line-height: 1.0;
+    letter-spacing: -0.025em;
+    margin: 0;
+    text-wrap: pretty;
+  }
+  h1.cover-title em{ font-style: italic; color: var(--accent-body); font-weight: 400; }
+  .cover .sub{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 300; font-size: 19px; line-height: 1.55;
+    color: var(--ink-2);
+    margin: 28px 0 0;
+    max-width: 660px;
+    text-wrap: pretty;
+  }
+  .benchmark{
+    margin: 40px 0 0;
+    padding: 24px 28px;
+    border-left: 2px solid var(--accent-body);
+    background: rgba(33,150,243,0.04);
+  }
+  .benchmark strong{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 500; font-size: 17px;
+    color: var(--ink); display: block; margin-bottom: 6px;
+  }
+  .benchmark p{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 300; font-size: 15px; line-height: 1.5;
+    color: var(--ink-2); margin: 0;
+  }
+  .scale-note{
+    margin: 20px 0 0;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; color: var(--ink-mute);
+    letter-spacing: 0.04em;
+  }
+  .time{
+    margin-top: 28px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  /* ---------- buttons ---------- */
+  .cta-row{ margin-top: 36px; }
+  .btn-primary{
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 10px;
+    min-width: 280px;
+    padding: 20px 32px;
+    background: var(--ink);
+    color: var(--paper);
+    border: 1px solid var(--ink);
+    font-family: "Inter Tight", system-ui, sans-serif;
+    font-weight: 500;
+    font-size: 17px;
+    letter-spacing: 0.005em;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+  }
+  .btn-primary .chev{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-size: 22px; line-height: 1;
+    transition: transform 160ms ease;
+  }
+  .btn-primary:hover{ background: var(--accent-body); border-color: var(--accent-body); }
+  .btn-primary:hover .chev{ transform: translateX(4px); }
+  .btn-primary:focus-visible{ outline: 2px solid var(--accent); outline-offset: 3px; }
+  .btn-primary[disabled]{ opacity: 0.5; cursor: not-allowed; }
+  .btn-primary[disabled]:hover{ background: var(--ink); border-color: var(--ink); }
+  .btn-primary.full-width{ width: 100%; min-width: 0; }
+  .btn-outline{
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 10px; padding: 18px 28px;
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    font-family: "Inter Tight", system-ui, sans-serif;
+    font-weight: 500; font-size: 16px;
+    text-decoration: none; cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+  }
+  .btn-outline:hover{ background: var(--ink); color: var(--paper); }
+  .footer-note{
+    margin-top: 14px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.04em; color: var(--ink-mute);
+  }
+
+  /* ---------- ASSESSMENT ---------- */
+  section.assessment{ padding: 56px 0 96px; max-width: 760px; }
+  .progress{
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 40px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .progress-dots{ display: inline-flex; gap: 8px; align-items: center; }
+  .progress-dot{
+    width: 8px; height: 8px; border-radius: 50%;
+    border: 1px solid var(--ink-mute);
+    background: transparent;
+    transition: background 160ms ease, border-color 160ms ease;
+  }
+  .progress-dot.active{ background: var(--accent-body); border-color: var(--accent-body); }
+  .progress-dot.completed{ background: var(--ink); border-color: var(--ink); }
+  .progress-label{ font-weight: 500; color: var(--ink); }
+
+  .assessment-section{ display: none; }
+  .assessment-section.active{ display: block; }
+
+  .section-title{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 400; font-size: clamp(28px, 3.4vw, 40px);
+    line-height: 1.1; letter-spacing: -0.018em;
+    margin: 0 0 18px; text-wrap: pretty;
+  }
+  .section-desc{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 300; font-size: 17px; line-height: 1.55;
+    color: var(--ink-2); margin: 0 0 36px; max-width: 640px;
+    text-wrap: pretty;
+  }
+
+  /* ---------- question cards ---------- */
+  .question-card{
+    padding: 22px 0;
+    border-top: 1px solid var(--rule-soft);
+    display: grid;
+    grid-template-columns: 1fr 160px;
+    gap: 28px;
+    align-items: center;
+  }
+  .question-card:last-of-type{ border-bottom: 1px solid var(--rule-soft); }
+  .question-text{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-size: 17px; line-height: 1.45;
+    color: var(--ink);
+  }
+  .question-helper{
+    margin-top: 8px;
+    font-family: "Source Serif 4", Georgia, serif;
+    font-style: italic; font-size: 14px; line-height: 1.5;
+    color: var(--ink-mute);
+  }
+
+  /* surveillance-flag question */
+  .question-card.flag{
+    background: rgba(184,65,14,0.04);
+    border-left: 2px solid var(--warn);
+    padding-left: 18px;
+    margin: 0 -18px;
+    grid-template-columns: 1fr 160px;
+  }
+
+  /* toggle */
+  .toggle-wrap{
+    display: inline-flex; align-items: center; gap: 14px;
+    justify-self: end;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .toggle-label{ user-select: none; }
+  .toggle-label.active{ color: var(--ink); font-weight: 500; }
+  .toggle-switch{
+    position: relative; display: inline-block;
+    width: 44px; height: 24px; flex: 0 0 44px;
+  }
+  .toggle-switch input{ opacity: 0; width: 0; height: 0; }
+  .toggle-slider{
+    position: absolute; cursor: pointer; inset: 0;
+    background: var(--paper-2);
+    border: 1px solid var(--ink);
+    border-radius: 24px;
+    transition: background 160ms ease;
+  }
+  .toggle-slider::before{
+    content: ""; position: absolute;
+    width: 16px; height: 16px;
+    left: 3px; top: 3px;
+    background: var(--ink);
+    border-radius: 50%;
+    transition: transform 160ms ease, background 160ms ease;
+  }
+  .toggle-switch input:checked + .toggle-slider{ background: var(--accent-body); }
+  .toggle-switch input:checked + .toggle-slider::before{
+    transform: translateX(20px);
+    background: var(--paper);
+  }
+
+  /* ---------- cost inputs ---------- */
+  .input-group{ margin-bottom: 22px; }
+  .input-group label{
+    display: block;
+    font-family: "Source Serif 4", Georgia, serif;
+    font-size: 16px; line-height: 1.4;
+    color: var(--ink); margin-bottom: 8px;
+  }
+  .input-group input,
+  .input-group select{
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    font-family: "Inter Tight", system-ui, sans-serif;
+    font-size: 16px;
+    transition: border-color 120ms ease;
+  }
+  .input-group input:focus,
+  .input-group select:focus{
+    outline: none;
+    border-color: var(--accent-body);
+    box-shadow: 0 0 0 2px rgba(33,150,243,0.18);
+  }
+  .input-group input.error,
+  .input-group select.error{ border-color: var(--warn); }
+  .input-error{
+    display: none;
+    margin-top: 6px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; color: var(--warn);
+    letter-spacing: 0.04em;
+  }
+  .input-error.visible{ display: block; }
+  .helper-block{
+    margin-top: 18px;
+    padding: 16px 20px;
+    border: 1px solid var(--rule-soft);
+    background: var(--paper-2);
+    font-family: "Source Serif 4", Georgia, serif;
+    font-style: italic; font-size: 14px; line-height: 1.55;
+    color: var(--ink-mute);
+  }
+
+  /* ---------- REVEAL ---------- */
+  section.reveal{
+    padding: 96px 0 96px;
+    max-width: 760px;
+    text-align: center;
+  }
+  .reveal-label{
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ink-mute); margin-bottom: 24px;
+  }
+  .reveal-score{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 300;
+    font-size: clamp(120px, 18vw, 220px);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--accent-body);
+    margin: 0 0 12px;
+    font-feature-settings: "lnum" 1;
+  }
+  .reveal-classification{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-style: italic; font-weight: 400;
+    font-size: clamp(32px, 4vw, 44px);
+    margin: 0 0 28px;
+    color: var(--accent-body);
+  }
+  .reveal-interp{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 300; font-size: 18px; line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0 auto 36px; max-width: 600px;
+    text-wrap: pretty;
+  }
+  .surveillance-flag-line{
+    display: none;
+    margin: 0 auto 36px;
+    padding: 14px 18px;
+    max-width: 600px;
+    border: 1px solid var(--warn);
+    background: rgba(184,65,14,0.04);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.06em;
+    color: var(--warn);
+  }
+  .surveillance-flag-line.visible{ display: block; }
+  .email-gate{
+    margin: 36px auto 0;
+    max-width: 480px;
+  }
+  .email-gate-prompt{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-size: 16px; color: var(--ink); margin: 0 0 14px;
+  }
+  .email-gate input{
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    font-family: "Inter Tight", system-ui, sans-serif;
+    font-size: 16px;
+    text-align: center;
+  }
+  .email-gate input.invalid{ border-color: var(--warn); }
+  .email-gate input.valid{ border-color: var(--good); }
+  .email-gate input:focus{
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(33,150,243,0.18);
+  }
+  .email-error{
+    display: none;
+    margin-top: 8px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; color: var(--warn); letter-spacing: 0.04em;
+  }
+  .email-error.visible{ display: block; }
+
+  /* ---------- RESULTS ---------- */
+  section.results{ padding: 64px 0 96px; }
+  .score-bar-container{
+    margin: 0 0 56px;
+    max-width: 880px;
+  }
+  .score-bar-track{
+    position: relative;
+    height: 6px;
+    background: var(--paper-2);
+    border: 1px solid var(--ink);
+  }
+  .score-bar-marker{
+    position: absolute;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent-body);
+    top: 50%; transform: translate(-50%, -50%);
+    border: 2px solid var(--paper);
+    box-shadow: 0 0 0 1px var(--ink);
+    transition: left 1500ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .score-bar-labels{
+    display: flex; justify-content: space-between;
+    margin-top: 12px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .summary-boxes{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin: 0 0 64px;
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+  .summary-box{
+    padding: 32px 36px;
+    border-right: 1px solid var(--rule-soft);
+  }
+  .summary-box:last-child{ border-right: 0; }
+  .summary-box-label{
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 16px;
+  }
+  .summary-box-value{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 300; font-size: clamp(64px, 9vw, 104px);
+    line-height: 0.95; letter-spacing: -0.04em;
+    color: var(--accent-body);
+    margin-bottom: 10px;
+    font-feature-settings: "lnum" 1;
+  }
+  .summary-box-sub{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-style: italic; font-size: 15px; line-height: 1.45;
+    color: var(--ink-mute);
+  }
+
+  .results h2{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 400; font-size: clamp(28px, 3.4vw, 40px);
+    line-height: 1.1; letter-spacing: -0.018em;
+    margin: 0 0 24px; max-width: 760px;
+    text-wrap: pretty;
+  }
+  .results-section{
+    margin: 0 0 80px;
+    max-width: 880px;
+  }
+  .results-section p{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 300; font-size: 17px; line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0 0 18px;
+    max-width: 720px;
+    text-wrap: pretty;
+  }
+  .results-section p strong{ color: var(--ink); font-weight: 500; }
+  .results-section p em{ font-style: italic; }
+  .results-section p.emphasis{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-style: italic; font-size: 19px;
+    color: var(--ink); margin: 28px 0;
+  }
+
+  /* ---------- six layers ---------- */
+  .layers-section{
+    margin: 0 0 80px;
+    max-width: 1080px;
+  }
+  .layer-row{
+    padding: 24px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    display: grid;
+    grid-template-columns: 36px 1fr 140px 100px;
+    gap: 24px;
+    align-items: baseline;
+  }
+  .layer-row:first-of-type{ border-top: 1px solid var(--ink); }
+  .layer-num{
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10.5px; letter-spacing: 0.18em;
+    color: var(--ink-mute); padding-top: 4px;
+  }
+  .layer-name{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-style: italic; font-weight: 400;
+    font-size: 19px; color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .layer-citation{
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px; letter-spacing: 0.04em;
+    color: var(--ink-mute); line-height: 1.55;
+  }
+  .layer-cost{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 400; font-size: 22px;
+    color: var(--ink); text-align: right;
+    font-feature-settings: "lnum" 1;
+  }
+  .layer-pct{
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.06em;
+    color: var(--ink-mute); text-align: right;
+  }
+  .layer-total{
+    margin-top: 24px;
+    padding: 22px 0;
+    border-top: 2px solid var(--ink);
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .layer-total-label{
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink);
+  }
+  .layer-total-value{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 400; font-size: 28px; color: var(--accent-body);
+    font-feature-settings: "lnum" 1;
+  }
+
+  /* ---------- dimension breakdown ---------- */
+  .dimension-row{
+    padding: 22px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    display: grid;
+    grid-template-columns: 200px 1fr 80px;
+    gap: 28px;
+    align-items: center;
+  }
+  .dimension-row:first-of-type{ border-top: 1px solid var(--ink); }
+  .dim-name{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-style: italic; font-size: 17px;
+    color: var(--ink);
+  }
+  .dim-track{
+    position: relative; height: 8px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-soft);
+  }
+  .dim-fill{
+    position: absolute; left: 0; top: 0; height: 100%;
+    background: var(--accent-body);
+    transition: width 1200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .dim-fill.low{ background: var(--warn); }
+  .dim-fill.mid{ background: #C97A1F; }
+  .dim-score{
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 13px; letter-spacing: 0.04em;
+    color: var(--ink); text-align: right;
+    font-feature-settings: "lnum" 1;
+  }
+
+  /* ---------- closes the gap (3 cards) ---------- */
+  .closes-gap{
+    margin: 80px 0;
+    max-width: 1080px;
+  }
+  .closes-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+  }
+  .closes-card{
+    padding: 36px 32px;
+    border-right: 1px solid var(--rule-soft);
+  }
+  .closes-card:last-child{ border-right: 0; }
+  .closes-card h3{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-style: italic; font-weight: 400;
+    font-size: 26px; margin: 0 0 14px;
+    color: var(--accent-body);
+  }
+  .closes-card p{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 300; font-size: 15px; line-height: 1.55;
+    color: var(--ink-2); margin: 0;
+    text-wrap: pretty;
+  }
+
+  /* ---------- closing CTA block ---------- */
+  .cta-block{
+    margin: 96px 0 64px;
+    padding: 56px 56px;
+    background: var(--ink);
+    color: var(--paper);
+    max-width: 1080px;
+  }
+  .cta-block h2{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 400; font-size: clamp(26px, 3vw, 36px);
+    line-height: 1.15; letter-spacing: -0.015em;
+    color: var(--paper); margin: 0 0 16px;
+    text-wrap: pretty;
+  }
+  .cta-block .cta-sub{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-style: italic; font-size: 18px;
+    color: rgba(241,236,227,0.75);
+    margin: 0 0 28px;
+  }
+  .cta-block .btn-primary{
+    background: var(--paper); color: var(--ink); border-color: var(--paper);
+  }
+  .cta-block .btn-primary:hover{
+    background: var(--accent); border-color: var(--accent); color: var(--paper);
+  }
+  .cta-block .secondary-row{
+    margin-top: 18px;
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .cta-block .secondary-row button,
+  .cta-block .secondary-row a{
+    background: transparent;
+    border: 0;
+    color: rgba(241,236,227,0.75);
+    text-decoration: none;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(241,236,227,0.3);
+    padding: 4px 0;
+    font-family: inherit; font-size: inherit;
+    letter-spacing: inherit; text-transform: inherit;
+  }
+  .cta-block .secondary-row button:hover,
+  .cta-block .secondary-row a:hover{ color: var(--paper); border-bottom-color: var(--paper); }
+
+  /* ---------- research appendix ---------- */
+  .research-appendix{
+    margin: 64px 0 56px;
+    max-width: 880px;
+  }
+  .research-toggle{
+    background: transparent; border: 0; padding: 0;
+    cursor: pointer;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-mute);
+    display: inline-flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 4px;
+  }
+  .research-toggle:hover{ color: var(--ink); border-bottom-color: var(--ink); }
+  .research-toggle .icon{ font-family: "Source Serif 4", serif; font-size: 16px; }
+  .research-list{
+    display: none;
+    margin: 24px 0 0; padding: 0 0 0 24px;
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 300; font-size: 14px; line-height: 1.6;
+    color: var(--ink-mute);
+  }
+  .research-list.visible{ display: block; }
+  .research-list li{ margin-bottom: 10px; }
+  .research-list li em{ color: var(--ink-2); }
+
+  /* ---------- toast ---------- */
+  .toast{
+    position: fixed;
+    bottom: 32px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    padding: 14px 24px;
+    background: var(--ink); color: var(--paper);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    z-index: 1000;
+    transition: transform 220ms ease;
+    opacity: 0; pointer-events: none;
+  }
+  .toast.show{ transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  /* ---------- footer ---------- */
+  footer.page-footer{
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--rule);
+    margin: 16px auto 0;
+    padding: 36px 56px 48px;
+    max-width: 1180px;
+    display: grid; grid-template-columns: 2fr 3fr;
+    gap: 48px; align-items: start;
+  }
+  footer .colophon{
+    font-family: "Source Serif 4", Georgia, serif;
+    font-style: italic; font-size: 13px; line-height: 1.5;
+    color: var(--ink-mute); max-width: 360px;
+  }
+  footer .legal{
+    margin-top: 14px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10px; letter-spacing: 0.06em;
+    color: var(--ink-mute); line-height: 1.6;
+  }
+  footer .links{
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px 32px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  footer .links a{ color: var(--ink-mute); text-decoration: none; transition: color 120ms ease; }
+  footer .links a:hover{ color: var(--ink); }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 980px){
+    .summary-boxes{ grid-template-columns: 1fr; }
+    .summary-box{ border-right: 0; border-bottom: 1px solid var(--rule-soft); }
+    .summary-box:last-child{ border-bottom: 0; }
+    .layer-row{ grid-template-columns: 28px 1fr 110px; }
+    .layer-pct{ display: none; }
+    .dimension-row{ grid-template-columns: 140px 1fr 70px; gap: 18px; }
+    .closes-grid{ grid-template-columns: 1fr; }
+    .closes-card{ border-right: 0; border-bottom: 1px solid var(--rule-soft); }
+    .closes-card:last-child{ border-bottom: 0; }
+    .question-card{ grid-template-columns: 1fr; gap: 14px; }
+    .toggle-wrap{ justify-self: start; }
+  }
+  @media (max-width: 720px){
+    .masthead{ padding: 18px 28px 14px; flex-wrap: wrap; gap: 12px; }
+    nav.primary{ gap: 18px; }
+    main{ padding: 0 28px; }
+    section.cover{ padding: 56px 0 80px; }
+    section.assessment{ padding: 36px 0 64px; }
+    .cta-block{ padding: 36px 28px; }
+    footer.page-footer{ grid-template-columns: 1fr; padding: 28px; }
+    footer .links{ grid-template-columns: 1fr; }
+    .btn-primary{ width: 100%; min-width: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .score-bar-marker, .dim-fill{ transition: none; }
+  }
+</style>
+  <link rel="stylesheet" href="assets/site-mobile.css">
+  <script src="assets/site-mobile.js" defer></script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Manager Gap Index Assessment",
+  "description": "The Manager Gap Index assessment. Five sections, four minutes. Get your MGI score and the full annual cost across six impact layers.",
+  "url": "https://mgi.cloverera.com/assessment/",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "publisher": {
+    "@id": "https://cloverera.com/#organization"
+  }
+}
+</script>
+</head>
+<body>
+
+<header class="masthead">
+  <a class="wordmark" href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/"><img src="assets/clover-era-logo.png" alt="" class="mark">Clover ERA<span class="dot">.</span></a>
+  <button class="hamburger" aria-expanded="false" aria-controls="primary-nav" aria-label="Open menu" type="button"><svg class="hamburger-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg><svg class="hamburger-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg></button>
+  <nav id="primary-nav" class="primary" aria-label="Primary">
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/Index%20Teaser.html">The Index</a>
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/How%20It%20Works.html">How It Works</a>
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/Evidence.html">Methodology</a>
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/The%20Productivity%20Inversion.html">The Inversion</a>
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/About.html">About</a>
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/MGI%20Landing.html" class="cta">About the MGI</a>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ============ SCREEN: COVER ============ -->
+  <div class="screen active" id="screen-cover">
+    <section class="cover">
+      <div class="mono eyebrow">Manager Gap Index · Diagnostic</div>
+      <h1 class="cover-title">Find out how wide your <em>Manager Gap</em> is.</h1>
+      <p class="sub">The Manager Gap Index scores your organisation across five dimensions and calculates the full operational cost of the gap across six impact layers. It also detects whether the tools you currently use to understand your teams are producing genuine signal or managed performance.</p>
+      <div class="benchmark">
+        <strong>Most mid-market companies score between 26 and 42 on the Manager Gap Index.</strong>
+        <p>That range costs an average of $6&ndash;9M per year in total operational impact. Most of it invisible on the day the score is taken.</p>
+      </div>
+      <div class="scale-note">Score of 100 = fully closed gap. Score of 0 = fully exposed.</div>
+      <div class="time">Takes 4 minutes.</div>
+      <div class="cta-row">
+        <button class="btn-primary" onclick="startAssessment()" aria-label="Start the Manager Gap Index assessment">
+          Calculate My MGI Score <span class="chev">›</span>
+        </button>
+      </div>
+      <div class="footer-note">Results are generated instantly and stay in your browser.</div>
+    </section>
+  </div>
+
+  <!-- ============ SCREEN: ASSESSMENT ============ -->
+  <div class="screen" id="screen-assessment">
+    <section class="assessment">
+      <div class="progress" role="progressbar" aria-label="Assessment progress">
+        <span class="progress-label" id="progressLabel">Section 1 of 5</span>
+        <span class="progress-dots" id="progressDots">
+          <span class="progress-dot active"></span>
+          <span class="progress-dot"></span>
+          <span class="progress-dot"></span>
+          <span class="progress-dot"></span>
+          <span class="progress-dot"></span>
+        </span>
+      </div>
+
+      <!-- Section 1: Visibility -->
+      <div class="assessment-section active" id="section-1">
+        <h2 class="section-title">What can your managers currently see?</h2>
+        <p class="section-desc">These questions assess how much genuine, real-time signal your managers receive about their team's actual experience and whether the systems meant to provide that signal are structurally capable of capturing truth.</p>
+        <div id="questions-1"></div>
+        <div class="cta-row">
+          <button class="btn-primary full-width" onclick="nextSection(1)">Next Section <span class="chev">›</span></button>
+        </div>
+      </div>
+
+      <!-- Section 2: Action -->
+      <div class="assessment-section" id="section-2">
+        <h2 class="section-title">When managers see a problem, do they know what to do?</h2>
+        <p class="section-desc">These questions assess whether your managers have specific, timely, contextual guidance to act on the signal their teams are sending.</p>
+        <div id="questions-2"></div>
+        <div class="cta-row">
+          <button class="btn-primary full-width" onclick="nextSection(2)">Next Section <span class="chev">›</span></button>
+        </div>
+      </div>
+
+      <!-- Section 3: Accountability -->
+      <div class="assessment-section" id="section-3">
+        <h2 class="section-title">Is anyone tracking whether managers actually do anything?</h2>
+        <p class="section-desc">These questions assess whether action is logged, followed up, and connected to outcome.</p>
+        <div id="questions-3"></div>
+        <div class="cta-row">
+          <button class="btn-primary full-width" onclick="nextSection(3)">Next Section <span class="chev">›</span></button>
+        </div>
+      </div>
+
+      <!-- Section 4: Strain -->
+      <div class="assessment-section" id="section-4">
+        <h2 class="section-title">How much pressure is already on the system?</h2>
+        <p class="section-desc">These questions assess whether your organisation is operating under conditions that widen the Manager Gap regardless of what systems you have in place.</p>
+        <div id="questions-4"></div>
+        <div class="cta-row">
+          <button class="btn-primary full-width" onclick="nextSection(4)">Next Section <span class="chev">›</span></button>
+        </div>
+      </div>
+
+      <!-- Section 5: Cost Exposure -->
+      <div class="assessment-section" id="section-5">
+        <h2 class="section-title">What is the gap actually costing you?</h2>
+        <p class="section-desc">Enter your organisation's numbers. These are used to calculate your full cost exposure across six impact layers.</p>
+
+        <div class="input-group">
+          <label for="input-headcount">Total number of employees</label>
+          <input type="number" id="input-headcount" placeholder="e.g. 350" min="1" />
+          <div class="input-error" id="error-headcount">Enter a positive number.</div>
+        </div>
+        <div class="input-group">
+          <label for="input-salary">Average annual salary (USD)</label>
+          <input type="number" id="input-salary" placeholder="e.g. 85000" min="1" />
+          <div class="input-error" id="error-salary">Enter a positive number.</div>
+        </div>
+        <div class="input-group">
+          <label for="input-turnover">Current voluntary turnover rate (%)</label>
+          <input type="number" id="input-turnover" placeholder="e.g. 14" min="0" max="100" />
+          <div class="input-error" id="error-turnover">Enter a number between 0 and 100.</div>
+        </div>
+        <div class="input-group">
+          <label for="input-regrettable">Estimated % of departures that were regrettable (%)</label>
+          <input type="number" id="input-regrettable" placeholder="e.g. 60" min="0" max="100" />
+          <div class="input-error" id="error-regrettable">Enter a number between 0 and 100.</div>
+        </div>
+        <div class="input-group">
+          <label for="input-customer">Approximate % of employees in customer-facing roles</label>
+          <input type="number" id="input-customer" placeholder="e.g. 35" min="0" max="100" />
+          <div class="input-error" id="error-customer">Enter a number between 0 and 100.</div>
+        </div>
+        <div class="input-group">
+          <label for="input-disengagement">Estimated % of employees not fully engaged</label>
+          <input type="number" id="input-disengagement" placeholder="55" min="1" max="100" value="55" />
+          <div class="input-error" id="error-disengagement">Enter a number between 1 and 100.</div>
+        </div>
+        <div class="input-group">
+          <label for="input-industry">Industry</label>
+          <select id="input-industry">
+            <option value="">Select your industry</option>
+            <option value="Technology">Technology</option>
+            <option value="Financial Services">Financial Services</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Manufacturing">Manufacturing</option>
+            <option value="Retail">Retail</option>
+            <option value="Professional Services">Professional Services</option>
+            <option value="Education">Education</option>
+            <option value="Construction">Construction</option>
+            <option value="Real Estate">Real Estate</option>
+            <option value="Energy">Energy</option>
+            <option value="Telecommunications">Telecommunications</option>
+            <option value="Media &amp; Entertainment">Media &amp; Entertainment</option>
+            <option value="Hospitality">Hospitality</option>
+            <option value="Transportation &amp; Logistics">Transportation &amp; Logistics</option>
+            <option value="Government &amp; Public Sector">Government &amp; Public Sector</option>
+            <option value="Non-Profit">Non-Profit</option>
+            <option value="Pharmaceutical">Pharmaceutical</option>
+            <option value="Insurance">Insurance</option>
+            <option value="Legal">Legal</option>
+            <option value="Other">Other</option>
+          </select>
+          <input type="text" id="input-industry-other" placeholder="Please specify your industry" style="display:none;margin-top:8px" />
+        </div>
+
+        <div class="helper-block">
+          Regrettable departures: those who left voluntarily and you would have preferred to keep. Industry average: 55&ndash;65% of voluntary turnover. If unsure, use 60%. Disengagement default of 55% is from Gallup's 2025 State of the Global Workplace report.
+        </div>
+
+        <div class="cta-row">
+          <button class="btn-primary full-width" onclick="calculateScore()">Calculate My Score <span class="chev">›</span></button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ SCREEN: REVEAL ============ -->
+  <div class="screen" id="screen-reveal">
+    <section class="reveal">
+      <div class="reveal-label">Your Manager Gap Index Score</div>
+      <div class="reveal-score" id="scoreDisplay">0</div>
+      <div class="reveal-classification" id="classificationDisplay"></div>
+      <p class="reveal-interp" id="interpretationDisplay"></p>
+      <div class="surveillance-flag-line" id="surveillanceRevealLine">Surveillance False Confidence also detected. See full breakdown for details.</div>
+      <div class="email-gate">
+        <p class="email-gate-prompt">Enter your business email to see your detailed breakdown.</p>
+        <input type="email" id="emailInput" placeholder="you@company.com" autocomplete="email" />
+        <div class="email-error" id="emailError">Please enter a valid email address.</div>
+      </div>
+      <div class="cta-row">
+        <button class="btn-primary" id="revealBtn" onclick="proceedToResults()" disabled>
+          See full breakdown <span class="chev">›</span>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ SCREEN: RESULTS ============ -->
+  <div class="screen" id="screen-results">
+    <section class="results">
+
+      <!-- Score bar -->
+      <div class="score-bar-container">
+        <div class="score-bar-track">
+          <div class="score-bar-marker" id="scoreBarMarker"></div>
+        </div>
+        <div class="score-bar-labels">
+          <span>0 · Exposed</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100 · Closed</span>
+        </div>
+      </div>
+
+      <!-- Summary boxes -->
+      <div class="summary-boxes">
+        <div class="summary-box">
+          <div class="summary-box-label">Your MGI Score</div>
+          <div class="summary-box-value" id="resultScore">0</div>
+          <div class="summary-box-sub" id="resultClassification"></div>
+        </div>
+        <div class="summary-box">
+          <div class="summary-box-label">Total annual cost of your Manager Gap</div>
+          <div class="summary-box-value" id="resultCost">$0</div>
+          <div class="summary-box-sub">across six impact layers</div>
+        </div>
+      </div>
+
+      <!-- Understanding the cost -->
+      <div class="results-section">
+        <h2>Understanding your Manager Gap cost.</h2>
+        <p>This number represents the total operational cost your organisation carries because of the gap between what your managers can see about their teams and what those teams are actually experiencing. It is not a number you will find on a single budget line. It is distributed across your existing cost base in two ways.</p>
+        <p>Roughly half sits inside your current spend as reduced output from people already on your payroll. Disengaged employees producing at 66 to 82 cents on the dollar. Managers spending time managing around problems they cannot see instead of leading through them. Teams that have stopped raising issues because nothing changed last time. This cost is already in your budget. You are already paying it. It is showing up as underperformance, not as a line item.</p>
+        <p>The other half is opportunity your organisation is not capturing because the environment is suppressing it. Innovation that isn't surfacing because psychological safety is low. Revenue that engaged customer-facing teams would generate but disengaged teams do not. Retention of people who would stay if their manager could see what was happening and act on it in time. This cost is invisible because it represents what should be happening but isn't.</p>
+        <p class="emphasis">Neither half requires new budget to address. The spend is already there. The opportunity is already there. The Manager Gap is the reason both are leaking.</p>
+      </div>
+
+      <!-- Why the gap exists -->
+      <div class="results-section">
+        <h2>Why the Manager Gap exists.</h2>
+        <p>The Manager Gap is not a management failure. It is a structural problem created by three industries, all running simultaneously, none of them connected.</p>
+        <p><strong>The first is the survey industry.</strong> Engagement platforms, pulse survey tools, and people analytics dashboards collect signal from your teams and produce a score. The score is presented as a measure of manager effectiveness and team health. In practice, it is a measure of how safe employees felt when they answered the question. In small teams, employees know they can be identified from aggregate responses. Many believe their answers may influence their appraisal. So they give the safe answer. A score arrives at 7.4 and leadership makes decisions about the people layer of their business based on data that is structurally biased toward the positive.</p>
+        <p><strong>The second is the training industry.</strong> Manager development programs, leadership workshops, and cohort learning journeys operate independently of the survey system. They are not designed from survey findings. They are selected from vendor catalogues or commissioned by budget cycle. A manager attends a workshop and returns to a team with no knowledge of what the last survey actually found. The training was not built from the signal. The signal did not flow into the curriculum. Research by Michael Beer at Harvard Business School confirmed this in 2016: most training spend fails not because the content is wrong but because the learning is entirely disconnected from the actual conditions managers return to.</p>
+        <p><strong>The third is the AI surveillance industry.</strong> A new category of tool monitors employee communications: Teams messages, email threads, call transcripts, Slack activity. It produces dashboards purporting to show team health, collaboration patterns, and sentiment. When employees discover these tools are in place, and they always discover this, they migrate authentic conversation to unmonitored channels. WhatsApp. Signal. In person. The monitored channel becomes a performance surface. The dashboard captures managed communication, not genuine team experience. The organisation believes it now has more visibility. It has less.</p>
+        <p>Three systems. Three sets of vendors. Three budget lines. Not one of them is telling the organisation what its teams are actually experiencing.</p>
+        <p class="emphasis">That is the Manager Gap. Your MGI Score measures how wide it is in your organisation right now, and calculates the total annual cost of operating with it open.</p>
+      </div>
+
+      <!-- Six layers -->
+      <div class="layers-section">
+        <h2>The six cost layers.</h2>
+        <div id="layerRows"></div>
+        <div class="layer-total">
+          <span class="layer-total-label">Total annual cost of your Manager Gap</span>
+          <span class="layer-total-value" id="layerTotalValue">$0</span>
+        </div>
+      </div>
+
+      <!-- Dimension breakdown -->
+      <div class="results-section">
+        <h2>Dimension breakdown.</h2>
+        <div id="dimensionBreakdown"></div>
+      </div>
+
+      <!-- What closes the gap -->
+      <div class="closes-gap">
+        <h2>What closes the gap.</h2>
+        <div class="closes-grid">
+          <div class="closes-card">
+            <h3>See</h3>
+            <p>Clover ERA surfaces anonymous team-level signals across six behavioural dimensions. Daily, in real time. Team-level patterns, never individual responses. Nothing to triangulate. Genuine anonymity by architecture, not by policy.</p>
+          </div>
+          <div class="closes-card">
+            <h3>Act</h3>
+            <p>Every signal triggers a specific recommendation. A micro-action for this week. A mini-action for this month. A worksheet for the conversation that needs to happen. Action in the flow of work, not a course to complete later, not a generic tip.</p>
+          </div>
+          <div class="closes-card">
+            <h3>Track</h3>
+            <p>Every action is logged. Every recommendation is followed up. Thirty days later, sixty days later, you can see whether the signal shifted. Not an engagement score. A measurable change in the team-level indicator that predicted the problem.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Closing CTA -->
+      <div class="cta-block">
+        <h2 id="ctaHeadline">Your Manager Gap costs you $0 every year.</h2>
+        <p class="cta-sub">Want to talk through what this means?</p>
+        <a class="btn-primary" href="https://calendly.com/clive-hays-cloverera/15-mins-what-s-driving-it" target="_blank" rel="noopener">
+          15 minutes with a founder <span class="chev">›</span>
+        </a>
+        <div class="secondary-row">
+          <button onclick="shareResults()">Share these results</button>
+          <button onclick="restartAssessment()">Take it again</button>
+        </div>
+      </div>
+
+      <!-- Research appendix -->
+      <div class="research-appendix">
+        <button class="research-toggle" onclick="toggleResearch()" aria-expanded="false" aria-controls="researchList">
+          <span class="icon" id="researchIcon">+</span>
+          View research sources
+        </button>
+        <ol class="research-list" id="researchList">
+          <li>Gallup. (2025). <em>State of the Global Workplace: 2025 Report.</em> Washington, DC: Gallup, Inc.</li>
+          <li>Gallup. (Various years). <em>State of the American Workplace.</em> Washington, DC: Gallup, Inc. (1.5x salary multiplier; 18%/34% disengagement cost; 70% engagement variance attributable to manager)</li>
+          <li>Perceptyx Center for Workforce Transformation. (2025). <em>The Great Management Meltdown: Why 58% of Leaders Want Out and What It Means for Business.</em></li>
+          <li>Google. (2015, updated 2022). <em>Project Aristotle: Re:Work Team Effectiveness Research.</em> Mountain View, CA: Google LLC.</li>
+          <li>Edmondson, A.C. (1999). Psychological safety and learning behavior in work teams. <em>Administrative Science Quarterly, 44</em>(2), 350-383.</li>
+          <li>Edmondson, A.C. &amp; Lei, Z. (2014). Psychological safety: The history, renaissance, and future of an interpersonal construct. <em>Annual Review of Organizational Psychology and Organizational Behavior, 1</em>, 23-43.</li>
+          <li>Beer, M., Finnstrom, M. &amp; Schrader, D. (2016). The great training robbery. <em>Harvard Business School Working Paper 16-121.</em></li>
+          <li>Gartner / CEB. (Multiple years). New manager failure rate research. (60% fail within 24 months)</li>
+          <li>Center for Creative Leadership. (2024). <em>First-time manager research.</em> Greensboro, NC: CCL.</li>
+          <li>Wharton School. (2024). People Management for Emerging Leaders research. Philadelphia, PA: University of Pennsylvania.</li>
+          <li>Heskett, J.L., Jones, T.O., Loveman, G.W., Sasser, W.E. &amp; Schlesinger, L.A. (1994). Putting the service-profit chain to work. <em>Harvard Business Review, 72</em>(2), 164-174.</li>
+          <li>Bain &amp; Company. (Various years). Customer retention and profitability research. (5% retention = 25-95% profit increase)</li>
+          <li>Training Industry. (2020). Employee productivity under ineffective managers research. (10-52% unproductive time)</li>
+          <li>Journal of Applied Psychology meta-analysis. (2023). Psychological safety and innovation output. (27% higher innovation)</li>
+          <li>McKinsey &amp; Company. (2024). Psychological safety workplace survey. (26% of employees in psychologically safe environments)</li>
+          <li>Work Institute. (2024). Employee exit and retention analysis. (63% of exits attributed to management factors)</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+</main>
+
+<footer class="page-footer">
+  <div class="colophon">
+    The Manager Gap Index is a proprietary scoring model developed by Clover ERA.
+    <div class="legal">
+      Cost calculations are estimates based on published research multipliers applied to the inputs provided. Actual costs vary. Results are calculated locally in your browser. No data is stored or transmitted by this preview.
+    </div>
+  </div>
+  <div class="links">
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/">Clover ERA</a>
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/How%20It%20Works.html">How It Works</a>
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/About.html">About / Founders</a>
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/Books.html">Books</a>
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/MGI%20Landing.html">About the MGI</a>
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/Index%20Teaser.html">The Index</a>
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/The%20Productivity%20Inversion.html">The Inversion</a>
+    <a href="https://clover-era-page-git-redesign-preview-clivehays-projects.vercel.app/preview/Evidence.html">Methodology</a>
+    <a href="mailto:contact@cloverera.com">contact@cloverera.com</a>
+    <a href="/privacy">Privacy / Terms</a>
+  </div>
+</footer>
+
+<div class="toast" id="toast">Link copied</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ===== STATE =====
+  var mgiState = window.mgiState = {
+    currentSection: 0,
+    answers: {
+      visibility: [], surveillanceFlag: false,
+      action: [], accountability: [], strain: [],
+      cost: { headcount: null, avgSalary: null, turnoverRate: null, regrettablePercent: null, customerFacingPercent: null, disengagementRate: 55 }
+    },
+    scores: { visibility: 0, action: 0, accountability: 0, strain: 0, costExposure: 0, total: 0,
+              displayVisibility: 0, displayAction: 0, displayAccountability: 0, displayStrain: 0, displayCostExposure: 0, displayTotal: 0 },
+    layers: { l1: 0, l2: 0, l3: 0, l4: 0, l5: 0, l6: 0, total: 0 },
+    flags: { promotionRisk: false, innovationSuppression: false, surveillanceFalseConfidence: false },
+    classification: '',
+    classificationColour: '',
+    userEmail: '',
+    industry: ''
+  };
+
+  // ===== QUESTION DATA (verbatim from production) =====
+  var sections = {
+    1: {
+      name: 'Visibility',
+      questions: [
+        'Do your managers receive structured, anonymous feedback from their teams more than once per quarter?',
+        'Does your feedback system produce a single overall score rather than breaking results down by behavioural dimension?',
+        'Does it typically take more than 7 days for managers to receive team feedback after it is collected?',
+        "Can managers see trend data showing how their team's signal has changed over time?",
+        'In your current feedback system, can employees be identified?'
+      ],
+      invertedQuestions: [1, 2, 4],
+      yesScore: 0, noScore: 4,
+      flagQuestion: {
+        text: 'Does your organisation use AI tools that monitor employee communications to understand team health or productivity?',
+        helperText: 'AI communication monitoring tools, including those that analyse Teams messages, Slack, email threads, and call transcripts, are included here. If your organisation uses any tool that processes employee communication data to produce team health or productivity insights, answer Yes.'
+      }
+    },
+    2: {
+      name: 'Action',
+      questions: [
+        'When a team signal drops, does the manager receive a specific recommended action tied to that signal?',
+        'Is manager development delivered through scheduled programmes rather than in direct response to team signals?',
+        'Do managers have structured support for difficult conversations: worksheets, frameworks, or prompts?',
+        'Do managers receive the same general development content regardless of what their specific team data shows?'
+      ],
+      invertedQuestions: [1, 3],
+      yesScore: 0, noScore: 5
+    },
+    3: {
+      name: 'Accountability',
+      questions: [
+        'Do managers have regular one-to-ones with their direct reports?',
+        'Could a manager ignore team feedback for a full quarter without anyone in leadership noticing?',
+        'Is there a closed feedback loop connecting the action a manager took to the team signal that followed?',
+        'Are managers primarily evaluated on business output with no formal accountability for team health outcomes?'
+      ],
+      invertedQuestions: [1, 3],
+      yesScore: 0, noScore: 5
+    },
+    4: {
+      name: 'Strain Multiplier',
+      questions: [
+        'Has your organisation gone through a restructure or layoff in the last 18 months?',
+        'Has your headcount remained stable, growing less than 20% over the last 24 months?',
+        'Were most of your managers promoted because they were good at their previous job?',
+        'Is your voluntary turnover currently running below 12% annually?'
+      ],
+      invertedQuestions: [1, 3],
+      yesScore: 5, noScore: 0
+    }
+  };
+
+  // ===== LAYER METADATA =====
+  var layerMeta = [
+    { key: 'l1', name: 'Regrettable Attrition', citation: 'Source: Gallup (2025). Conservative estimate uses 1.5x salary multiplier. Range is 0.5x to 2x depending on role level.' },
+    { key: 'l2', name: 'Disengagement Tax', citation: 'Source: Gallup (2025 State of the Global Workplace). 70% of team engagement variance is attributable to the manager. Cost calculated at 18% of salary per disengaged employee.' },
+    { key: 'l3', name: 'Manager Drag', citation: 'Source: Perceptyx (2025); Training Industry (2020); Gallup. 10-52% unproductive time under ineffective managers. Conservative 5-20% drag coefficient scaled to your scores.' },
+    { key: 'l4', name: 'Promotion Risk', citation: 'Source: Gartner; Center for Creative Leadership (2024); Wharton (2024). 60% fail within 24 months. 60% receive no training. Cost on estimated manager headcount at conservative 50% salary failure rate.' },
+    { key: 'l5', name: 'Innovation Suppression', citation: 'Source: Google Project Aristotle (2015, 2022); Edmondson & Detert (HBS); Journal of Applied Psychology (2023). 31% more innovation in psychologically safe teams. 85% of employees withhold important information from their manager.' },
+    { key: 'l6', name: 'Customer Impact', citation: 'Source: Gallup; Bain & Company; Harvard Business School Service-Profit Chain. Engaged teams sell 20% more. 5% retention improvement increases profits 25-95%.' }
+  ];
+
+  // ===== BUILD QUESTIONS =====
+  function escapeAttr(s){ return String(s).replace(/"/g, '&quot;'); }
+
+  function buildQuestions() {
+    Object.keys(sections).forEach(function(sNum) {
+      var sec = sections[sNum];
+      var container = document.getElementById('questions-' + sNum);
+      sec.questions.forEach(function(q, i) {
+        var id = 'q' + sNum + '-' + i;
+        var card = document.createElement('div');
+        card.className = 'question-card';
+        card.innerHTML =
+          '<div><div class="question-text">' + q + '</div></div>' +
+          '<div class="toggle-wrap">' +
+            '<span class="toggle-label" id="' + id + '-no-label">No</span>' +
+            '<label class="toggle-switch">' +
+              '<input type="checkbox" id="' + id + '" aria-label="' + escapeAttr(q) + '">' +
+              '<span class="toggle-slider"></span>' +
+            '</label>' +
+            '<span class="toggle-label" id="' + id + '-yes-label">Yes</span>' +
+          '</div>';
+        container.appendChild(card);
+        var checkbox = document.getElementById(id);
+        checkbox.addEventListener('change', function() {
+          document.getElementById(id + '-yes-label').classList.toggle('active', checkbox.checked);
+          document.getElementById(id + '-no-label').classList.toggle('active', !checkbox.checked);
+        });
+        document.getElementById(id + '-no-label').classList.add('active');
+      });
+
+      if (sNum === '1' && sec.flagQuestion) {
+        var flagId = 'q1-flag';
+        var card = document.createElement('div');
+        card.className = 'question-card flag';
+        card.innerHTML =
+          '<div>' +
+            '<div class="question-text">' + sec.flagQuestion.text + '</div>' +
+            '<div class="question-helper">' + sec.flagQuestion.helperText + '</div>' +
+          '</div>' +
+          '<div class="toggle-wrap">' +
+            '<span class="toggle-label active" id="' + flagId + '-no-label">No</span>' +
+            '<label class="toggle-switch">' +
+              '<input type="checkbox" id="' + flagId + '" aria-label="' + escapeAttr(sec.flagQuestion.text) + '">' +
+              '<span class="toggle-slider"></span>' +
+            '</label>' +
+            '<span class="toggle-label" id="' + flagId + '-yes-label">Yes</span>' +
+          '</div>';
+        container.appendChild(card);
+        var fc = document.getElementById(flagId);
+        fc.addEventListener('change', function() {
+          document.getElementById(flagId + '-yes-label').classList.toggle('active', fc.checked);
+          document.getElementById(flagId + '-no-label').classList.toggle('active', !fc.checked);
+        });
+      }
+    });
+  }
+
+  // ===== SCREEN MANAGEMENT =====
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function updateProgress() {
+    var label = document.getElementById('progressLabel');
+    label.textContent = (mgiState.currentSection >= 1 && mgiState.currentSection <= 5)
+      ? 'Section ' + mgiState.currentSection + ' of 5' : '';
+    document.querySelectorAll('.progress-dot').forEach(function(dot, i) {
+      dot.classList.remove('active', 'completed');
+      if (i + 1 === mgiState.currentSection) dot.classList.add('active');
+      else if (i + 1 < mgiState.currentSection) dot.classList.add('completed');
+    });
+  }
+
+  // ===== START =====
+  window.startAssessment = function() {
+    mgiState.currentSection = 1;
+    showScreen('screen-assessment');
+    document.querySelectorAll('.assessment-section').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById('section-1').classList.add('active');
+    updateProgress();
+  };
+
+  // ===== NEXT SECTION =====
+  window.nextSection = function(current) {
+    var key = ['', 'visibility', 'action', 'accountability', 'strain'][current];
+    var sec = sections[current];
+
+    if (current === 1) {
+      mgiState.answers.visibility = [];
+      for (var i = 0; i < sec.questions.length; i++) {
+        mgiState.answers.visibility.push(document.getElementById('q1-' + i).checked);
+      }
+      mgiState.answers.surveillanceFlag = document.getElementById('q1-flag').checked;
+    } else {
+      mgiState.answers[key] = [];
+      for (var j = 0; j < sec.questions.length; j++) {
+        mgiState.answers[key].push(document.getElementById('q' + current + '-' + j).checked);
+      }
+    }
+
+    document.getElementById('section-' + current).classList.remove('active');
+    var next = current + 1;
+    document.getElementById('section-' + next).classList.add('active');
+    mgiState.currentSection = next;
+    updateProgress();
+  };
+
+  // ===== INDUSTRY OTHER =====
+  document.addEventListener('DOMContentLoaded', function() {
+    buildQuestions();
+    var sel = document.getElementById('input-industry');
+    var other = document.getElementById('input-industry-other');
+    sel.addEventListener('change', function() {
+      other.style.display = sel.value === 'Other' ? 'block' : 'none';
+    });
+
+    var emailInput = document.getElementById('emailInput');
+    var revealBtn = document.getElementById('revealBtn');
+    var emailError = document.getElementById('emailError');
+    emailInput.addEventListener('input', function() {
+      var v = emailInput.value.trim();
+      var ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+      emailInput.classList.remove('valid', 'invalid');
+      emailError.classList.remove('visible');
+      if (v.length > 0) emailInput.classList.add(ok ? 'valid' : 'invalid');
+      revealBtn.disabled = !ok;
+    });
+    emailInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !revealBtn.disabled) proceedToResults();
+    });
+  });
+
+  // ===== CALCULATE =====
+  window.calculateScore = function() {
+    var fields = [
+      { id: 'headcount', min: 1, max: Infinity },
+      { id: 'salary', min: 1, max: Infinity },
+      { id: 'turnover', min: 0, max: 100 },
+      { id: 'regrettable', min: 0, max: 100 },
+      { id: 'customer', min: 0, max: 100 },
+      { id: 'disengagement', min: 1, max: 100 }
+    ];
+    var valid = true;
+    fields.forEach(function(f) {
+      var input = document.getElementById('input-' + f.id);
+      var error = document.getElementById('error-' + f.id);
+      var v = parseFloat(input.value);
+      if (!input.value || isNaN(v) || v < f.min || v > f.max) {
+        input.classList.add('error'); error.classList.add('visible'); valid = false;
+      } else {
+        input.classList.remove('error'); error.classList.remove('visible');
+      }
+    });
+    if (!valid) return;
+
+    var c = mgiState.answers.cost;
+    c.headcount = parseFloat(document.getElementById('input-headcount').value);
+    c.avgSalary = parseFloat(document.getElementById('input-salary').value);
+    c.turnoverRate = parseFloat(document.getElementById('input-turnover').value);
+    c.regrettablePercent = parseFloat(document.getElementById('input-regrettable').value);
+    c.customerFacingPercent = parseFloat(document.getElementById('input-customer').value);
+    c.disengagementRate = parseFloat(document.getElementById('input-disengagement').value);
+
+    var sel = document.getElementById('input-industry');
+    var other = document.getElementById('input-industry-other');
+    mgiState.industry = sel.value === 'Other' ? (other.value.trim() || 'Other') : sel.value;
+
+    // Sub-scores (verbatim from production)
+    var visInv = [1, 2, 4];
+    mgiState.scores.visibility = mgiState.answers.visibility.reduce(function(s, y, i) {
+      return s + (visInv.indexOf(i) >= 0 ? (y ? 4 : 0) : (y ? 0 : 4));
+    }, 0);
+    var actInv = [1, 3];
+    mgiState.scores.action = mgiState.answers.action.reduce(function(s, y, i) {
+      return s + (actInv.indexOf(i) >= 0 ? (y ? 5 : 0) : (y ? 0 : 5));
+    }, 0);
+    var accInv = [1, 3];
+    mgiState.scores.accountability = mgiState.answers.accountability.reduce(function(s, y, i) {
+      return s + (accInv.indexOf(i) >= 0 ? (y ? 5 : 0) : (y ? 0 : 5));
+    }, 0);
+    var strInv = [1, 3];
+    mgiState.scores.strain = mgiState.answers.strain.reduce(function(s, y, i) {
+      return s + (strInv.indexOf(i) >= 0 ? (y ? 0 : 5) : (y ? 5 : 0));
+    }, 0);
+
+    mgiState.flags.surveillanceFalseConfidence = mgiState.answers.surveillanceFlag;
+
+    // Cost layers
+    var regDep = c.headcount * (c.turnoverRate / 100) * (c.regrettablePercent / 100);
+    mgiState.layers.l1 = regDep * c.avgSalary * 1.5;
+
+    var disengaged = c.headcount * (c.disengagementRate / 100);
+    mgiState.layers.l2 = disengaged * c.avgSalary * 0.18;
+
+    var strainFactor = mgiState.scores.strain / 20;
+    var visFactor = mgiState.scores.visibility / 20;
+    var dragCoeff = 0.05 + (strainFactor * 0.10) + (visFactor * 0.10);
+    dragCoeff = Math.min(dragCoeff, 0.20);
+    mgiState.layers.l3 = c.headcount * c.avgSalary * dragCoeff;
+
+    if (mgiState.answers.strain[2] === true) {
+      var estManagers = c.headcount * 0.15;
+      var mgrSalary = c.avgSalary * 1.35;
+      var atRisk = estManagers * 0.60;
+      mgiState.layers.l4 = atRisk * mgrSalary * 0.50;
+      mgiState.flags.promotionRisk = true;
+    } else {
+      mgiState.layers.l4 = 0;
+      mgiState.flags.promotionRisk = false;
+    }
+
+    var suppressionIndex = ((mgiState.scores.visibility / 20) + (mgiState.scores.accountability / 20)) / 2;
+    if (mgiState.flags.surveillanceFalseConfidence) suppressionIndex = Math.min(suppressionIndex + 0.15, 1.0);
+    var innovLossRate = 0.03 + (suppressionIndex * 0.12);
+    mgiState.layers.l5 = c.headcount * c.avgSalary * innovLossRate;
+    mgiState.flags.innovationSuppression = suppressionIndex > 0.6;
+
+    mgiState.layers.total = mgiState.layers.l1 + mgiState.layers.l2 + mgiState.layers.l3 + mgiState.layers.l4 + mgiState.layers.l5;
+
+    // Cost-exposure preliminary band
+    var preTotal = mgiState.layers.total;
+    if (preTotal < 500000) mgiState.scores.costExposure = 4;
+    else if (preTotal < 1000000) mgiState.scores.costExposure = 8;
+    else if (preTotal < 3000000) mgiState.scores.costExposure = 12;
+    else if (preTotal < 6000000) mgiState.scores.costExposure = 16;
+    else mgiState.scores.costExposure = 20;
+
+    mgiState.scores.total = mgiState.scores.visibility + mgiState.scores.action + mgiState.scores.accountability + mgiState.scores.strain + mgiState.scores.costExposure;
+
+    // Classification (display = 100 - raw)
+    var dt1 = 100 - mgiState.scores.total;
+    if (dt1 >= 80) { mgiState.classification = 'Closed'; }
+    else if (dt1 >= 60) { mgiState.classification = 'Narrow'; }
+    else if (dt1 >= 40) { mgiState.classification = 'Open'; }
+    else if (dt1 >= 20) { mgiState.classification = 'Critical'; }
+    else { mgiState.classification = 'Exposed'; }
+
+    // Customer impact uses classification
+    var cfH = c.headcount * (c.customerFacingPercent / 100);
+    var classMult = { 'Closed': 0, 'Narrow': 0.05, 'Open': 0.10, 'Critical': 0.15, 'Exposed': 0.20 };
+    mgiState.layers.l6 = cfH * c.avgSalary * (classMult[mgiState.classification] || 0);
+    mgiState.layers.total = mgiState.layers.l1 + mgiState.layers.l2 + mgiState.layers.l3 + mgiState.layers.l4 + mgiState.layers.l5 + mgiState.layers.l6;
+
+    // Re-band cost exposure with full total
+    var fullTotal = mgiState.layers.total;
+    if (fullTotal < 500000) mgiState.scores.costExposure = 4;
+    else if (fullTotal < 1000000) mgiState.scores.costExposure = 8;
+    else if (fullTotal < 3000000) mgiState.scores.costExposure = 12;
+    else if (fullTotal < 6000000) mgiState.scores.costExposure = 16;
+    else mgiState.scores.costExposure = 20;
+
+    mgiState.scores.total = mgiState.scores.visibility + mgiState.scores.action + mgiState.scores.accountability + mgiState.scores.strain + mgiState.scores.costExposure;
+
+    // Re-classify
+    var dt2 = 100 - mgiState.scores.total;
+    if (dt2 >= 80) mgiState.classification = 'Closed';
+    else if (dt2 >= 60) mgiState.classification = 'Narrow';
+    else if (dt2 >= 40) mgiState.classification = 'Open';
+    else if (dt2 >= 20) mgiState.classification = 'Critical';
+    else mgiState.classification = 'Exposed';
+
+    // Display-inverted scores (high = good)
+    mgiState.scores.displayTotal = 100 - mgiState.scores.total;
+    mgiState.scores.displayVisibility = 20 - mgiState.scores.visibility;
+    mgiState.scores.displayAction = 20 - mgiState.scores.action;
+    mgiState.scores.displayAccountability = 20 - mgiState.scores.accountability;
+    mgiState.scores.displayStrain = 20 - mgiState.scores.strain;
+    mgiState.scores.displayCostExposure = 20 - mgiState.scores.costExposure;
+
+    showReveal();
+  };
+
+  // ===== REVEAL =====
+  function showReveal() {
+    mgiState.currentSection = 6;
+    showScreen('screen-reveal');
+
+    var scoreEl = document.getElementById('scoreDisplay');
+    var classEl = document.getElementById('classificationDisplay');
+    var interpEl = document.getElementById('interpretationDisplay');
+    var survLine = document.getElementById('surveillanceRevealLine');
+
+    classEl.textContent = mgiState.classification;
+    var interp = {
+      'Closed': 'Your organisation has strong visibility infrastructure. The Manager Gap is narrow and your operational risk is at its structural minimum.',
+      'Narrow': 'There are gaps in your management visibility layer, but they are addressable with targeted intervention before they compound.',
+      'Open': 'Your managers are operating with significant blind spots. The tools meant to provide visibility are not capturing genuine team signal.',
+      'Critical': 'Your Manager Gap is wide. Your current people infrastructure is producing false confidence. The probability of accelerating attrition in the next 90 days is high.',
+      'Exposed': 'Your organisation is paying for three systems that are simultaneously creating blind spots. The total cost exposure is significant and growing.'
+    };
+    interpEl.textContent = interp[mgiState.classification] || '';
+    survLine.classList.toggle('visible', !!mgiState.flags.surveillanceFalseConfidence);
+
+    var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var target = mgiState.scores.displayTotal;
+    if (prefersReduced) {
+      scoreEl.textContent = target;
+    } else {
+      var start = null, duration = 1500;
+      function countUp(ts) {
+        if (!start) start = ts;
+        var p = Math.min((ts - start) / duration, 1);
+        scoreEl.textContent = Math.round(p * target);
+        if (p < 1) requestAnimationFrame(countUp);
+      }
+      setTimeout(function() { requestAnimationFrame(countUp); }, 400);
+    }
+  }
+
+  // ===== EMAIL GATE → RESULTS =====
+  window.proceedToResults = function() {
+    var v = document.getElementById('emailInput').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) return;
+    mgiState.userEmail = v;
+    showResults();
+  };
+
+  // ===== RESULTS =====
+  function formatCost(val) {
+    if (val >= 10000000) return '$' + Math.round(val / 1000000) + 'M';
+    if (val >= 1000000) return '$' + (val / 1000000).toFixed(1) + 'M';
+    return '$' + Math.round(val).toLocaleString('en-US');
+  }
+
+  function showResults() {
+    showScreen('screen-results');
+    var total = mgiState.scores.displayTotal;
+    var totalCost = mgiState.layers.total;
+
+    setTimeout(function() {
+      document.getElementById('scoreBarMarker').style.left = Math.min(total, 100) + '%';
+    }, 100);
+
+    document.getElementById('resultScore').textContent = total;
+    document.getElementById('resultClassification').textContent = mgiState.classification;
+    document.getElementById('resultCost').textContent = formatCost(totalCost);
+    document.getElementById('layerTotalValue').textContent = formatCost(totalCost);
+    document.getElementById('ctaHeadline').textContent = 'Your Manager Gap costs you ' + formatCost(totalCost) + ' every year.';
+
+    // Six layers
+    var container = document.getElementById('layerRows');
+    container.innerHTML = '';
+    var keys = ['l1', 'l2', 'l3', 'l4', 'l5', 'l6'];
+    keys.forEach(function(key, idx) {
+      var meta = layerMeta[idx];
+      var cost = mgiState.layers[key];
+      var pct = totalCost > 0 ? Math.round((cost / totalCost) * 100) : 0;
+      var row = document.createElement('div');
+      row.className = 'layer-row';
+      row.innerHTML =
+        '<div class="layer-num">L.0' + (idx + 1) + '</div>' +
+        '<div>' +
+          '<div class="layer-name">' + meta.name + '</div>' +
+          '<div class="layer-citation">' + meta.citation + '</div>' +
+        '</div>' +
+        '<div class="layer-cost">' + formatCost(cost) + '</div>' +
+        '<div class="layer-pct">' + pct + '%</div>';
+      container.appendChild(row);
+    });
+
+    // Dimension breakdown
+    var dimContainer = document.getElementById('dimensionBreakdown');
+    dimContainer.innerHTML = '';
+    var dims = [
+      { name: 'Visibility', score: mgiState.scores.displayVisibility },
+      { name: 'Action', score: mgiState.scores.displayAction },
+      { name: 'Accountability', score: mgiState.scores.displayAccountability },
+      { name: 'Strain', score: mgiState.scores.displayStrain },
+      { name: 'Cost Exposure', score: mgiState.scores.displayCostExposure }
+    ];
+    dims.forEach(function(d) {
+      var pct = (d.score / 20) * 100;
+      var cls = pct < 30 ? 'low' : (pct < 60 ? 'mid' : '');
+      var row = document.createElement('div');
+      row.className = 'dimension-row';
+      row.innerHTML =
+        '<div class="dim-name">' + d.name + '</div>' +
+        '<div class="dim-track"><div class="dim-fill ' + cls + '" style="width:' + pct + '%"></div></div>' +
+        '<div class="dim-score">' + d.score + ' / 20</div>';
+      dimContainer.appendChild(row);
+    });
+  }
+
+  // ===== TOAST =====
+  function toast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 1800);
+  }
+
+  // ===== UTILITIES =====
+  window.shareResults = function() {
+    if (navigator.share) {
+      navigator.share({ title: 'My MGI Score', text: 'I scored ' + mgiState.scores.displayTotal + ' on the Manager Gap Index.', url: window.location.href }).catch(function(){});
+    } else {
+      navigator.clipboard.writeText(window.location.href).then(function(){ toast('Link copied'); });
+    }
+  };
+  window.restartAssessment = function() {
+    window.location.reload();
+  };
+  window.toggleResearch = function() {
+    var list = document.getElementById('researchList');
+    var icon = document.getElementById('researchIcon');
+    var btn = list.previousElementSibling;
+    var open = list.classList.toggle('visible');
+    icon.textContent = open ? '−' : '+';
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+})();
+</script>
+</body>
+</html>
