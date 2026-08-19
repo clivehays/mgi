@@ -9,7 +9,7 @@
 
   var STORE_KEY = 'mgi-v5';
   var ADVANCE_DELAY = 200;
-  var TOTAL = 16;
+  var TOTAL = 17;
 
   /* where the dot sits in each quadrant, at mid-radius */
   var MARKER_POS = {
@@ -43,9 +43,9 @@
       'btn-start', 'btn-back', 'btn-next', 'btn-submit',
       'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
       'contact-form', 'form-error',
-      'state-call', 'confidence-line', 'state-desc', 'gap-body',
+      'state-call', 'confidence-line', 'state-desc', 'state-caution', 'gap-body',
       'compass-desc', 'marker-halo', 'marker-dot',
-      'signal-score', 'signal-copy', 'areas-list',
+      'signal-score', 'signal-framing', 'signal-copy', 'areas-list', 'areas-summary',
       'action-body', 'report-sent'
     ].forEach(function (id) {
       el[id] = document.getElementById(id);
@@ -79,7 +79,8 @@
       evidence: state.values.slice(1, 13),
       output: state.values[13],
       external: state.values[14],
-      energy: state.values[15]
+      energy: state.values[15],
+      exposure: state.values[16]
     };
   }
 
@@ -310,6 +311,7 @@
       output: answers.output,
       external: answers.external,
       energy: answers.energy,
+      exposure: answers.exposure,
       submittedAt: new Date().toISOString()
     };
 
@@ -338,17 +340,23 @@
     call.appendChild(name);
     call.appendChild(document.createTextNode('.'));
 
-    el['confidence-line'].textContent = r.confidence.label + ' · based on your signal score, explained below';
+    el['confidence-line'].textContent = r.confidence.label + ' · based on how often you’re positioned to see this team';
     el['state-desc'].textContent = r.state.description;
+
+    /* the caution only appears when the manager sees the team less than weekly */
+    el['state-caution'].textContent = r.caution || '';
+    el['state-caution'].hidden = !r.caution;
+
     el['gap-body'].textContent = r.gap.copy;
 
     renderCompass(r);
 
     el['signal-score'].textContent = r.signal + ' / 36';
-    el['signal-copy'].textContent = r.confidence.copy;
+    el['signal-framing'].textContent = MGI.SIGNAL_FRAMING;
+    el['signal-copy'].textContent = r.signalCopy;
     renderAreas(r);
 
-    el['action-body'].textContent = r.state.action;
+    el['action-body'].textContent = r.action;
   }
 
   function renderCompass(r) {
@@ -382,43 +390,37 @@
       var wrap = document.createElement('div');
       wrap.className = 'area';
 
-      var head = document.createElement('div');
-      head.className = 'area-head';
-
       var name = document.createElement('h3');
       name.className = 'area-name';
       name.textContent = a.name;
-
-      var label = document.createElement('span');
-      label.className = 'area-label lab-' + a.label.toLowerCase();
-      label.textContent = a.label;
-
-      head.appendChild(name);
-      head.appendChild(label);
-
-      var bar = document.createElement('div');
-      bar.className = 'area-bar';
-      var fill = document.createElement('span');
-      fill.style.width = (a.mean / 3 * 100) + '%';
-      bar.appendChild(fill);
 
       var desc = document.createElement('p');
       desc.className = 'area-desc';
       desc.textContent = a.desc;
 
-      wrap.appendChild(head);
-      wrap.appendChild(bar);
-      wrap.appendChild(desc);
+      /* the honest summary of an area is its recency, stated plainly.
+         No label vocabulary sits on top of it. The tint fades with age. */
+      var fact = document.createElement('p');
+      fact.className = 'area-fact fact-' + a.best;
+      fact.textContent = a.recencyFact;
 
-      if (a.isWeakest) {
+      wrap.appendChild(name);
+      wrap.appendChild(desc);
+      wrap.appendChild(fact);
+
+      if (a.callout) {
         var callout = document.createElement('p');
         callout.className = 'area-callout';
-        callout.textContent = MGI.calloutFor(a);
+        callout.textContent = a.callout;
         wrap.appendChild(callout);
       }
 
       list.appendChild(wrap);
     });
+
+    /* either the summary block or the per-area callouts, never both */
+    el['areas-summary'].textContent = r.summary || '';
+    el['areas-summary'].hidden = !r.summary;
   }
 
   if (document.readyState === 'loading') {

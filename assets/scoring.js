@@ -5,13 +5,19 @@
    and required by the serverless function as a CommonJS module,
    so the client and the emails can never disagree.
 
-   Sixteen questions:
+   Seventeen questions:
      Q0        gut check, unscored, compared to the computed state
      Q1-Q12    evidence items, recency scale, 3/2/1/0
      Q13-Q15   trajectory items, output / external / energy
+     Q16       exposure, drives confidence and nothing else
 
-   From those: a most-likely state, a confidence level, and the
-   manager gap between instinct and evidence.
+   Three outputs from three distinct sources, deliberately kept
+   apart:
+     state       evidence items plus the trajectory items
+     confidence  exposure only. It never changes the state call,
+                 only how firmly the report stands behind it.
+     signal      sum of the twelve evidence items. Reported as
+                 what it is, evidence freshness. Never confidence.
    ============================================================= */
 
 (function (root, factory) {
@@ -29,7 +35,6 @@
     key: 'gut',
     kind: 'gut',
     text: 'Before the questions: going on instinct alone, which best describes your team right now?',
-    intro: true,
     options: [
       { value: 'great', label: 'In great shape', severity: 0 },
       { value: 'fine', label: 'Fine, as far as I can tell', severity: 1 },
@@ -99,13 +104,30 @@
     ]
   };
 
-  /* ---------- the full sixteen, in order ---------- */
+  /* ---------- Q16: exposure. Confidence comes from here alone ----------
+     A behaviour that has not reached a manager who is there most days
+     is genuinely not happening. The same absence reported from a
+     distance might be distance, not decline. */
+
+  var EXPOSURE = {
+    key: 'exposure',
+    kind: 'exposure',
+    text: 'In a typical week, how much direct working contact do you have with this team?',
+    options: [
+      { value: 'most_days', label: 'Most days', confidence: 'high' },
+      { value: 'few_times', label: 'A few times a week', confidence: 'high' },
+      { value: 'weekly', label: 'About weekly', confidence: 'moderate' },
+      { value: 'less_weekly', label: 'Less than weekly', confidence: 'low' }
+    ]
+  };
+
+  /* ---------- the full seventeen, in order ---------- */
 
   var ITEMS = [GUT];
   EVIDENCE.forEach(function (text, i) {
     ITEMS.push({ key: 'e' + (i + 1), kind: 'evidence', n: i + 1, text: text, options: SCALE });
   });
-  ITEMS.push(OUTPUT, EXTERNAL, ENERGY);
+  ITEMS.push(OUTPUT, EXTERNAL, ENERGY, EXPOSURE);
 
   /* ---------- signal areas ---------- */
 
@@ -148,7 +170,6 @@
   ];
 
   var BEHAVIOUR_ITEMS = [1, 2, 5, 6, 9, 10, 11, 12];
-  var WORK_ITEMS = [3, 4, 7, 8];
 
   /* ---------- states ---------- */
 
@@ -166,8 +187,8 @@
       name: 'Drift',
       colour: '#C2842F',
       severity: [2, 2],
-      description: 'Your output is holding, which is why this state is dangerous: nothing in the numbers says anything is wrong. But the behaviours that produce that output are fading around you. Fewer unprompted ideas. Less open disagreement. Problems arriving late or second-hand. Drift is the state managers miss most, because everything that would reveal it is a thing that quietly stops happening. By the time Drift shows up in output, it has a new name.',
-      action: 'Do not announce an initiative. Drift deepens under programmes and retreats under attention. This week, pick the person you are least sure about and have one unhurried conversation with no agenda. Then look again at your weakest signal area above and create one situation where fresh signal can reach you in it.'
+      description: 'Your output is holding, which is why this state is dangerous: nothing in the numbers says anything is wrong. But the behaviours that produce that output have stopped reaching you. Fewer unprompted ideas. Less open disagreement. Problems arriving late or second-hand. Drift is the state managers miss most, because everything that would reveal it is a thing that quietly stops happening. By the time Drift shows up in output, it has a new name.',
+      action: 'Do not announce an initiative. Drift deepens under programmes and retreats under attention. This week, pick the person you are least sure about and have one unhurried conversation with no agenda. Then look again at your thinnest signal area above and create one situation where fresh signal can reach you in it.'
     },
     headwinds: {
       key: 'headwinds',
@@ -187,31 +208,55 @@
     }
   };
 
-  /* ---------- confidence ---------- */
+  /* ---------- confidence, from exposure only ---------- */
 
-  var CONFIDENCE = [
-    {
-      key: 'high',
-      min: 27,
-      max: 36,
-      label: 'High confidence',
-      copy: 'Twelve of the sixteen questions measured how recently real signal from this team has reached you. Yours is current, so this reading rests on evidence, not memory. Treat it accordingly.'
-    },
-    {
-      key: 'moderate',
-      min: 15,
-      max: 26,
-      label: 'Moderate confidence',
-      copy: 'Twelve of the sixteen questions measured how recently real signal from this team has reached you. Parts of your picture are live; parts are running on memory. This reading is a strong estimate, not a verdict. The areas below show where it is thinnest.'
-    },
-    {
-      key: 'low',
-      min: 0,
-      max: 14,
-      label: 'Low confidence',
-      copy: 'Twelve of the sixteen questions measured how recently real signal from this team has reached you, and most of your answers reached back a quarter or further. That makes this reading provisional, and that is a finding in itself: whatever state this team is truly in, your current signal would not show you a change. A team can leave Cruise and travel a long way before a manager on stale signal notices.'
-    }
+  var CONFIDENCE = {
+    high: { key: 'high', label: 'High confidence' },
+    moderate: { key: 'moderate', label: 'Moderate confidence' },
+    low: { key: 'low', label: 'Low confidence' }
+  };
+
+  var LOW_CONFIDENCE_CAUTION = 'One caution before you take this reading at face value. You told us you have direct contact with this team less than weekly. At that distance, behaviours that haven’t reached you may still be happening out of your sight. The difference matters: it is the difference between a team going quiet and you no longer hearing them. Only fresher contact tells you which, and until then, treat this result as a question to investigate rather than an answer.';
+
+  var LOW_CONFIDENCE_ACTION = 'And given how little of this team’s week you currently see, the single highest-value move is more direct contact. Every other read improves from there.';
+
+  /* ---------- signal score: freshness of evidence, not confidence ---------- */
+
+  var SIGNAL_FRAMING = 'Twelve of the seventeen questions measured how recently real, first-hand signal from this team has reached you. This score is what your current picture of the team is built on.';
+
+  var SIGNAL_BANDS = [
+    { min: 27, max: 36, copy: 'Yours is current. Whatever this team does next, you are positioned to see it early.' },
+    { min: 15, max: 26, copy: 'Parts of your picture are live; parts are running on memory. The areas below show which.' },
+    { min: 0, max: 14, copy: 'Most of your answers reached back a quarter or further. Whatever state this team is truly in, signal this old would not show you a change. A team can leave Cruise and travel a long way before a manager on old signal notices.' }
   ];
+
+  /* ---------- recency wording ----------
+     The per-area fact reports the MOST RECENT answer in that area,
+     which is the honest summary: it names what the manager has, not
+     a label invented on top of it. */
+
+  var RECENCY_FACT = {
+    3: 'Most recent signal: within the last week',
+    2: 'Most recent signal: within the last month',
+    1: 'Most recent signal: over a month ago',
+    0: 'Most recent signal: nothing you could recall'
+  };
+
+  /* the same fact folded into the callout sentence */
+  var RECENCY_PHRASE = {
+    3: 'last week',
+    2: 'last month',
+    1: 'a month ago',
+    0: null   // handled separately, "nothing more recent than nothing" does not read
+  };
+
+  /* "All five of your five areas" reads redundantly, so the
+     five case carries its own phrasing */
+  var COUNT_PHRASE = {
+    3: 'Three of your five areas',
+    4: 'Four of your five areas',
+    5: 'All five of your areas'
+  };
 
   /* ---------- lookups ---------- */
 
@@ -244,32 +289,16 @@
     return total / items.length;
   }
 
-  function areaLabel(m) {
-    if (m >= 2) return 'Current';
-    if (m >= 1) return 'Fading';
-    return 'Stale';
-  }
-
-  function recencyPhrase(v) {
-    if (v === 0) return 'memory';
-    if (v === 1) return 'last quarter';
-    if (v === 2) return 'last month';
-    return 'last week';
-  }
-
-  function confidenceFor(s) {
-    for (var i = 0; i < CONFIDENCE.length; i++) {
-      if (s >= CONFIDENCE[i].min && s <= CONFIDENCE[i].max) return CONFIDENCE[i];
+  function signalBandFor(s) {
+    for (var i = 0; i < SIGNAL_BANDS.length; i++) {
+      if (s >= SIGNAL_BANDS[i].min && s <= SIGNAL_BANDS[i].max) return SIGNAL_BANDS[i];
     }
-    return CONFIDENCE[CONFIDENCE.length - 1];
+    return SIGNAL_BANDS[SIGNAL_BANDS.length - 1];
   }
 
   /* ---------- the state decision tree ----------
      Deterministic, applied top to bottom, first match wins.
-     Holding output with faded behaviours is the definition of
-     Drift. Slipping output with a clear external cause and an
-     intact team is Headwinds. Slipping output with no external
-     explanation, or with the behaviours gone too, is Stall. */
+     Exposure never enters this tree. */
 
   function decideState(b, output, external, energy) {
     var holding = optionFor(OUTPUT, output).holding;
@@ -318,7 +347,7 @@
   }
 
   /* ---------- score ----------
-     answers: { gut, evidence: [12 ints 0-3], output, external, energy } */
+     answers: { gut, evidence: [12 ints 0-3], output, external, energy, exposure } */
 
   function score(answers) {
     var evidence = answers.evidence;
@@ -328,16 +357,21 @@
     for (i = 0; i < 12; i++) s += evidence[i];
 
     var b = mean(evidence, BEHAVIOUR_ITEMS);
-    var w = mean(evidence, WORK_ITEMS);
 
     var decision = decideState(b, answers.output, answers.external, answers.energy);
     var state = decision.state;
-    var confidence = confidenceFor(s);
+
+    var exposureOpt = optionFor(EXPOSURE, answers.exposure);
+    var confidence = CONFIDENCE[exposureOpt.confidence];
+    var isLow = confidence.key === 'low';
+
     var gap = decideGap(answers.gut, state);
 
     var areas = AREAS.map(function (a) {
-      var m = mean(evidence, a.items);
-      var worst = Math.min(evidence[a.items[0] - 1], evidence[a.items[1] - 1]);
+      var v1 = evidence[a.items[0] - 1];
+      var v2 = evidence[a.items[1] - 1];
+      var best = Math.max(v1, v2);
+      var m = (v1 + v2) / 2;
       return {
         key: a.key,
         name: a.name,
@@ -345,9 +379,9 @@
         desc: a.desc,
         tie: a.tie,
         mean: m,
-        label: areaLabel(m),
-        worst: worst,
-        recency: recencyPhrase(worst)
+        best: best,
+        recencyFact: RECENCY_FACT[best],
+        isWeak: m < 1.0
       };
     });
 
@@ -355,8 +389,27 @@
       if (x.mean !== y.mean) return x.mean - y.mean;
       return x.tie - y.tie;
     });
-    var weakest = [ranked[0].key, ranked[1].key];
-    areas.forEach(function (a) { a.isWeakest = weakest.indexOf(a.key) !== -1; });
+    areas.forEach(function (a) { a.rank = ranked.indexOf(a); });
+
+    var weakCount = areas.filter(function (a) { return a.isWeak; }).length;
+
+    /* Either one summary block, or callouts on the two lowest areas.
+       Never both, and the cohort sentence appears exactly once. */
+    var summary = null;
+    var callouts = [];
+
+    if (weakCount >= 3) {
+      summary = COUNT_PHRASE[weakCount] + ' are running on little or nothing recent. At that point the gaps stop being local. Your picture of this team is a picture of a previous team.';
+    } else {
+      callouts = [
+        { key: ranked[0].key, copy: lowestCallout(ranked[0]) },
+        { key: ranked[1].key, copy: secondCallout(ranked[1]) }
+      ];
+    }
+
+    var calloutFor = {};
+    callouts.forEach(function (c) { calloutFor[c.key] = c.copy; });
+    areas.forEach(function (a) { a.callout = calloutFor[a.key] || null; });
 
     /* every answer, in order, for the notification email */
     var responses = ITEMS.map(function (item, idx) {
@@ -376,29 +429,36 @@
       state: state,
       rule: decision.rule,
       confidence: confidence,
+      isLowConfidence: isLow,
+      caution: isLow ? LOW_CONFIDENCE_CAUTION : null,
+      exposure: { value: answers.exposure, label: exposureOpt.label },
       gap: gap,
       signal: s,
+      signalFraming: SIGNAL_FRAMING,
+      signalCopy: signalBandFor(s).copy,
       behaviour: b,
-      work: w,
       areas: areas,
-      weakest: weakest,
-      weakestAreas: [ranked[0], ranked[1]],
+      ranked: ranked,
+      weakCount: weakCount,
+      summary: summary,
+      action: isLow ? state.action + ' ' + LOW_CONFIDENCE_ACTION : state.action,
       responses: responses,
       headline: 'Based on what you’ve observed, your team is most likely in ' + state.name + '.'
     };
   }
 
-  /* the weakest-area callout. The "last week" case only occurs on a
-     near-perfect signal score, where "rests on nothing more recent
-     than" would misread. */
-  function calloutFor(area) {
-    var opening;
-    if (area.worst >= 3) {
-      opening = 'Your read on ' + lower(area.name) + ' is current, with nothing in it older than last week. It is still the thinnest part of your picture.';
-    } else {
-      opening = 'Your read on ' + lower(area.name) + ' currently rests on nothing more recent than ' + area.recency + '.';
-    }
+  function lowestCallout(area) {
+    var phrase = RECENCY_PHRASE[area.best];
+    var opening = phrase
+      ? 'Your read on ' + lower(area.name) + ' rests on nothing more recent than ' + phrase + '.'
+      : 'Your read on ' + lower(area.name) + ' rests on nothing you could recall.';
     return opening + ' In our research cohort, this is where managers’ pictures drift furthest from what teams actually report.';
+  }
+
+  /* "runs nearly as thin" rather than "is nearly as thin": one area
+     name ends in "is", and "the team is is nearly as thin" reads badly */
+  function secondCallout(area) {
+    return 'Your read on ' + lower(area.name) + ' runs nearly as thin. This is the area a fresh look would change fastest.';
   }
 
   function lower(name) {
@@ -419,6 +479,7 @@
     if (!optionFor(OUTPUT, a.output)) return false;
     if (!optionFor(EXTERNAL, a.external)) return false;
     if (!optionFor(ENERGY, a.energy)) return false;
+    if (!optionFor(EXPOSURE, a.exposure)) return false;
 
     return true;
   }
@@ -431,11 +492,12 @@
     OUTPUT: OUTPUT,
     EXTERNAL: EXTERNAL,
     ENERGY: ENERGY,
+    EXPOSURE: EXPOSURE,
     AREAS: AREAS,
     STATES: STATES,
     CONFIDENCE: CONFIDENCE,
+    SIGNAL_FRAMING: SIGNAL_FRAMING,
     score: score,
-    calloutFor: calloutFor,
     labelFor: labelFor,
     lower: lower,
     validAnswers: validAnswers

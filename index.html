@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Manager Gap Index</title>
-<meta name="description" content="Every team is in one of four states. Sixteen questions, about four minutes, working out the most likely state of your team from things you have directly observed.">
+<meta name="description" content="Every team is in one of four states. Seventeen questions, about four minutes, working out the most likely state of your team from things you have directly observed.">
 <link rel="canonical" href="https://mgi.cloverera.com/">
 <meta name="robots" content="index, follow">
 
@@ -45,7 +45,7 @@
 
     <div class="lede body-serif">
       <p>Every team is in one of four states. Stable. Quietly slipping while the numbers still look fine. Fighting conditions outside its control. Or already stalling. Most managers can name the last one, because by then it has already cost them. The other three are harder to tell apart from the inside.</p>
-      <p>This diagnostic works out the most likely state of your team from things you have directly observed, then tells you how much your answer can be trusted. Sixteen questions. About four minutes.</p>
+      <p>This diagnostic works out the most likely state of your team from things you have directly observed, then tells you how much that reading can be trusted. Seventeen questions. About four minutes.</p>
     </div>
 
     <div class="instruction">
@@ -60,7 +60,7 @@
 <section class="view q-view" id="view-questions" aria-labelledby="q-text">
   <div class="wrap">
     <div class="q-progress">
-      <span class="count" id="q-count">1 of 16</span>
+      <span class="count" id="q-count">1 of 17</span>
       <div class="q-bar"><span id="q-bar-fill" style="width:0%"></span></div>
     </div>
 
@@ -82,7 +82,7 @@
 <!-- ============ 3. CONTACT ============ -->
 <section class="view contact-view" id="view-contact" aria-labelledby="contact-title">
   <div class="wrap">
-    <span class="mono eyebrow">Sixteen of sixteen</span>
+    <span class="mono eyebrow">Seventeen of seventeen</span>
     <h2 id="contact-title">Your result is ready. Where should we send the full report?</h2>
 
     <form id="contact-form" novalidate>
@@ -141,6 +141,7 @@
       <p class="state-call" id="state-call"></p>
       <p class="confidence-line" id="confidence-line"></p>
       <p class="state-desc" id="state-desc"></p>
+      <p class="state-caution" id="state-caution" hidden></p>
     </section>
 
     <!-- 4.2 the gap -->
@@ -193,7 +194,7 @@
                 font-size="11" font-weight="600" letter-spacing="1.8" fill="#C2842F">DRIFT</text>
         </svg>
 
-        <figcaption class="compass-caption">Dot shows the most likely state. The halo shows how confident this reading can be, given the signal behind it.</figcaption>
+        <figcaption class="compass-caption">Dot shows the most likely state. The halo shows how much of the team’s week you are positioned to see.</figcaption>
       </figure>
     </section>
 
@@ -201,8 +202,10 @@
     <section aria-labelledby="signal-heading">
       <span class="mono eyebrow" id="signal-heading">Your signal score</span>
       <p class="signal-score" id="signal-score"></p>
+      <p class="signal-framing" id="signal-framing"></p>
       <p class="signal-copy" id="signal-copy"></p>
       <div id="areas-list"></div>
+      <p class="areas-summary" id="areas-summary" hidden></p>
     </section>
 
     <!-- 4.5 one action -->
