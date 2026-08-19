@@ -9,9 +9,25 @@
 
   var STORE_KEY = 'mgi-v5';
   var ADVANCE_DELAY = 200;
+  var TOTAL = 16;
+
+  /* where the dot sits in each quadrant, at mid-radius */
+  var MARKER_POS = {
+    cruise: { x: 280, y: 135, where: 'at the top' },
+    headwinds: { x: 360, y: 215, where: 'on the right' },
+    stall: { x: 280, y: 295, where: 'at the bottom' },
+    drift: { x: 200, y: 215, where: 'on the left' }
+  };
+
+  /* the halo widens as confidence falls */
+  var MARKER_STYLE = {
+    high: { dot: 7, halo: 0, haloOpacity: 0 },
+    moderate: { dot: 7, halo: 26, haloOpacity: 0.20 },
+    low: { dot: 5, halo: 52, haloOpacity: 0.14 }
+  };
 
   var state = {
-    answers: new Array(12).fill(null),
+    values: new Array(TOTAL).fill(null),
     index: 0,
     contact: null,
     view: 'landing'
@@ -27,9 +43,10 @@
       'btn-start', 'btn-back', 'btn-next', 'btn-submit',
       'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
       'contact-form', 'form-error',
-      'band-name', 'band-score', 'band-desc',
-      'svg-drift', 'svg-headwinds', 'key-drift', 'key-headwinds',
-      'headline-finding', 'areas-list', 'report-sent'
+      'state-call', 'confidence-line', 'state-desc', 'gap-body',
+      'compass-desc', 'marker-halo', 'marker-dot',
+      'signal-score', 'signal-copy', 'areas-list',
+      'action-body', 'report-sent'
     ].forEach(function (id) {
       el[id] = document.getElementById(id);
     });
@@ -48,12 +65,26 @@
     document.addEventListener('keydown', onKeydown);
     window.addEventListener('popstate', onPopState);
 
-    if (state.view === 'report' && state.contact) {
-      renderReport(MGI.score(state.answers));
+    if (state.view === 'report' && state.contact && complete()) {
+      renderReport(MGI.score(toAnswers()));
       show('report', false);
     } else {
       show('landing', false);
     }
+  }
+
+  function toAnswers() {
+    return {
+      gut: state.values[0],
+      evidence: state.values.slice(1, 13),
+      output: state.values[13],
+      external: state.values[14],
+      energy: state.values[15]
+    };
+  }
+
+  function complete() {
+    return state.values.every(function (v) { return v !== null; });
   }
 
   /* ---------- persistence ---------- */
@@ -69,8 +100,8 @@
       var raw = sessionStorage.getItem(STORE_KEY);
       if (!raw) return;
       var prev = JSON.parse(raw);
-      if (prev && Array.isArray(prev.answers) && prev.answers.length === 12) {
-        state.answers = prev.answers;
+      if (prev && Array.isArray(prev.values) && prev.values.length === TOTAL) {
+        state.values = prev.values;
         state.index = prev.index || 0;
         state.contact = prev.contact || null;
         state.view = prev.view || 'landing';
@@ -116,28 +147,29 @@
   function renderQuestion() {
     var i = state.index;
     var n = i + 1;
+    var item = MGI.ITEMS[i];
 
-    el['q-count'].textContent = n + ' of 12';
-    el['q-bar-fill'].style.width = (i / 12 * 100) + '%';
+    el['q-count'].textContent = n + ' of ' + TOTAL;
+    el['q-bar-fill'].style.width = (i / TOTAL * 100) + '%';
     el['q-number'].textContent = n < 10 ? '0' + n : String(n);
-    el['q-text'].textContent = MGI.QUESTIONS[i];
+    el['q-text'].textContent = item.text;
 
     var scale = el['q-scale'];
     scale.innerHTML = '';
     var legend = document.createElement('legend');
     legend.className = 'visually-hidden';
-    legend.textContent = 'How recently did this happen?';
+    legend.textContent = item.kind === 'evidence' ? 'How recently did this happen?' : 'Choose one';
     scale.appendChild(legend);
 
-    MGI.SCALE.forEach(function (opt, k) {
+    item.options.forEach(function (opt, k) {
       var label = document.createElement('label');
       label.className = 'scale-option';
 
       var input = document.createElement('input');
       input.type = 'radio';
       input.name = 'q' + n;
-      input.value = String(opt.value);
-      input.checked = state.answers[i] === opt.value;
+      input.value = String(k);
+      input.checked = state.values[i] === opt.value;
       input.addEventListener('change', function () { choose(opt.value); });
 
       var face = document.createElement('span');
@@ -160,7 +192,7 @@
 
     el['btn-back'].hidden = false;
     el['btn-back'].textContent = i === 0 ? 'Back to start' : 'Back';
-    el['btn-next'].hidden = state.answers[i] === null;
+    el['btn-next'].hidden = state.values[i] === null;
   }
 
   function focusScale() {
@@ -169,7 +201,7 @@
   }
 
   function choose(value) {
-    state.answers[state.index] = value;
+    state.values[state.index] = value;
     el['btn-next'].hidden = false;
     save();
     if (lastInputWasPointer) {
@@ -178,8 +210,8 @@
   }
 
   function next() {
-    if (state.answers[state.index] === null) return;
-    if (state.index < 11) {
+    if (state.values[state.index] === null) return;
+    if (state.index < TOTAL - 1) {
       go(state.index + 1);
     } else {
       show('contact');
@@ -213,7 +245,7 @@
       if (target) {
         e.preventDefault();
         target.checked = true;
-        choose(Number(target.value));
+        target.dispatchEvent(new Event('change'));
         target.focus({ preventScroll: true });
       }
     }
@@ -250,11 +282,11 @@
     state.contact = contact;
     save();
 
-    var result = MGI.score(state.answers);
+    var result = MGI.score(toAnswers());
     renderReport(result);
     show('report');
 
-    send(contact, result);
+    send(contact);
   }
 
   function listify(items) {
@@ -262,9 +294,10 @@
     return items.slice(0, -1).join(', ') + ' and ' + items[items.length - 1];
   }
 
-  function send(contact, result) {
+  function send(contact) {
     el['report-sent'].textContent = 'A copy of this report is on its way to ' + contact.email + '.';
 
+    var answers = toAnswers();
     var payload = {
       firstName: contact.firstName,
       email: contact.email,
@@ -272,7 +305,11 @@
       role: contact.role,
       teamSize: contact.teamSize,
       website: contact.website,
-      answers: state.answers,
+      gut: answers.gut,
+      evidence: answers.evidence,
+      output: answers.output,
+      external: answers.external,
+      energy: answers.energy,
       submittedAt: new Date().toISOString()
     };
 
@@ -290,17 +327,54 @@
   /* ---------- report ---------- */
 
   function renderReport(r) {
-    el['band-name'].textContent = r.band.name;
-    el['band-score'].textContent = r.total + ' / 36';
-    el['band-desc'].textContent = r.band.desc;
+    /* the state call stays hedged: most likely, never certain */
+    var call = el['state-call'];
+    call.innerHTML = '';
+    call.appendChild(document.createTextNode('Based on what you’ve observed, your team is most likely in '));
+    var name = document.createElement('em');
+    name.className = 'state-name';
+    name.style.color = r.state.colour;
+    name.textContent = r.state.name;
+    call.appendChild(name);
+    call.appendChild(document.createTextNode('.'));
 
-    el['svg-drift'].textContent = r.drift.label.toUpperCase();
-    el['svg-headwinds'].textContent = r.headwinds.label.toUpperCase();
-    el['key-drift'].textContent = r.drift.label;
-    el['key-headwinds'].textContent = r.headwinds.label;
+    el['confidence-line'].textContent = r.confidence.label + ' · based on your signal score, explained below';
+    el['state-desc'].textContent = r.state.description;
+    el['gap-body'].textContent = r.gap.copy;
 
-    el['headline-finding'].textContent = r.headline;
+    renderCompass(r);
 
+    el['signal-score'].textContent = r.signal + ' / 36';
+    el['signal-copy'].textContent = r.confidence.copy;
+    renderAreas(r);
+
+    el['action-body'].textContent = r.state.action;
+  }
+
+  function renderCompass(r) {
+    var pos = MARKER_POS[r.state.key];
+    var style = MARKER_STYLE[r.confidence.key];
+
+    var halo = el['marker-halo'];
+    halo.setAttribute('cx', pos.x);
+    halo.setAttribute('cy', pos.y);
+    halo.setAttribute('r', style.halo);
+    halo.setAttribute('fill', style.halo ? r.state.colour : 'none');
+    halo.setAttribute('fill-opacity', style.haloOpacity);
+
+    var dot = el['marker-dot'];
+    dot.setAttribute('cx', pos.x);
+    dot.setAttribute('cy', pos.y);
+    dot.setAttribute('r', style.dot);
+    dot.setAttribute('fill', r.state.colour);
+
+    el['compass-desc'].textContent =
+      'The evidence points to ' + r.state.name + ', with ' + r.confidence.label.toLowerCase() +
+      '. The dot sits in the ' + r.state.name + ' quadrant, ' + pos.where +
+      ' of the compass. Cruise is at the top, Headwinds on the right, Stall at the bottom, Drift on the left.';
+  }
+
+  function renderAreas(r) {
     var list = el['areas-list'];
     list.innerHTML = '';
 

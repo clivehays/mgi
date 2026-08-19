@@ -4,18 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Manager Gap Index</title>
-<meta name="description" content="Every manager carries a picture of their team. Twelve questions, about three minutes, measuring how much of yours is running on fresh signal and how much is running on memory.">
+<meta name="description" content="Every team is in one of four states. Sixteen questions, about four minutes, working out the most likely state of your team from things you have directly observed.">
 <link rel="canonical" href="https://mgi.cloverera.com/">
 <meta name="robots" content="index, follow">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://mgi.cloverera.com/">
 <meta property="og:title" content="The Manager Gap Index">
-<meta property="og:description" content="Every manager carries a picture of their team. How much of yours is current?">
+<meta property="og:description" content="What state is your team actually in?">
 <meta property="og:site_name" content="The Manager Gap Index">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="The Manager Gap Index">
-<meta name="twitter:description" content="Every manager carries a picture of their team. How much of yours is current?">
+<meta name="twitter:description" content="What state is your team actually in?">
 
 <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
@@ -41,11 +41,11 @@
   <div class="wrap">
     <span class="mono eyebrow">The Manager Gap Index</span>
 
-    <h1 id="landing-title">Every manager carries a picture of their team. How much of yours is current?</h1>
+    <h1 id="landing-title">What state is your team actually in?</h1>
 
     <div class="lede body-serif">
-      <p>Your read on your team is built from two sources: things you have actually seen recently, and assumptions carried forward from the last time you looked. Teams change faster than snapshots. This diagnostic measures how much of your picture is running on fresh signal, and how much is running on memory.</p>
-      <p>Twelve questions. About three minutes. Every question is about your own recent experience, so only you can answer it, and only honest answers produce a meaningful result.</p>
+      <p>Every team is in one of four states. Stable. Quietly slipping while the numbers still look fine. Fighting conditions outside its control. Or already stalling. Most managers can name the last one, because by then it has already cost them. The other three are harder to tell apart from the inside.</p>
+      <p>This diagnostic works out the most likely state of your team from things you have directly observed, then tells you how much your answer can be trusted. Sixteen questions. About four minutes.</p>
     </div>
 
     <div class="instruction">
@@ -60,7 +60,7 @@
 <section class="view q-view" id="view-questions" aria-labelledby="q-text">
   <div class="wrap">
     <div class="q-progress">
-      <span class="count" id="q-count">1 of 12</span>
+      <span class="count" id="q-count">1 of 16</span>
       <div class="q-bar"><span id="q-bar-fill" style="width:0%"></span></div>
     </div>
 
@@ -68,7 +68,7 @@
     <h2 class="q-text" id="q-text"></h2>
 
     <fieldset class="scale" id="q-scale">
-      <legend class="visually-hidden">How recently did this happen?</legend>
+      <legend class="visually-hidden">Choose one</legend>
     </fieldset>
 
     <div class="q-nav">
@@ -82,7 +82,7 @@
 <!-- ============ 3. CONTACT ============ -->
 <section class="view contact-view" id="view-contact" aria-labelledby="contact-title">
   <div class="wrap">
-    <span class="mono eyebrow">Twelve of twelve</span>
+    <span class="mono eyebrow">Sixteen of sixteen</span>
     <h2 id="contact-title">Your result is ready. Where should we send the full report?</h2>
 
     <form id="contact-form" novalidate>
@@ -131,108 +131,90 @@
 </section>
 
 <!-- ============ 4. REPORT ============ -->
-<section class="view report" id="view-report" aria-labelledby="band-name">
+<section class="view report" id="view-report" aria-labelledby="state-call">
 
   <div class="wrap">
 
-    <!-- 4.1 overall reading -->
-    <section aria-labelledby="band-name">
-      <span class="mono eyebrow">Your signal reading</span>
-      <p class="band-name" id="band-name"></p>
-      <p class="band-score" id="band-score"></p>
-      <p class="band-desc" id="band-desc"></p>
+    <!-- 4.1 the state call -->
+    <section aria-labelledby="state-call">
+      <span class="mono eyebrow">Your result</span>
+      <p class="state-call" id="state-call"></p>
+      <p class="confidence-line" id="confidence-line"></p>
+      <p class="state-desc" id="state-desc"></p>
     </section>
 
-    <!-- 4.2 the compass -->
+    <!-- 4.2 the gap -->
+    <section aria-labelledby="gap-heading">
+      <span class="mono eyebrow" id="gap-heading">Your instinct vs the evidence</span>
+      <p class="gap-body" id="gap-body"></p>
+    </section>
+
+    <!-- 4.3 the compass -->
     <section aria-labelledby="compass-heading">
-      <span class="mono eyebrow" id="compass-heading">What you could detect</span>
+      <span class="mono eyebrow" id="compass-heading">Where that sits</span>
 
       <figure class="compass-figure">
-        <svg class="compass-svg" viewBox="0 0 480 460" role="img" aria-labelledby="compass-title compass-desc">
-          <title id="compass-title">Detection compass</title>
-          <desc id="compass-desc">A four state compass with a question mark at the centre, because this diagnostic does not know which state your team is in. Cruise at the top is labelled assumed. Drift on the left, Headwinds on the right and Stall at the bottom each carry a label describing how well you could currently detect that state. The same four labels are listed in text beneath the chart.</desc>
+        <svg class="compass-svg" viewBox="0 0 560 460" role="img" aria-labelledby="compass-title" aria-describedby="compass-desc">
+          <title id="compass-title">The four-state compass</title>
+          <desc id="compass-desc"></desc>
 
           <!-- quadrant fills -->
-          <path d="M 240 215 L 116.26 91.26 A 175 175 0 0 1 363.74 91.26 Z" fill="#1B7A4A" fill-opacity="0.07"/>
-          <path d="M 240 215 L 363.74 91.26 A 175 175 0 0 1 363.74 338.74 Z" fill="#6B5BD2" fill-opacity="0.07"/>
-          <path d="M 240 215 L 363.74 338.74 A 175 175 0 0 1 116.26 338.74 Z" fill="#B03A2E" fill-opacity="0.07"/>
-          <path d="M 240 215 L 116.26 338.74 A 175 175 0 0 1 116.26 91.26 Z" fill="#C2842F" fill-opacity="0.07"/>
+          <path d="M 280 215 L 166.86 101.86 A 160 160 0 0 1 393.14 101.86 Z" fill="#1B7A4A" fill-opacity="0.07"/>
+          <path d="M 280 215 L 393.14 101.86 A 160 160 0 0 1 393.14 328.14 Z" fill="#6B5BD2" fill-opacity="0.07"/>
+          <path d="M 280 215 L 393.14 328.14 A 160 160 0 0 1 166.86 328.14 Z" fill="#B03A2E" fill-opacity="0.07"/>
+          <path d="M 280 215 L 166.86 328.14 A 160 160 0 0 1 166.86 101.86 Z" fill="#C2842F" fill-opacity="0.07"/>
 
           <!-- concentric rings -->
           <g fill="none" stroke="#C9C2B4" stroke-width="1">
-            <circle cx="240" cy="215" r="44"/>
-            <circle cx="240" cy="215" r="88"/>
-            <circle cx="240" cy="215" r="131"/>
+            <circle cx="280" cy="215" r="40"/>
+            <circle cx="280" cy="215" r="80"/>
+            <circle cx="280" cy="215" r="120"/>
           </g>
-          <circle cx="240" cy="215" r="175" fill="none" stroke="#17161A" stroke-width="1"/>
+          <circle cx="280" cy="215" r="160" fill="none" stroke="#17161A" stroke-width="1"/>
 
           <!-- quadrant dividers -->
           <g stroke="#C9C2B4" stroke-width="1">
-            <line x1="116.26" y1="91.26" x2="363.74" y2="338.74"/>
-            <line x1="363.74" y1="91.26" x2="116.26" y2="338.74"/>
+            <line x1="166.86" y1="101.86" x2="393.14" y2="328.14"/>
+            <line x1="393.14" y1="101.86" x2="166.86" y2="328.14"/>
           </g>
 
-          <!-- centre: no dot, a question mark -->
-          <circle cx="240" cy="215" r="31" fill="#F1ECE3" stroke="#17161A" stroke-width="1"/>
-          <text x="240" y="215" text-anchor="middle" dominant-baseline="central"
-                font-family="Source Serif 4, Georgia, serif" font-size="42" font-weight="500" fill="#17161A">?</text>
+          <!-- the reading: the dot carries the state, the halo the confidence -->
+          <circle id="marker-halo" cx="280" cy="215" r="0" fill="none"/>
+          <circle id="marker-dot" cx="280" cy="215" r="0" fill="none"/>
 
-          <!-- CRUISE (top) -->
-          <text x="240" y="112" text-anchor="middle" font-family="JetBrains Mono, monospace"
-                font-size="10" font-weight="600" letter-spacing="1.6" fill="#1B7A4A">CRUISE</text>
-          <text x="240" y="130" text-anchor="middle" font-family="JetBrains Mono, monospace"
-                font-size="9" font-weight="600" letter-spacing="1.3" fill="#6F6A60" id="svg-cruise">ASSUMED</text>
-
-          <!-- HEADWINDS (right) -->
-          <text x="344" y="206" text-anchor="middle" font-family="JetBrains Mono, monospace"
-                font-size="10" font-weight="600" letter-spacing="1.6" fill="#6B5BD2">HEADWINDS</text>
-          <text x="344" y="224" text-anchor="middle" font-family="JetBrains Mono, monospace"
-                font-size="9" font-weight="600" letter-spacing="1.3" fill="#6F6A60" id="svg-headwinds"></text>
-
-          <!-- STALL (bottom) -->
-          <text x="240" y="300" text-anchor="middle" font-family="JetBrains Mono, monospace"
-                font-size="10" font-weight="600" letter-spacing="1.6" fill="#B03A2E">STALL</text>
-          <text x="240" y="318" text-anchor="middle" font-family="JetBrains Mono, monospace"
-                font-size="9" font-weight="600" letter-spacing="1.3" fill="#6F6A60">DETECTABLE</text>
-          <text x="240" y="332" text-anchor="middle" font-family="JetBrains Mono, monospace"
-                font-size="9" font-weight="600" letter-spacing="1.3" fill="#6F6A60">TOO LATE TO MATTER</text>
-
-          <!-- DRIFT (left) -->
-          <text x="136" y="206" text-anchor="middle" font-family="JetBrains Mono, monospace"
-                font-size="10" font-weight="600" letter-spacing="1.6" fill="#C2842F">DRIFT</text>
-          <text x="136" y="224" text-anchor="middle" font-family="JetBrains Mono, monospace"
-                font-size="9" font-weight="600" letter-spacing="1.3" fill="#6F6A60" id="svg-drift"></text>
+          <!-- quadrant names, outside the ring so the marker owns the inside -->
+          <text x="280" y="38" text-anchor="middle" font-family="JetBrains Mono, monospace"
+                font-size="11" font-weight="600" letter-spacing="1.8" fill="#1B7A4A">CRUISE</text>
+          <text x="486" y="219" text-anchor="middle" font-family="JetBrains Mono, monospace"
+                font-size="11" font-weight="600" letter-spacing="1.8" fill="#6B5BD2">HEADWINDS</text>
+          <text x="280" y="400" text-anchor="middle" font-family="JetBrains Mono, monospace"
+                font-size="11" font-weight="600" letter-spacing="1.8" fill="#B03A2E">STALL</text>
+          <text x="74" y="219" text-anchor="middle" font-family="JetBrains Mono, monospace"
+                font-size="11" font-weight="600" letter-spacing="1.8" fill="#C2842F">DRIFT</text>
         </svg>
 
-        <figcaption class="compass-key">
-          <div><span class="state k-cruise">Cruise</span><span class="verdict">Assumed</span></div>
-          <div><span class="state k-drift">Drift</span><span class="verdict" id="key-drift"></span></div>
-          <div><span class="state k-headwinds">Headwinds</span><span class="verdict" id="key-headwinds"></span></div>
-          <div><span class="state k-stall">Stall</span><span class="verdict">Detectable, too late to matter</span></div>
-        </figcaption>
+        <figcaption class="compass-caption">Dot shows the most likely state. The halo shows how confident this reading can be, given the signal behind it.</figcaption>
       </figure>
-
-      <p class="legend">Teams move through four states. <strong>Cruise:</strong> stable and healthy. <strong>Drift:</strong> output still fine, but the things that produce it are slipping. <strong>Headwinds:</strong> output falling while the team itself is healthy; the cause is outside. <strong>Stall:</strong> the decline has reached the output. Stall is the only state every manager detects without trying, because by then it has already cost you.</p>
-
-      <p class="pull-quote" id="headline-finding"></p>
     </section>
 
-    <!-- 4.3 the five areas -->
-    <section aria-labelledby="areas-heading">
-      <span class="mono eyebrow" id="areas-heading">Where your signal comes from</span>
+    <!-- 4.4 how much to trust this reading -->
+    <section aria-labelledby="signal-heading">
+      <span class="mono eyebrow" id="signal-heading">Your signal score</span>
+      <p class="signal-score" id="signal-score"></p>
+      <p class="signal-copy" id="signal-copy"></p>
       <div id="areas-list"></div>
     </section>
 
-    <!-- 4.4 one action -->
+    <!-- 4.5 one action -->
     <section aria-labelledby="action-heading">
       <span class="mono eyebrow" id="action-heading">This week</span>
-      <p class="action-body">Pick your weakest area above. Create one situation this week where fresh signal can reach you in it: a working session instead of a status meeting, a one-to-one with the person you are least sure about, or a direct look at the work itself. Then notice how much of what you learn was not in your picture.</p>
+      <p class="action-body" id="action-body"></p>
     </section>
 
-    <!-- 4.5 closing -->
+    <!-- 4.6 closing -->
     <section class="closing" aria-labelledby="closing-heading">
       <span class="mono eyebrow" id="closing-heading">The conversation</span>
-      <p class="closing-body"><strong>Talk your result through.</strong> The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA’s co-founder, walks a small number of participants through their result each week: thirty minutes, your answers, what they mean, and what to do about them. If you would like one of those conversations, reply to the report email and say so. We will also reach out to some participants directly.</p>
+      <p class="closing-body"><strong>Talk your result through.</strong> The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA’s co-founder, walks a small number of participants through their result each week: thirty minutes, your answers, what they mean, and what to do next. If you would like one of those conversations, reply to the report email and say so. We will also reach out to some participants directly.</p>
       <p class="report-sent" id="report-sent"></p>
     </section>
 

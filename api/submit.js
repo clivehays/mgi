@@ -2,10 +2,10 @@
    Manager Gap Index v5 - submission handler
 
    Stores the submission, emails Clive the raw answers as call
-   prep, and emails the manager their report. Scores are
-   recomputed here from the raw answers using the same module
-   the browser uses, so the email can never disagree with the
-   page the manager saw.
+   prep, and emails the manager their report. The state, the
+   confidence and the gap are recomputed here from the raw
+   answers using the same module the browser uses, so the email
+   can never disagree with the page the manager saw.
 
    Environment:
      RESEND_API_KEY              required for email
@@ -21,6 +21,12 @@ var MGI = require('../assets/scoring.js');
 var NOTIFY_TO = process.env.MGI_NOTIFY_EMAIL || 'contact@cloverera.com';
 var FROM = process.env.MGI_FROM_EMAIL || 'Manager Gap Index <mgi@cloverera.com>';
 var TABLE = process.env.MGI_TABLE || 'mgi_v5_submissions';
+
+var GAP_SUMMARY = {
+  behind: 'Instinct behind the evidence',
+  aligned: 'Aligned',
+  ahead: 'Instinct ahead of the evidence'
+};
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -40,7 +46,14 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ ok: true });
   }
 
-  var answers = body.answers;
+  var answers = {
+    gut: body.gut,
+    evidence: body.evidence,
+    output: body.output,
+    external: body.external,
+    energy: body.energy
+  };
+
   if (!MGI.validAnswers(answers)) {
     return res.status(400).json({ ok: false, error: 'Invalid answers' });
   }
@@ -70,10 +83,13 @@ module.exports = async function handler(req, res) {
     company: contact.company,
     role: contact.role,
     team_size: contact.teamSize,
-    total: result.total,
-    band: result.band.name,
-    drift: result.drift.label,
-    headwinds: result.headwinds.label,
+    state: result.state.name,
+    confidence: result.confidence.label,
+    gap: GAP_SUMMARY[result.gap.key],
+    gut: MGI.labelFor('gut', answers.gut),
+    signal: result.signal,
+    behaviour: Number(result.behaviour.toFixed(2)),
+    work: Number(result.work.toFixed(2)),
     weakest: result.weakest.join(', '),
     answers: answers
   };
@@ -179,11 +195,12 @@ function notification(contact, result, submittedAt) {
   lines.push('Team size: ' + contact.teamSize);
   lines.push('Submitted: ' + submittedAt);
   lines.push('');
-  lines.push('Score: ' + result.total + ' / 36');
-  lines.push('Band: ' + result.band.name);
+  lines.push('State: ' + result.state.name + ' (decision rule ' + result.rule + ')');
+  lines.push('Confidence: ' + result.confidence.label + ' (signal ' + result.signal + '/36)');
+  lines.push('Gut read: ' + result.gap.gutLabel);
+  lines.push('Gap: ' + GAP_SUMMARY[result.gap.key]);
   lines.push('');
-  lines.push('Drift detection: ' + result.drift.label + ' (mean ' + result.drift.mean.toFixed(2) + ')');
-  lines.push('Headwinds detection: ' + result.headwinds.label + ' (mean ' + result.headwinds.mean.toFixed(2) + ')');
+  lines.push('Behaviour score B: ' + result.behaviour.toFixed(2) + '   Work signal W: ' + result.work.toFixed(2));
   lines.push('');
   lines.push('Weakest areas:');
   lines.push('  1. ' + weakest[0]);
@@ -192,9 +209,9 @@ function notification(contact, result, submittedAt) {
   lines.push('ANSWERS');
   lines.push('');
 
-  result.items.forEach(function (item) {
-    lines.push('Q' + item.n + '. ' + item.question);
-    lines.push('    ' + item.label + ' (' + item.value + ')');
+  result.responses.forEach(function (item, i) {
+    lines.push('Q' + i + '. ' + item.question);
+    lines.push('    ' + item.label + (item.kind === 'evidence' ? ' (' + item.value + ')' : ''));
     lines.push('');
   });
 
@@ -204,7 +221,8 @@ function notification(contact, result, submittedAt) {
     from: FROM,
     to: [NOTIFY_TO],
     reply_to: contact.email,
-    subject: 'MGI: ' + contact.firstName + ', ' + contact.company + ' · ' + result.band.name + ' (' + result.total + '/36)',
+    subject: 'MGI: ' + contact.firstName + ', ' + contact.company + ' · ' + result.state.name.toUpperCase() +
+      ' (' + result.confidence.label.toLowerCase() + ', ' + result.signal + '/36)',
     text: text,
     html: '<pre style="font:13px/1.55 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;color:#17161A">' + esc(text) + '</pre>'
   };
@@ -219,59 +237,92 @@ function managerReport(contact, result) {
   var paper = '#F1ECE3';
   var serif = 'Georgia,"Times New Roman",serif';
   var mono = 'ui-monospace,Menlo,Consolas,monospace';
+  var sans = 'Arial,Helvetica,sans-serif';
+
+  function eyebrow(t) {
+    return '<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:' +
+      mute + ';margin:0 0 12px;">' + esc(t) + '</p>';
+  }
 
   var h = [];
 
   h.push('<div style="background:' + paper + ';padding:28px 0;">');
   h.push('<div style="max-width:600px;margin:0 auto;padding:0 22px;font-family:' + serif + ';color:' + ink + ';">');
 
-  h.push('<p style="font-family:' + mono + ';font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:' + mute + ';margin:0 0 22px;">The Manager Gap Index</p>');
+  h.push(eyebrow('The Manager Gap Index'));
 
-  h.push('<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:' + mute + ';margin:0 0 10px;">Your signal reading</p>');
-  h.push('<p style="font-size:34px;line-height:1.05;margin:0 0 8px;">' + esc(result.band.name) + '</p>');
-  h.push('<p style="font-family:' + mono + ';font-size:12px;letter-spacing:0.16em;color:' + mute + ';margin:0 0 18px;">' + result.total + ' / 36</p>');
-  h.push('<p style="font-size:17px;line-height:1.55;margin:0 0 30px;">' + esc(result.band.desc) + '</p>');
+  // 1. the state call, hedged
+  h.push(eyebrow('Your result'));
+  h.push('<p style="font-size:27px;line-height:1.2;margin:0 0 12px;">Based on what you have observed, your team is most likely in <em style="color:' +
+    result.state.colour + ';font-weight:bold;">' + esc(result.state.name) + '</em>.</p>');
+  h.push('<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:' +
+    mute + ';margin:0 0 20px;">' + esc(result.confidence.label) + ' · based on your signal score, below</p>');
+  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 28px;">' + esc(result.state.description) + '</p>');
 
   h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:0 0 26px;">');
 
-  h.push('<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:' + mute + ';margin:0 0 14px;">What you could detect</p>');
-  h.push('<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;font-family:' + mono + ';font-size:11px;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 22px;">');
-  h.push(compassRow('Cruise', 'Assumed', '#1B7A4A', rule));
-  h.push(compassRow('Drift', result.drift.label, '#C2842F', rule));
-  h.push(compassRow('Headwinds', result.headwinds.label, '#6B5BD2', rule));
-  h.push(compassRow('Stall', 'Detectable, too late to matter', '#B03A2E', rule));
+  // 2. the gap
+  h.push(eyebrow('Your instinct vs the evidence'));
+  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 28px;">' + esc(result.gap.copy) + '</p>');
+
+  h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:0 0 26px;">');
+
+  // 3. the four states, with this reading marked
+  h.push(eyebrow('Where that sits'));
+  h.push('<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;font-family:' + mono +
+    ';font-size:11px;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 12px;">');
+  ['cruise', 'drift', 'headwinds', 'stall'].forEach(function (key) {
+    var s = MGI.STATES[key];
+    var here = s.key === result.state.key;
+    h.push('<tr>' +
+      '<td style="padding:9px 0;border-bottom:1px solid ' + rule + ';width:22px;color:' + s.colour + ';">' +
+      (here ? '&#9679;' : '') + '</td>' +
+      '<td style="padding:9px 0;border-bottom:1px solid ' + rule + ';color:' + (here ? s.colour : mute) +
+      ';font-weight:' + (here ? 'bold' : 'normal') + ';">' + esc(s.name) + '</td>' +
+      '<td style="padding:9px 0;border-bottom:1px solid ' + rule + ';color:' + mute + ';text-align:right;">' +
+      (here ? esc(result.confidence.label) : '') + '</td>' +
+      '</tr>');
+  });
   h.push('</table>');
-
-  h.push('<p style="font-size:15px;line-height:1.6;margin:0 0 22px;">Teams move through four states. <strong>Cruise:</strong> stable and healthy. <strong>Drift:</strong> output still fine, but the things that produce it are slipping. <strong>Headwinds:</strong> output falling while the team itself is healthy; the cause is outside. <strong>Stall:</strong> the decline has reached the output. Stall is the only state every manager detects without trying, because by then it has already cost you.</p>');
-
-  h.push('<p style="font-size:19px;line-height:1.4;font-style:italic;border-left:2px solid #2196F3;padding:2px 0 2px 18px;margin:0 0 30px;">' + esc(result.headline) + '</p>');
+  h.push('<p style="font-family:' + sans + ';font-size:13px;line-height:1.55;color:' + mute +
+    ';margin:0 0 28px;">The marked state is the most likely one, given what you reported. The confidence beside it reflects how fresh the signal behind the reading is.</p>');
 
   h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:0 0 26px;">');
 
-  h.push('<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:' + mute + ';margin:0 0 16px;">Where your signal comes from</p>');
+  // 4. signal score and the five areas
+  h.push(eyebrow('Your signal score'));
+  h.push('<p style="font-family:' + mono + ';font-size:24px;letter-spacing:0.06em;font-weight:bold;margin:0 0 14px;">' +
+    result.signal + ' / 36</p>');
+  h.push('<p style="font-size:16px;line-height:1.6;margin:0 0 22px;">' + esc(result.confidence.copy) + '</p>');
 
   result.areas.forEach(function (a) {
     h.push('<div style="border-top:1px solid ' + rule + ';padding:15px 0;">');
     h.push('<p style="font-size:18px;margin:0 0 5px;">' + esc(a.name) + '</p>');
-    h.push('<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:' + areaColour(a.label) + ';margin:0 0 8px;">' + esc(a.label) + '</p>');
-    h.push('<p style="font-size:14px;line-height:1.55;color:' + mute + ';margin:0;font-family:Arial,Helvetica,sans-serif;">' + esc(a.desc) + '</p>');
+    h.push('<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:' +
+      areaColour(a.label) + ';margin:0 0 8px;">' + esc(a.label) + '</p>');
+    h.push('<p style="font-family:' + sans + ';font-size:14px;line-height:1.55;color:' + mute + ';margin:0;">' + esc(a.desc) + '</p>');
     if (a.isWeakest) {
-      h.push('<p style="font-size:15px;line-height:1.55;background:#E8E2D6;border-left:2px solid ' + ink + ';padding:13px 15px;margin:12px 0 0;">' + esc(MGI.calloutFor(a)) + '</p>');
+      h.push('<p style="font-size:15px;line-height:1.55;background:#E8E2D6;border-left:2px solid ' + ink +
+        ';padding:13px 15px;margin:12px 0 0;">' + esc(MGI.calloutFor(a)) + '</p>');
     }
     h.push('</div>');
   });
 
   h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:26px 0;">');
 
-  h.push('<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:' + mute + ';margin:0 0 12px;">This week</p>');
-  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 30px;">Pick your weakest area above. Create one situation this week where fresh signal can reach you in it: a working session instead of a status meeting, a one-to-one with the person you are least sure about, or a direct look at the work itself. Then notice how much of what you learn was not in your picture.</p>');
+  // 5. one action
+  h.push(eyebrow('This week'));
+  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 28px;">' + esc(result.state.action) + '</p>');
 
   h.push('<hr style="border:0;border-top:1px solid ' + ink + ';margin:0 0 26px;">');
 
-  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 26px;"><strong>Talk your result through.</strong> The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA’s co-founder, walks a small number of participants through their result each week: thirty minutes, your answers, what they mean, and what to do about them. If you would like one of those conversations, reply to this email and say so. We will also reach out to some participants directly.</p>');
+  // 6. closing
+  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 26px;"><strong>Talk your result through.</strong> The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA’s co-founder, walks a small number of participants through their result each week: thirty minutes, your answers, what they mean, and what to do next. If you would like one of those conversations, reply to this email and say so. We will also reach out to some participants directly.</p>');
 
   h.push('<hr style="border:0;border-top:1px solid ' + ink + ';margin:0 0 16px;">');
-  h.push('<p style="font-family:' + mono + ';font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:' + mute + ';line-height:1.8;margin:0;">The Manager Gap Index is a <a href="https://cloverera.com" style="color:' + mute + ';">Clover ERA</a> research instrument.<br>contact@cloverera.com</p>');
+  h.push('<p style="font-family:' + mono + ';font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:' + mute +
+    ';line-height:1.8;margin:0;">The Manager Gap Index is a <a href="https://cloverera.com" style="color:' + mute +
+    ';">Clover ERA</a> research instrument.<br>contact@cloverera.com</p>');
 
   h.push('</div></div>');
 
@@ -279,17 +330,11 @@ function managerReport(contact, result) {
     from: FROM,
     to: [contact.email],
     reply_to: NOTIFY_TO,
-    subject: 'Your Manager Gap Index result: ' + result.band.name + ' (' + result.total + '/36)',
+    subject: 'Your Manager Gap Index result: most likely ' + result.state.name +
+      ' (' + result.confidence.label.toLowerCase() + ')',
     html: h.join(''),
-    text: managerReportText(contact, result)
+    text: managerReportText(result)
   };
-}
-
-function compassRow(state, verdict, colour, rule) {
-  return '<tr>' +
-    '<td style="padding:9px 0;border-bottom:1px solid ' + rule + ';color:' + colour + ';font-weight:bold;width:110px;">' + esc(state) + '</td>' +
-    '<td style="padding:9px 0;border-bottom:1px solid ' + rule + ';color:#6F6A60;">' + esc(verdict) + '</td>' +
-    '</tr>';
 }
 
 function areaColour(label) {
@@ -298,40 +343,41 @@ function areaColour(label) {
   return '#B03A2E';
 }
 
-function managerReportText(contact, result) {
+function managerReportText(result) {
   var L = [];
   L.push('THE MANAGER GAP INDEX');
   L.push('');
-  L.push('YOUR SIGNAL READING');
-  L.push(result.band.name + '  (' + result.total + ' / 36)');
+  L.push('YOUR RESULT');
+  L.push('Based on what you have observed, your team is most likely in ' + result.state.name + '.');
+  L.push(result.confidence.label + ', based on your signal score, below.');
   L.push('');
-  L.push(result.band.desc);
+  L.push(result.state.description);
   L.push('');
-  L.push('WHAT YOU COULD DETECT');
-  L.push('  Cruise      Assumed');
-  L.push('  Drift       ' + result.drift.label);
-  L.push('  Headwinds   ' + result.headwinds.label);
-  L.push('  Stall       Detectable, too late to matter');
+  L.push('YOUR INSTINCT VS THE EVIDENCE');
+  L.push(result.gap.copy);
   L.push('');
-  L.push('Teams move through four states. Cruise: stable and healthy. Drift: output still fine, but the things that produce it are slipping. Headwinds: output falling while the team itself is healthy; the cause is outside. Stall: the decline has reached the output. Stall is the only state every manager detects without trying, because by then it has already cost you.');
+  L.push('WHERE THAT SITS');
+  ['cruise', 'drift', 'headwinds', 'stall'].forEach(function (key) {
+    var s = MGI.STATES[key];
+    var here = s.key === result.state.key;
+    L.push('  ' + (here ? '> ' : '  ') + s.name + (here ? '   ' + result.confidence.label : ''));
+  });
   L.push('');
-  L.push(result.headline);
-  L.push('');
-  L.push('WHERE YOUR SIGNAL COMES FROM');
+  L.push('YOUR SIGNAL SCORE');
+  L.push(result.signal + ' / 36');
+  L.push(result.confidence.copy);
   L.push('');
   result.areas.forEach(function (a) {
     L.push(a.name + ' - ' + a.label);
     L.push('  ' + a.desc);
-    if (a.isWeakest) {
-      L.push('  ' + MGI.calloutFor(a));
-    }
+    if (a.isWeakest) L.push('  ' + MGI.calloutFor(a));
     L.push('');
   });
   L.push('THIS WEEK');
-  L.push('Pick your weakest area above. Create one situation this week where fresh signal can reach you in it: a working session instead of a status meeting, a one-to-one with the person you are least sure about, or a direct look at the work itself. Then notice how much of what you learn was not in your picture.');
+  L.push(result.state.action);
   L.push('');
   L.push('TALK YOUR RESULT THROUGH');
-  L.push('The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA’s co-founder, walks a small number of participants through their result each week: thirty minutes, your answers, what they mean, and what to do about them. If you would like one of those conversations, reply to this email and say so. We will also reach out to some participants directly.');
+  L.push('The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA’s co-founder, walks a small number of participants through their result each week: thirty minutes, your answers, what they mean, and what to do next. If you would like one of those conversations, reply to this email and say so. We will also reach out to some participants directly.');
   L.push('');
   L.push('The Manager Gap Index is a Clover ERA research instrument. cloverera.com');
   L.push('contact@cloverera.com');

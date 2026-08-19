@@ -451,31 +451,41 @@ fieldset.scale{
 
 .report .eyebrow{ display: block; margin-bottom: 20px; }
 
-.band-name{
+.state-call{
   font-family: var(--serif);
   font-weight: 500;
-  font-size: clamp(34px, 7vw, 52px);
-  line-height: 1.02;
-  letter-spacing: -0.024em;
-  margin: 0 0 10px;
+  font-size: clamp(27px, 5.6vw, 40px);
+  line-height: 1.14;
+  letter-spacing: -0.022em;
+  margin: 0 0 16px;
+  max-width: 15em;
 }
 
-.band-score{
+.state-name{
+  font-style: italic;
+  font-weight: 600;
+}
+
+.confidence-line{
   font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0.18em;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--ink-mute);
   font-weight: 600;
-  margin: 0 0 24px;
+  line-height: 1.75;
+  margin: 0 0 28px;
+  max-width: 30em;
 }
 
-.band-desc{
+.state-desc,
+.gap-body{
   font-family: var(--serif);
-  font-size: clamp(18px, 3.8vw, 21px);
-  line-height: 1.55;
+  font-size: clamp(17px, 3.6vw, 19px);
+  line-height: 1.62;
   color: var(--ink-2);
   margin: 0;
-  max-width: 34em;
+  max-width: 36em;
 }
 
 /* compass */
@@ -487,69 +497,36 @@ fieldset.scale{
   width: 100%;
   max-width: 460px;
   height: auto;
-  margin: 4px auto 8px;
+  margin: 4px auto 6px;
 }
 
-.compass-key{
-  border-top: 1px solid var(--rule-soft);
-  margin: 18px 0 26px;
-}
-
-.compass-key div{
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  padding: 11px 0;
-  border-bottom: 1px solid var(--rule-soft);
-}
-
-.compass-key .state{
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-weight: 600;
-  width: 96px;
-  flex: 0 0 96px;
-}
-
-.compass-key .verdict{
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-weight: 600;
+.compass-caption{
+  font-family: var(--ui);
+  font-size: 13px;
+  line-height: 1.55;
   color: var(--ink-mute);
+  margin: 0;
+  max-width: 34em;
 }
 
-.k-cruise{ color: var(--cruise); }
-.k-drift{ color: var(--drift); }
-.k-headwinds{ color: var(--headwinds); }
-.k-stall{ color: var(--stall); }
+/* signal score */
 
-.legend{
+.signal-score{
+  font-family: var(--mono);
+  font-size: 26px;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 18px;
+}
+
+.signal-copy{
   font-family: var(--serif);
-  font-size: 16px;
+  font-size: clamp(16px, 3.4vw, 18px);
   line-height: 1.6;
   color: var(--ink-2);
-  margin: 0;
-  max-width: 38em;
-}
-
-.legend strong{ font-weight: 600; color: var(--ink); }
-
-.pull-quote{
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 500;
-  font-size: clamp(20px, 4.2vw, 25px);
-  line-height: 1.38;
-  letter-spacing: -0.012em;
-  color: var(--ink);
-  border-left: 2px solid var(--accent);
-  padding: 4px 0 4px 22px;
-  margin: 34px 0 0;
-  max-width: 30em;
+  margin: 0 0 30px;
+  max-width: 36em;
 }
 
 /* areas */
@@ -691,11 +668,8 @@ fieldset.scale{
   /* the strapline wraps to a ragged stack on a phone, and the
      wordmark already says what this is */
   .masthead .meta{ display: none; }
-  .compass-key .state{ width: 84px; flex: 0 0 84px; font-size: 10px; }
-  .compass-key .verdict{ font-size: 9.5px; letter-spacing: 0.1em; }
   .area-head{ flex-direction: column; gap: 5px; }
   .q-nav{ flex-direction: row-reverse; justify-content: flex-end; gap: 22px; }
-  .pull-quote{ padding-left: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce){
