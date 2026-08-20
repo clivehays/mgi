@@ -94,6 +94,10 @@ module.exports = async function handler(req, res) {
   var submittedAt = new Date().toISOString();
   var result = MGI.score(answers);
 
+  /* One column per answer, not just the jsonb blob. This table is meant to be
+     interrogated as a cohort later, and "mean of item 9 by industry" should be
+     plain SQL rather than json extraction. The blob is kept alongside for
+     fidelity and for anything the columns do not anticipate. */
   var record = {
     submitted_at: submittedAt,
     first_name: contact.firstName,
@@ -103,17 +107,35 @@ module.exports = async function handler(req, res) {
     industry: contact.industryLabel,
     industry_option: contact.industry || null,
     team_size: contact.teamSize,
+
+    gut: answers.gut,
+    output: answers.output,
+    external_pressure: answers.external,
+    energy: answers.energy,
+    exposure: answers.exposure,
+
     state: result.state.name,
+    decision_rule: result.rule,
     confidence: result.confidence.label,
-    exposure: result.exposure.label,
     gap: GAP_SUMMARY[result.gap.key],
-    gut: result.gap.gutLabel,
     signal: result.signal,
     behaviour: Number(result.behaviour.toFixed(2)),
     weak_areas: result.weakCount,
     area_ranking: result.ranked.map(function (a) { return a.name; }).join(' | '),
+
     answers: answers
   };
+
+  // the twelve evidence items, q1 through q12
+  for (var q = 0; q < 12; q++) {
+    record['q' + (q + 1)] = answers.evidence[q];
+  }
+
+  // per-area means, so segmentation does not have to recompute them
+  result.areas.forEach(function (a) {
+    record['area_' + a.key] = Number(a.mean.toFixed(2));
+    record['area_' + a.key + '_recency'] = a.best;
+  });
 
   // always leave a durable trace in the platform log, whatever else fails
   console.log('MGI_SUBMISSION ' + JSON.stringify(record));

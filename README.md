@@ -168,8 +168,8 @@ Set these in the Vercel project. Only `RESEND_API_KEY` is required for email to 
 | `MGI_FROM_EMAIL` | no | `The Manager Gap Index <mgi@cloverera.com>` | From address on the manager's report. The domain must be verified in Resend. |
 | `MGI_NOTIFY_FROM` | no | `MGI_FROM_EMAIL` | From address on the notification only. Set this to a different verified domain when the notification is addressed to the same mailbox it is sent from, which some filters treat as spoofing. |
 | `MGI_REPLY_TO` | no | `MGI_NOTIFY_EMAIL` | Reply-to on the manager's report. Load-bearing: the closing block tells the manager to reply to it. |
-| `SUPABASE_URL` | no | none | Durable store. Omit and submissions live in the notification email and the Vercel log. |
-| `SUPABASE_SERVICE_ROLE_KEY` | no | none | Service role key, server side only. Never expose to the browser. |
+| `SUPABASE_URL` | yes | none | Durable store. Set. Without it submissions live only in the notification email and the Vercel log. |
+| `SUPABASE_SERVICE_ROLE_KEY` | yes | none | Service role key, server side only. Set. Never expose to the browser. |
 | `MGI_TABLE` | no | `mgi_v5_submissions` | Table name. |
 
 ### Live configuration
@@ -194,35 +194,36 @@ domain would remove it entirely. If notifications ever land in Junk, add `clover
 to the key's allowed domains in Resend and set `MGI_NOTIFY_FROM` to
 `The Manager Gap Index <mgi@cloverera.com>`. No code change is needed.
 
-### Optional Supabase table
+### Storage
 
-```sql
-create table if not exists mgi_v5_submissions (
-  id           bigint generated always as identity primary key,
-  submitted_at timestamptz not null,
-  first_name   text not null,
-  email        text not null,
-  company      text not null,
-  role         text not null,
-  team_size    text,
-  state        text not null,
-  confidence   text not null,
-  exposure     text not null,
-  gap          text not null,
-  gut          text not null,
-  signal       int  not null,
-  behaviour    numeric,
-  weak_areas   int,
-  area_ranking text,
-  answers      jsonb not null,
-  created_at   timestamptz not null default now()
-);
+Every submission is written to Supabase, project `drugebiitlcjkknjfxeh`, table
+`mgi_v5_submissions`. This is a research dataset, not a lead log: the cohort will be
+interrogated as a whole later, so the table is shaped for that.
 
-alter table mgi_v5_submissions enable row level security;
--- no policies: the service role key bypasses RLS, the anon key gets nothing
-```
+One column per answer rather than only a jsonb blob, so "mean of item 9 by industry" is
+plain SQL instead of json extraction. Answers are stored as **stable identifiers**
+(`most_days`, `slipped_slightly`, `fine`) rather than display labels, so rewording an
+option never breaks comparability across the cohort. The full jsonb blob is kept
+alongside for fidelity and for anything the columns do not anticipate.
 
-`answers` holds the raw submission: `{ gut, evidence: [12 ints], output, external, energy, exposure }`.
+46 columns, in four groups:
+
+| Group | Columns |
+|---|---|
+| Respondent | `first_name`, `email`, `company`, `role`, `industry`, `industry_option`, `team_size` |
+| Raw answers | `gut`, `q1` to `q12`, `output`, `external_pressure`, `energy`, `exposure` |
+| Derived | `state`, `decision_rule`, `confidence`, `gap`, `signal`, `behaviour`, `weak_areas`, `area_ranking` |
+| Per area | `area_<key>` mean and `area_<key>_recency` for each of the five areas |
+
+Plus `id`, `submitted_at`, `created_at` and `answers` (jsonb).
+
+`industry` holds what a human should read, so it carries the free text when the manager
+chose Other. `industry_option` holds the dropdown value, so grouping by sector still
+works and Other stays countable.
+
+Indexes on `submitted_at`, `state`, `industry_option` and `email`. Row level security is
+enabled with no policies, so the service role key reaches it and the anon key gets
+nothing. The DDL lives in the build scratchpad; re-running it is idempotent.
 
 Every submission is also written to the Vercel function log as a single line prefixed
 `MGI_SUBMISSION`, so nothing is lost even if both the store and the emails fail.
