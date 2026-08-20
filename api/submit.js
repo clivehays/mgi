@@ -19,6 +19,10 @@
      MGI_REPLY_TO                reply-to on the manager's report. Defaults to
                                  MGI_NOTIFY_EMAIL. Load-bearing: the closing
                                  block tells the manager to reply to it.
+     MGI_FALLBACK_FROM           a from address on a domain the API key is
+                                 known to allow. If a send is refused because
+                                 the configured domain is not authorised, the
+                                 message is retried from here rather than lost.
      SUPABASE_URL                optional, durable store
      SUPABASE_SERVICE_ROLE_KEY   optional, durable store
      MGI_TABLE                   default mgi_v5_submissions
@@ -30,6 +34,7 @@ var NOTIFY_TO = process.env.MGI_NOTIFY_EMAIL || 'contact@cloverera.com';
 var FROM = process.env.MGI_FROM_EMAIL || 'The Manager Gap Index <mgi@cloverera.com>';
 var NOTIFY_FROM = process.env.MGI_NOTIFY_FROM || FROM;
 var REPLY_TO = process.env.MGI_REPLY_TO || NOTIFY_TO;
+var FALLBACK_FROM = process.env.MGI_FALLBACK_FROM || '';
 var TABLE = process.env.MGI_TABLE || 'mgi_v5_submissions';
 
 var GAP_SUMMARY = {
@@ -202,6 +207,27 @@ async function store(record) {
 
 /* ---------- email transport ---------- */
 
+async function post(key, msg) {
+  var res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + key
+    },
+    body: JSON.stringify(msg)
+  });
+  return { ok: res.ok, status: res.status, body: res.ok ? '' : await res.text() };
+}
+
+/* Moving the sending domain is a two-part change: the address here and the
+   scope of the API key. Get them out of step and every message is refused,
+   which costs a real manager the report they just answered seventeen
+   questions for. So a refusal that names the domain is retried from an
+   address the key is known to allow. */
+function isDomainRefusal(status, body) {
+  return status === 403 && /not authorized to send emails from|restricted/i.test(body || '');
+}
+
 async function sendEmail(msg) {
   var key = process.env.RESEND_API_KEY;
   if (!key) {
@@ -209,19 +235,20 @@ async function sendEmail(msg) {
     return false;
   }
   try {
-    var res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + key
-      },
-      body: JSON.stringify(msg)
-    });
-    if (!res.ok) {
-      console.error('MGI email failed: ' + res.status + ' ' + (await res.text()));
+    var r = await post(key, msg);
+    if (r.ok) return true;
+
+    if (isDomainRefusal(r.status, r.body) && FALLBACK_FROM && msg.from !== FALLBACK_FROM) {
+      console.error('MGI email refused for ' + msg.from + ', retrying from ' + FALLBACK_FROM + ': ' + r.body);
+      var retry = Object.assign({}, msg, { from: FALLBACK_FROM });
+      var r2 = await post(key, retry);
+      if (r2.ok) return true;
+      console.error('MGI fallback also failed: ' + r2.status + ' ' + r2.body);
       return false;
     }
-    return true;
+
+    console.error('MGI email failed: ' + r.status + ' ' + r.body);
+    return false;
   } catch (e) {
     console.error('MGI email threw: ' + e.message);
     return false;

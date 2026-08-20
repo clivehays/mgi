@@ -192,6 +192,7 @@ Set these in the Vercel project. Only `RESEND_API_KEY` is required for email to 
 | `MGI_FROM_EMAIL` | no | `The Manager Gap Index <mgi@cloverera.com>` | From address on the manager's report. The domain must be verified in Resend. |
 | `MGI_NOTIFY_FROM` | no | `MGI_FROM_EMAIL` | From address on the notification only. Set this to a different verified domain when the notification is addressed to the same mailbox it is sent from, which some filters treat as spoofing. |
 | `MGI_REPLY_TO` | no | `MGI_NOTIFY_EMAIL` | Reply-to on the manager's report. Load-bearing: the closing block tells the manager to reply to it. |
+| `MGI_FALLBACK_FROM` | no | none | A from address on a domain the key is known to allow. If a send is refused because the configured domain is not authorised, the message is retried from here instead of being lost. |
 | `SUPABASE_URL` | yes | none | Durable store. Set. Without it submissions live only in the notification email and the Vercel log. |
 | `SUPABASE_SERVICE_ROLE_KEY` | yes | none | Service role key, server side only. Set. Never expose to the browser. |
 | `MGI_TABLE` | no | `mgi_v5_submissions` | Table name. |
