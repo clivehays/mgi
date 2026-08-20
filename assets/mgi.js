@@ -42,7 +42,7 @@
       'view-landing', 'view-questions', 'view-contact', 'view-report',
       'btn-start', 'btn-back', 'btn-next', 'btn-submit',
       'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
-      'contact-form', 'form-error',
+      'contact-form', 'form-error', 'f-industry', 'field-industry-other', 'f-industry-other',
       'state-call', 'confidence-line', 'state-desc', 'state-caution', 'gap-body',
       'compass-desc', 'marker-halo', 'marker-dot',
       'signal-score', 'signal-framing', 'signal-copy', 'areas-list', 'areas-summary',
@@ -61,6 +61,7 @@
     el['btn-back'].addEventListener('click', back);
     el['btn-next'].addEventListener('click', next);
     el['contact-form'].addEventListener('submit', onSubmit);
+    el['f-industry'].addEventListener('change', onIndustryChange);
 
     document.addEventListener('keydown', onKeydown);
     window.addEventListener('popstate', onPopState);
@@ -254,6 +255,17 @@
 
   /* ---------- contact ---------- */
 
+  /* the free-text box only exists once Other is chosen, so the form stays
+     one tap for everyone else */
+  function onIndustryChange() {
+    var isOther = el['f-industry'].value === 'Other';
+    el['field-industry-other'].hidden = !isOther;
+    /* focus without preventScroll here: on a phone this pops the keyboard, and
+       the field needs to be scrolled clear of it */
+    if (isOther) el['f-industry-other'].focus();
+    else el['f-industry-other'].value = '';
+  }
+
   function onSubmit(e) {
     e.preventDefault();
 
@@ -263,6 +275,8 @@
       email: form.email.value.trim(),
       company: form.company.value.trim(),
       role: form.role.value.trim(),
+      industry: form.industry.value,
+      industryOther: form.industryOther.value.trim(),
       teamSize: form.teamSize.value,
       website: form.website.value
     };
@@ -272,6 +286,8 @@
     if (!contact.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) missing.push('a valid work email');
     if (!contact.company) missing.push('company');
     if (!contact.role) missing.push('role');
+    if (!contact.industry) missing.push('industry');
+    else if (contact.industry === 'Other' && !contact.industryOther) missing.push('which industry');
 
     if (missing.length) {
       el['form-error'].textContent = 'Please add ' + listify(missing) + '.';
@@ -304,6 +320,8 @@
       email: contact.email,
       company: contact.company,
       role: contact.role,
+      industry: contact.industry,
+      industryOther: contact.industryOther,
       teamSize: contact.teamSize,
       website: contact.website,
       gut: answers.gut,

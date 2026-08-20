@@ -370,6 +370,7 @@ fieldset.scale{
 .contact-view h2{ margin-bottom: 30px; max-width: 16em; }
 
 .field{ margin-bottom: 22px; }
+.field[hidden]{ display: none; }
 
 .field label{
   display: block;

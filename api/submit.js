@@ -74,8 +74,15 @@ module.exports = async function handler(req, res) {
     email: clean(body.email, 160),
     company: clean(body.company, 120),
     role: clean(body.role, 120),
+    industry: clean(body.industry, 60),
+    industryOther: clean(body.industryOther, 80),
     teamSize: clean(body.teamSize, 20) || 'Not given'
   };
+
+  /* what to show a human: the free text when they chose Other, the option otherwise */
+  contact.industryLabel = (contact.industry === 'Other' && contact.industryOther)
+    ? contact.industryOther
+    : (contact.industry || 'Not given');
 
   if (!contact.firstName || !contact.company || !contact.role) {
     return res.status(400).json({ ok: false, error: 'Missing contact fields' });
@@ -93,6 +100,8 @@ module.exports = async function handler(req, res) {
     email: contact.email,
     company: contact.company,
     role: contact.role,
+    industry: contact.industryLabel,
+    industry_option: contact.industry || null,
     team_size: contact.teamSize,
     state: result.state.name,
     confidence: result.confidence.label,
@@ -205,6 +214,7 @@ function notification(contact, result, submittedAt) {
   lines.push('Email: ' + contact.email);
   lines.push('Company: ' + contact.company);
   lines.push('Role: ' + contact.role);
+  lines.push('Industry: ' + contact.industryLabel);
   lines.push('Team size: ' + contact.teamSize);
   lines.push('Submitted: ' + submittedAt);
   lines.push('');

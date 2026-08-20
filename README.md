@@ -149,6 +149,14 @@ is "instinct behind the evidence", above it is "instinct ahead", inside it is "a
 The halo carries the confidence, so it shows how much of the team's week the manager is
 positioned to see: none at High, a tight ring at Moderate, a wide translucent halo at Low.
 
+## The contact form
+
+First name, work email, company, role and industry are required. Team size is optional.
+Industry is a dropdown of eighteen office and knowledge-work sectors plus Other; choosing
+Other reveals a free-text box, which is then required, and switching back to a listed
+sector clears whatever was typed. The server keeps both the chosen option and the free
+text, and shows the free text in the notification when Other was used.
+
 ## Environment variables
 
 Set these in the Vercel project. Only `RESEND_API_KEY` is required for email to work.
