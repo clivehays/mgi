@@ -169,15 +169,22 @@ Set these in the Vercel project. Only `RESEND_API_KEY` is required for email to 
 Three domains are verified on the Clover ERA Resend account: `cloverera.com`,
 `joincloverera.com` and `go.cloverera.com`, so any address on any of them can send.
 
-The MGI project is configured to send the manager's report as
-`clive@joincloverera.com`, which is the mailbox the closing block asks them to reply to.
-The notification to Clive is sent from `mgi@cloverera.com` instead, because it is
-addressed to `clive@joincloverera.com` and mail that arrives from outside carrying the
-recipient's own domain in the From header is the pattern spam filters treat as spoofing.
-Different domain, no such pattern, and DMARC still aligns because both are verified.
-
 The MGI uses its own Resend key, not the one in `clover-crm/.env`. This endpoint is
-public, so a leak here should be one key to rotate rather than two systems to fix.
+public, so a leak here is one key to rotate rather than two systems to fix. That key is
+restricted two ways: sending only (it returns 401 on `/domains`) and scoped to
+`joincloverera.com` alone.
+
+That scope decides the sending addresses. The manager's report goes out as
+`clive@joincloverera.com`, the mailbox the closing block asks them to reply to. The
+notification to Clive is sent from `mgi@joincloverera.com`, a different local part on the
+same domain, because the key cannot send from `cloverera.com`.
+
+The two senders exist because the notification is addressed to `clive@joincloverera.com`,
+and mail arriving from outside with the recipient's own address in the From header is the
+pattern filters treat most harshly. A different local part softens that; a different
+domain would remove it entirely. If notifications ever land in Junk, add `cloverera.com`
+to the key's allowed domains in Resend and set `MGI_NOTIFY_FROM` to
+`The Manager Gap Index <mgi@cloverera.com>`. No code change is needed.
 
 ### Optional Supabase table
 
