@@ -321,6 +321,11 @@
       body: JSON.stringify(payload)
     }).then(function (res) {
       if (!res.ok) throw new Error('bad status');
+      return res.json();
+    }).then(function (data) {
+      /* only the manager's own copy decides this message. A failed
+         notification is ours to chase and says nothing to them. */
+      if (data && data.copySent === false) throw new Error('copy not sent');
     }).catch(function () {
       el['report-sent'].textContent = 'We could not send the email copy just now. This report is complete as it stands, and you can reach us at contact@cloverera.com.';
     });
