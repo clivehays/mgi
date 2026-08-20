@@ -287,7 +287,9 @@ function managerReport(contact, result) {
   var mute = '#6F6A60';
   var rule = '#C9C2B4';
   var paper = '#F1ECE3';
-  var serif = 'Georgia,"Times New Roman",serif';
+  /* single quotes: this goes inside a double-quoted style attribute, and
+     double quotes here terminate the attribute and mangle the markup */
+  var serif = "Georgia,'Times New Roman',serif";
   var mono = 'ui-monospace,Menlo,Consolas,monospace';
   var sans = 'Arial,Helvetica,sans-serif';
 
@@ -395,6 +397,12 @@ function managerReport(contact, result) {
     reply_to: REPLY_TO,
     subject: 'Your Manager Gap Index result: most likely ' + result.state.name +
       ' (' + result.confidence.label.toLowerCase() + ')',
+    /* Microsoft and Gmail both read this as a signal that the sender is
+       legitimate, and the closing block does say we may reach out again,
+       so the recipient should have a way to say no. */
+    headers: {
+      'List-Unsubscribe': '<mailto:' + NOTIFY_TO + '?subject=Unsubscribe>'
+    },
     html: h.join(''),
     text: managerReportText(result)
   };
