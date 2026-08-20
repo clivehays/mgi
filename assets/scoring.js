@@ -267,14 +267,6 @@
     0: 'Most recent signal: nothing you could recall'
   };
 
-  /* the same fact folded into the callout sentence */
-  var RECENCY_PHRASE = {
-    3: 'last week',
-    2: 'last month',
-    1: 'a month ago',
-    0: null   // handled separately, "nothing more recent than nothing" does not read
-  };
-
   /* "All five of your five areas" reads redundantly, so the
      five case carries its own phrasing */
   var COUNT_PHRASE = {
@@ -479,18 +471,39 @@
     };
   }
 
+  /* The two lowest-ranked areas always get a callout, but "lowest-ranked" is
+     relative, not a verdict. On a healthy team the thinnest area can still be
+     entirely current, and telling that manager their read "rests on nothing
+     more recent than last week" scolds them for the best answer available.
+     So the register follows what the area actually shows: a drift warning only
+     when the freshest thing in it is over a week old, and a watch note when it
+     is current. */
+
+  var COHORT_DRIFT = ' In our research cohort, this is where managers\u2019 pictures drift furthest from what teams actually report.';
+  var COHORT_WATCH = ' In our research cohort this is the area that fades first, so it is the one to keep an eye on.';
+
   function lowestCallout(area) {
-    var phrase = RECENCY_PHRASE[area.best];
-    var opening = phrase
-      ? 'Your read on ' + lower(area.name) + ' rests on nothing more recent than ' + phrase + '.'
-      : 'Your read on ' + lower(area.name) + ' rests on nothing you could recall.';
-    return opening + ' In our research cohort, this is where managers’ pictures drift furthest from what teams actually report.';
+    var name = lower(area.name);
+    if (area.best >= 3) {
+      return 'Your read on ' + name + ' is the thinnest of the five, though something in it did reach you within the last week.' + COHORT_WATCH;
+    }
+    if (area.best === 2) {
+      return 'Your read on ' + name + ' is the thinnest of the five, and the freshest thing in it is a month old.' + COHORT_DRIFT;
+    }
+    if (area.best === 1) {
+      return 'Your read on ' + name + ' rests on nothing more recent than a month ago.' + COHORT_DRIFT;
+    }
+    return 'Your read on ' + name + ' rests on nothing you could recall.' + COHORT_DRIFT;
   }
 
-  /* "runs nearly as thin" rather than "is nearly as thin": one area
-     name ends in "is", and "the team is is nearly as thin" reads badly */
   function secondCallout(area) {
-    return 'Your read on ' + lower(area.name) + ' runs nearly as thin. This is the area a fresh look would change fastest.';
+    var name = lower(area.name);
+    if (area.best >= 3) {
+      /* describes only itself: the lowest-ranked area may be stale, and
+         a claim about "these two" would contradict it */
+      return 'Your read on ' + name + ' is the next thinnest, though it is current too. Worth keeping an eye on rather than fixing.';
+    }
+    return 'Your read on ' + name + ' runs nearly as thin. This is the area a fresh look would change fastest.';
   }
 
   function lower(name) {

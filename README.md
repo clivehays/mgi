@@ -141,6 +141,15 @@ get differently-worded callouts, and the cohort sentence appears on the lowest o
 exactly once per report. Ranking ties prefer "Whether truth travels upward", then "How
 invested people are", then the lowest item number.
 
+**Callout register.** Lowest-ranked is a ranking, not a verdict. On a healthy team the
+thinnest area can still be entirely current, so the callout wording follows what the area
+actually shows rather than its position. When the freshest thing in it is over a week old
+the callout names the staleness and carries the cohort drift warning. When the area is
+current it says so, calls the area the thinnest of the five, and swaps the warning for a
+watch note. Without this, a manager in Cruise who answered "within the last week" to
+everything was told their read "rests on nothing more recent than last week", which
+scolds them for the best answer the instrument offers.
+
 **The manager gap.** Gut severity: great shape 0, fine 1, something off 2, struggling 3.
 State severity: Cruise 0 or 1, Drift 2, Headwinds 2, Stall 3. Gut below the state's range
 is "instinct behind the evidence", above it is "instinct ahead", inside it is "aligned".
