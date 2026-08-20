@@ -187,6 +187,52 @@ p{ margin: 0 0 18px; }
   font-style: italic;
 }
 
+/* the privacy line sits where the decision to start is made, so it is
+   quiet but not buried */
+.privacy-line{
+  font-family: var(--ui);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-mute);
+  border-left: 2px solid var(--rule);
+  padding: 2px 0 2px 16px;
+  margin: 0 0 34px;
+  max-width: 38em;
+}
+
+.landing-note{
+  border-top: 1px solid var(--rule-soft);
+  margin-top: 40px;
+  padding-top: 22px;
+  max-width: 40em;
+}
+
+.note-heading{
+  display: block;
+  margin: 0 0 14px;
+  font-size: 10px;
+}
+
+.landing-note p{
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin: 0 0 14px;
+}
+
+.landing-note p:last-child{ margin-bottom: 0; }
+
+.landing-note a{
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+
+.landing-note a:hover{ border-bottom-color: var(--ink); }
+
+.landing-note em{ font-style: italic; }
+
 /* ---------- buttons ---------- */
 
 .btn{

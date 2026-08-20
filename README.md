@@ -39,9 +39,11 @@ Three rules hold everywhere in the code and copy:
 1. **The state call is always "likely", never certain.** Copy says "most likely in" and
    "the evidence points to". Seventeen questions from one perspective earn a strong
    estimate, not a verdict. A lint enforces this.
-2. **No product pitch.** Clover ERA appears only in the footer attribution and the
-   closing block. No trial, pricing, worksheets, framework names or booking links. The
-   sales conversation happens later, by phone, off this page.
+2. **No product pitch.** No trial, pricing, worksheets or booking links, and the sales
+   conversation happens later, by phone, off this page. Clover ERA appears in exactly
+   three places: the footer attribution, the report's closing block, and the credibility
+   block on the landing page (Clive's call, 2026-08-20, so managers can see who is behind
+   the instrument before they answer anything). A lint fails on a fourth.
 3. **No framework vocabulary in the questions**, and no invented label vocabularies on
    the report. There is no Stale/Fading/Current scale. Where a summary is needed, the
    report states the underlying recency fact instead.
@@ -157,6 +159,19 @@ is "instinct behind the evidence", above it is "instinct ahead", inside it is "a
 **The compass** is inline SVG. The dot sits mid-radius in the computed state's quadrant.
 The halo carries the confidence, so it shows how much of the team's week the manager is
 positioned to see: none at High, a tight ring at Moderate, a wide translucent halo at Low.
+
+## Privacy copy
+
+The landing page carries a short privacy line high up and a fuller statement below the
+button. The wording is deliberately narrower than "completely private, nothing attributed
+to an individual", because the instrument cannot honour that: submissions are stored
+identified, the notification email is call prep with the respondent's name against every
+answer, and the closing block says Clive may reach out.
+
+What is promised instead is true and is what a respondent actually cares about: nothing
+individual is ever published, research outputs are aggregated, nothing is sold or shared,
+contact is limited to one message about their result, and answers are deleted on request.
+A lint fails the build if any blanket anonymity claim appears.
 
 ## The contact form
 
