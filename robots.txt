@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://mgi.cloverera.com/sitemap.xml
+Sitemap: https://managergap.com/sitemap.xml
