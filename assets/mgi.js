@@ -1,0 +1,454 @@
+/* =============================================================
+   Manager Gap Index v5 - flow, rendering, submission
+   Answers stay in the page (and sessionStorage) until the
+   contact form is submitted. Nothing leaves the browser before.
+   ============================================================= */
+
+(function () {
+  'use strict';
+
+  var STORE_KEY = 'mgi-v5';
+  var ADVANCE_DELAY = 200;
+  var TOTAL = 17;
+
+  /* where the dot sits in each quadrant, at mid-radius */
+  var MARKER_POS = {
+    cruise: { x: 280, y: 135, where: 'at the top' },
+    headwinds: { x: 360, y: 215, where: 'on the right' },
+    stall: { x: 280, y: 295, where: 'at the bottom' },
+    drift: { x: 200, y: 215, where: 'on the left' }
+  };
+
+  /* the halo widens as confidence falls */
+  var MARKER_STYLE = {
+    high: { dot: 7, halo: 0, haloOpacity: 0 },
+    moderate: { dot: 7, halo: 26, haloOpacity: 0.20 },
+    low: { dot: 5, halo: 52, haloOpacity: 0.14 }
+  };
+
+  var state = {
+    values: new Array(TOTAL).fill(null),
+    index: 0,
+    contact: null,
+    view: 'landing'
+  };
+
+  var el = {};
+
+  /* ---------- boot ---------- */
+
+  function init() {
+    [
+      'view-landing', 'view-questions', 'view-contact', 'view-report',
+      'btn-start', 'btn-back', 'btn-next', 'btn-submit',
+      'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
+      'contact-form', 'form-error', 'f-industry', 'field-industry-other', 'f-industry-other',
+      'state-call', 'confidence-line', 'state-desc', 'state-caution', 'gap-body',
+      'compass-desc', 'marker-halo', 'marker-dot',
+      'signal-score', 'signal-framing', 'signal-copy', 'areas-list', 'areas-summary',
+      'action-body', 'report-sent'
+    ].forEach(function (id) {
+      el[id] = document.getElementById(id);
+    });
+
+    restore();
+
+    /* claim the entry we land on, so the in-page Back button can pop
+       history without ever stepping off the site */
+    history.replaceState({ view: state.view === 'report' ? 'report' : 'landing', index: 0 }, '');
+
+    el['btn-start'].addEventListener('click', function () { go(0); });
+    el['btn-back'].addEventListener('click', back);
+    el['btn-next'].addEventListener('click', next);
+    el['contact-form'].addEventListener('submit', onSubmit);
+    el['f-industry'].addEventListener('change', onIndustryChange);
+
+    document.addEventListener('keydown', onKeydown);
+    window.addEventListener('popstate', onPopState);
+
+    if (state.view === 'report' && state.contact && complete()) {
+      renderReport(MGI.score(toAnswers()));
+      show('report', false);
+    } else {
+      show('landing', false);
+    }
+  }
+
+  function toAnswers() {
+    return {
+      gut: state.values[0],
+      evidence: state.values.slice(1, 13),
+      output: state.values[13],
+      external: state.values[14],
+      energy: state.values[15],
+      exposure: state.values[16]
+    };
+  }
+
+  function complete() {
+    return state.values.every(function (v) { return v !== null; });
+  }
+
+  /* ---------- persistence ---------- */
+
+  function save() {
+    try {
+      sessionStorage.setItem(STORE_KEY, JSON.stringify(state));
+    } catch (e) { /* private mode, carry on in memory */ }
+  }
+
+  function restore() {
+    try {
+      var raw = sessionStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      var prev = JSON.parse(raw);
+      if (prev && Array.isArray(prev.values) && prev.values.length === TOTAL) {
+        state.values = prev.values;
+        state.index = prev.index || 0;
+        state.contact = prev.contact || null;
+        state.view = prev.view || 'landing';
+      }
+    } catch (e) { /* ignore corrupt state */ }
+  }
+
+  /* ---------- view switching ---------- */
+
+  function show(view, push) {
+    state.view = view;
+    ['landing', 'questions', 'contact', 'report'].forEach(function (v) {
+      el['view-' + v].classList.toggle('is-active', v === view);
+    });
+    if (push !== false) {
+      history.pushState({ view: view, index: state.index }, '');
+    }
+    window.scrollTo(0, 0);
+    save();
+  }
+
+  function onPopState(e) {
+    var s = e.state;
+    if (!s) { show('landing', false); return; }
+    if (s.view === 'questions') {
+      state.index = s.index || 0;
+      renderQuestion();
+      show('questions', false);
+    } else {
+      show(s.view, false);
+    }
+  }
+
+  /* ---------- questions ---------- */
+
+  function go(i) {
+    state.index = i;
+    renderQuestion();
+    show('questions');
+    focusScale();
+  }
+
+  function renderQuestion() {
+    var i = state.index;
+    var n = i + 1;
+    var item = MGI.ITEMS[i];
+
+    el['q-count'].textContent = n + ' of ' + TOTAL;
+    el['q-bar-fill'].style.width = (i / TOTAL * 100) + '%';
+    el['q-number'].textContent = n < 10 ? '0' + n : String(n);
+    el['q-text'].textContent = item.text;
+
+    var scale = el['q-scale'];
+    scale.innerHTML = '';
+    var legend = document.createElement('legend');
+    legend.className = 'visually-hidden';
+    legend.textContent = item.kind === 'evidence' ? 'How recently did this happen?' : 'Choose one';
+    scale.appendChild(legend);
+
+    item.options.forEach(function (opt, k) {
+      var label = document.createElement('label');
+      label.className = 'scale-option';
+
+      var input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'q' + n;
+      input.value = String(k);
+      input.checked = state.values[i] === opt.value;
+      input.addEventListener('change', function () { choose(opt.value); });
+
+      var face = document.createElement('span');
+      face.className = 'face';
+
+      var key = document.createElement('span');
+      key.className = 'key';
+      key.setAttribute('aria-hidden', 'true');
+      key.textContent = String(k + 1);
+
+      var text = document.createElement('span');
+      text.textContent = opt.label;
+
+      face.appendChild(key);
+      face.appendChild(text);
+      label.appendChild(input);
+      label.appendChild(face);
+      scale.appendChild(label);
+    });
+
+    el['btn-back'].hidden = false;
+    el['btn-back'].textContent = i === 0 ? 'Back to start' : 'Back';
+    el['btn-next'].hidden = state.values[i] === null;
+  }
+
+  function focusScale() {
+    var first = el['q-scale'].querySelector('input:checked') || el['q-scale'].querySelector('input');
+    if (first) first.focus({ preventScroll: true });
+  }
+
+  function choose(value) {
+    state.values[state.index] = value;
+    el['btn-next'].hidden = false;
+    save();
+    if (lastInputWasPointer) {
+      window.setTimeout(next, ADVANCE_DELAY);
+    }
+  }
+
+  function next() {
+    if (state.values[state.index] === null) return;
+    if (state.index < TOTAL - 1) {
+      go(state.index + 1);
+    } else {
+      show('contact');
+      var first = document.getElementById('f-first');
+      if (first) first.focus({ preventScroll: true });
+    }
+  }
+
+  /* pop rather than push, so the in-page Back button and the
+     phone's own back gesture walk the same single history stack */
+  function back() {
+    history.back();
+  }
+
+  /* pointer selection auto-advances; keyboard selection does not,
+     because arrow keys move and select in one action */
+  var lastInputWasPointer = false;
+  document.addEventListener('pointerdown', function () { lastInputWasPointer = true; }, true);
+  document.addEventListener('keydown', function () { lastInputWasPointer = false; }, true);
+
+  function onKeydown(e) {
+    if (state.view !== 'questions') return;
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      next();
+      return;
+    }
+    if (['1', '2', '3', '4'].indexOf(e.key) !== -1) {
+      var inputs = el['q-scale'].querySelectorAll('input');
+      var target = inputs[Number(e.key) - 1];
+      if (target) {
+        e.preventDefault();
+        target.checked = true;
+        target.dispatchEvent(new Event('change'));
+        target.focus({ preventScroll: true });
+      }
+    }
+  }
+
+  /* ---------- contact ---------- */
+
+  /* the free-text box only exists once Other is chosen, so the form stays
+     one tap for everyone else */
+  function onIndustryChange() {
+    var isOther = el['f-industry'].value === 'Other';
+    el['field-industry-other'].hidden = !isOther;
+    /* focus without preventScroll here: on a phone this pops the keyboard, and
+       the field needs to be scrolled clear of it */
+    if (isOther) el['f-industry-other'].focus();
+    else el['f-industry-other'].value = '';
+  }
+
+  function onSubmit(e) {
+    e.preventDefault();
+
+    var form = el['contact-form'];
+    var contact = {
+      firstName: form.firstName.value.trim(),
+      email: form.email.value.trim(),
+      company: form.company.value.trim(),
+      role: form.role.value.trim(),
+      industry: form.industry.value,
+      industryOther: form.industryOther.value.trim(),
+      teamSize: form.teamSize.value,
+      website: form.website.value
+    };
+
+    var missing = [];
+    if (!contact.firstName) missing.push('first name');
+    if (!contact.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) missing.push('a valid work email');
+    if (!contact.company) missing.push('company');
+    if (!contact.role) missing.push('role');
+    if (!contact.industry) missing.push('industry');
+    else if (contact.industry === 'Other' && !contact.industryOther) missing.push('which industry');
+
+    if (missing.length) {
+      el['form-error'].textContent = 'Please add ' + listify(missing) + '.';
+      el['form-error'].hidden = false;
+      return;
+    }
+    el['form-error'].hidden = true;
+
+    state.contact = contact;
+    save();
+
+    var result = MGI.score(toAnswers());
+    renderReport(result);
+    show('report');
+
+    send(contact);
+  }
+
+  function listify(items) {
+    if (items.length === 1) return items[0];
+    return items.slice(0, -1).join(', ') + ' and ' + items[items.length - 1];
+  }
+
+  function send(contact) {
+    el['report-sent'].textContent = 'A copy of this report is on its way to ' + contact.email + '.';
+
+    var answers = toAnswers();
+    var payload = {
+      firstName: contact.firstName,
+      email: contact.email,
+      company: contact.company,
+      role: contact.role,
+      industry: contact.industry,
+      industryOther: contact.industryOther,
+      teamSize: contact.teamSize,
+      website: contact.website,
+      gut: answers.gut,
+      evidence: answers.evidence,
+      output: answers.output,
+      external: answers.external,
+      energy: answers.energy,
+      exposure: answers.exposure,
+      submittedAt: new Date().toISOString()
+    };
+
+    fetch('/api/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function (res) {
+      if (!res.ok) throw new Error('bad status');
+      return res.json();
+    }).then(function (data) {
+      /* only the manager's own copy decides this message. A failed
+         notification is ours to chase and says nothing to them. */
+      if (data && data.copySent === false) throw new Error('copy not sent');
+    }).catch(function () {
+      el['report-sent'].textContent = 'We could not send the email copy just now. This report is complete as it stands, and you can reach us at contact@cloverera.com.';
+    });
+  }
+
+  /* ---------- report ---------- */
+
+  function renderReport(r) {
+    /* the state call stays hedged: most likely, never certain */
+    var call = el['state-call'];
+    call.innerHTML = '';
+    call.appendChild(document.createTextNode('Based on what you’ve observed, your team is most likely in '));
+    var name = document.createElement('em');
+    name.className = 'state-name';
+    name.style.color = r.state.colour;
+    name.textContent = r.state.name;
+    call.appendChild(name);
+    call.appendChild(document.createTextNode('.'));
+
+    el['confidence-line'].textContent = r.confidence.label + ' · based on how often you’re positioned to see this team';
+    el['state-desc'].textContent = r.state.description;
+
+    /* the caution only appears when the manager sees the team less than weekly */
+    el['state-caution'].textContent = r.caution || '';
+    el['state-caution'].hidden = !r.caution;
+
+    el['gap-body'].textContent = r.gap.copy;
+
+    renderCompass(r);
+
+    el['signal-score'].textContent = r.signal + ' / 36';
+    el['signal-framing'].textContent = MGI.SIGNAL_FRAMING;
+    el['signal-copy'].textContent = r.signalCopy;
+    renderAreas(r);
+
+    el['action-body'].textContent = r.action;
+  }
+
+  function renderCompass(r) {
+    var pos = MARKER_POS[r.state.key];
+    var style = MARKER_STYLE[r.confidence.key];
+
+    var halo = el['marker-halo'];
+    halo.setAttribute('cx', pos.x);
+    halo.setAttribute('cy', pos.y);
+    halo.setAttribute('r', style.halo);
+    halo.setAttribute('fill', style.halo ? r.state.colour : 'none');
+    halo.setAttribute('fill-opacity', style.haloOpacity);
+
+    var dot = el['marker-dot'];
+    dot.setAttribute('cx', pos.x);
+    dot.setAttribute('cy', pos.y);
+    dot.setAttribute('r', style.dot);
+    dot.setAttribute('fill', r.state.colour);
+
+    el['compass-desc'].textContent =
+      'The evidence points to ' + r.state.name + ', with ' + r.confidence.label.toLowerCase() +
+      '. The dot sits in the ' + r.state.name + ' quadrant, ' + pos.where +
+      ' of the compass. Cruise is at the top, Headwinds on the right, Stall at the bottom, Drift on the left.';
+  }
+
+  function renderAreas(r) {
+    var list = el['areas-list'];
+    list.innerHTML = '';
+
+    r.areas.forEach(function (a) {
+      var wrap = document.createElement('div');
+      wrap.className = 'area';
+
+      var name = document.createElement('h3');
+      name.className = 'area-name';
+      name.textContent = a.name;
+
+      var desc = document.createElement('p');
+      desc.className = 'area-desc';
+      desc.textContent = a.desc;
+
+      /* the honest summary of an area is its recency, stated plainly.
+         No label vocabulary sits on top of it. The tint fades with age. */
+      var fact = document.createElement('p');
+      fact.className = 'area-fact fact-' + a.best;
+      fact.textContent = a.recencyFact;
+
+      wrap.appendChild(name);
+      wrap.appendChild(desc);
+      wrap.appendChild(fact);
+
+      if (a.callout) {
+        var callout = document.createElement('p');
+        callout.className = 'area-callout';
+        callout.textContent = a.callout;
+        wrap.appendChild(callout);
+      }
+
+      list.appendChild(wrap);
+    });
+
+    /* either the summary block or the per-area callouts, never both */
+    el['areas-summary'].textContent = r.summary || '';
+    el['areas-summary'].hidden = !r.summary;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+}());
