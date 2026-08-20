@@ -113,7 +113,7 @@ module.exports = async function handler(req, res) {
   var notified = await sendEmail(notification(contact, result, submittedAt));
   var copied = await sendEmail(managerReport(contact, result));
 
-  /* The submission is processed either way. A failed notification is ours to
+  /* The submission is processed regardless. A failed notification is ours to
      chase, not the manager's: it is logged above and the raw answers are in the
      MGI_SUBMISSION line, so nothing is lost. Telling the manager their own copy
      failed when it did not would be a lie, so the client keys its message off
