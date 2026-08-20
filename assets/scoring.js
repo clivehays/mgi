@@ -230,6 +230,31 @@
     { min: 0, max: 14, copy: 'Most of your answers reached back a quarter or further. Whatever state this team is truly in, signal this old would not show you a change. A team can leave Cruise and travel a long way before a manager on old signal notices.' }
   ];
 
+  var EXPOSURE_PHRASE = {
+    most_days: 'most days',
+    few_times: 'a few times a week',
+    weekly: 'about weekly',
+    less_weekly: 'less than weekly'
+  };
+
+  /* When the manager is close to the team, a thin signal score does not
+     mean a stale picture. It means these things have stopped happening
+     where they could see them. The default band copy attributes a low
+     score to distance, which misreads the one case the instrument can
+     be most certain about, so high exposure gets its own wording. */
+
+  function closeUpSignalCopy(s, phrase) {
+    if (s <= 14) {
+      return 'You told us you are with this team ' + phrase + '. Most of these things still reached back a quarter or further. That combination is the finding. A thin picture usually means distance. Yours does not. You are close enough to see, and the things worth seeing have stopped happening.';
+    }
+    return 'Parts of your picture are live. Parts are not. You are with this team ' + phrase + ', so that gap is not distance. Some of this stopped reaching you while you were there to see it. The areas below show which.';
+  }
+
+  function closeUpSummary(countPhrase, phrase) {
+    return countPhrase + ' are running on little or nothing recent, and you are with this team ' + phrase +
+      '. At that point the gaps stop being local, and they stop being about distance. This is not an old picture of the team. It is a current picture of a team that has gone quiet.';
+  }
+
   /* ---------- recency wording ----------
      The per-area fact reports the MOST RECENT answer in that area,
      which is the honest summary: it names what the manager has, not
@@ -364,6 +389,10 @@
     var exposureOpt = optionFor(EXPOSURE, answers.exposure);
     var confidence = CONFIDENCE[exposureOpt.confidence];
     var isLow = confidence.key === 'low';
+    var exposurePhrase = EXPOSURE_PHRASE[answers.exposure];
+
+    /* close enough to the team that a thin score reports absence, not distance */
+    var closeUp = confidence.key === 'high';
 
     var gap = decideGap(answers.gut, state);
 
@@ -399,7 +428,9 @@
     var callouts = [];
 
     if (weakCount >= 3) {
-      summary = COUNT_PHRASE[weakCount] + ' are running on little or nothing recent. At that point the gaps stop being local. Your picture of this team is a picture of a previous team.';
+      summary = closeUp
+        ? closeUpSummary(COUNT_PHRASE[weakCount], exposurePhrase)
+        : COUNT_PHRASE[weakCount] + ' are running on little or nothing recent. At that point the gaps stop being local. Your picture of this team is a picture of a previous team.';
     } else {
       callouts = [
         { key: ranked[0].key, copy: lowestCallout(ranked[0]) },
@@ -435,7 +466,8 @@
       gap: gap,
       signal: s,
       signalFraming: SIGNAL_FRAMING,
-      signalCopy: signalBandFor(s).copy,
+      signalCopy: (closeUp && s <= 26) ? closeUpSignalCopy(s, exposurePhrase) : signalBandFor(s).copy,
+      closeUp: closeUp,
       behaviour: b,
       areas: areas,
       ranked: ranked,

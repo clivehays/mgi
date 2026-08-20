@@ -107,6 +107,19 @@ the state block and one sentence is appended to the action.
 **Signal score** from S, reported separately and never as confidence: 27 to 36, 15 to 26,
 and 0 to 14 each get their own sentence under a shared framing line.
 
+**The close-up variant.** The default copy for a thin score attributes it to distance
+("a manager on old signal", "a picture of a previous team"). That misreads the one case
+this instrument can be most certain about. A manager who is with the team most days, or a
+few times a week, and still cannot recall these behaviours is not reporting a stale
+picture. They are reporting absence, at close enough range to be sure of it. So when
+confidence is High and the signal score is 26 or below, the band sentence and the summary
+block both switch to wording that names that, injecting the manager's own exposure
+answer. At 27 and above the original copy stands, because there is no contradiction to
+resolve. Moderate and Low exposure keep the distance framing, which is correct for them.
+
+The variant states the fact and stops. It does not tell the manager they have not been
+paying attention, per the house rule that the system is the villain and never the person.
+
 **Five signal areas**, two items each. Items 11 and 12 count toward B and S but belong to
 no named area.
 
@@ -235,6 +248,10 @@ review and each a one-line revert:
 4. The second-lowest area callout says "runs nearly as thin" rather than "is nearly as
    thin", because one area name ends in "is" and the literal wording produced "how
    equipped the team is is nearly as thin".
+5. The signal band sentence and the summary block have a high-exposure variant that the
+   brief does not specify. See "The close-up variant" above. Added at Clive's direction on
+   2026-08-20 after the default copy was found to misread the high-exposure, low-signal
+   case.
 
 ## Previous version
 
