@@ -156,11 +156,28 @@ Set these in the Vercel project. Only `RESEND_API_KEY` is required for email to 
 | Variable | Required | Default | Purpose |
 |---|---|---|---|
 | `RESEND_API_KEY` | yes | none | Resend API key. Without it neither email sends and the client shows a fallback line. |
-| `MGI_NOTIFY_EMAIL` | no | `contact@cloverera.com` | Where the notification goes. |
-| `MGI_FROM_EMAIL` | no | `Manager Gap Index <mgi@cloverera.com>` | From address. The domain must be verified in Resend. |
+| `MGI_NOTIFY_EMAIL` | no | `contact@cloverera.com` | Where the notification lands. |
+| `MGI_FROM_EMAIL` | no | `The Manager Gap Index <mgi@cloverera.com>` | From address on the manager's report. The domain must be verified in Resend. |
+| `MGI_NOTIFY_FROM` | no | `MGI_FROM_EMAIL` | From address on the notification only. Set this to a different verified domain when the notification is addressed to the same mailbox it is sent from, which some filters treat as spoofing. |
+| `MGI_REPLY_TO` | no | `MGI_NOTIFY_EMAIL` | Reply-to on the manager's report. Load-bearing: the closing block tells the manager to reply to it. |
 | `SUPABASE_URL` | no | none | Durable store. Omit and submissions live in the notification email and the Vercel log. |
 | `SUPABASE_SERVICE_ROLE_KEY` | no | none | Service role key, server side only. Never expose to the browser. |
 | `MGI_TABLE` | no | `mgi_v5_submissions` | Table name. |
+
+### Live configuration
+
+Three domains are verified on the Clover ERA Resend account: `cloverera.com`,
+`joincloverera.com` and `go.cloverera.com`, so any address on any of them can send.
+
+The MGI project is configured to send the manager's report as
+`clive@joincloverera.com`, which is the mailbox the closing block asks them to reply to.
+The notification to Clive is sent from `mgi@cloverera.com` instead, because it is
+addressed to `clive@joincloverera.com` and mail that arrives from outside carrying the
+recipient's own domain in the From header is the pattern spam filters treat as spoofing.
+Different domain, no such pattern, and DMARC still aligns because both are verified.
+
+The MGI uses its own Resend key, not the one in `clover-crm/.env`. This endpoint is
+public, so a leak here should be one key to rotate rather than two systems to fix.
 
 ### Optional Supabase table
 

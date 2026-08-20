@@ -9,8 +9,16 @@
 
    Environment:
      RESEND_API_KEY              required for email
-     MGI_NOTIFY_EMAIL            default contact@cloverera.com
-     MGI_FROM_EMAIL              default Manager Gap Index <mgi@cloverera.com>
+     MGI_NOTIFY_EMAIL            where Clive's notification lands
+     MGI_FROM_EMAIL              from address on the manager's report
+     MGI_NOTIFY_FROM             from address on the notification only.
+                                 Defaults to MGI_FROM_EMAIL. Worth setting to
+                                 a different domain if the notification is
+                                 addressed to the same mailbox it is sent
+                                 from, which some filters treat as spoofing.
+     MGI_REPLY_TO                reply-to on the manager's report. Defaults to
+                                 MGI_NOTIFY_EMAIL. Load-bearing: the closing
+                                 block tells the manager to reply to it.
      SUPABASE_URL                optional, durable store
      SUPABASE_SERVICE_ROLE_KEY   optional, durable store
      MGI_TABLE                   default mgi_v5_submissions
@@ -19,7 +27,9 @@
 var MGI = require('../assets/scoring.js');
 
 var NOTIFY_TO = process.env.MGI_NOTIFY_EMAIL || 'contact@cloverera.com';
-var FROM = process.env.MGI_FROM_EMAIL || 'Manager Gap Index <mgi@cloverera.com>';
+var FROM = process.env.MGI_FROM_EMAIL || 'The Manager Gap Index <mgi@cloverera.com>';
+var NOTIFY_FROM = process.env.MGI_NOTIFY_FROM || FROM;
+var REPLY_TO = process.env.MGI_REPLY_TO || NOTIFY_TO;
 var TABLE = process.env.MGI_TABLE || 'mgi_v5_submissions';
 
 var GAP_SUMMARY = {
@@ -223,7 +233,7 @@ function notification(contact, result, submittedAt) {
   var text = lines.join('\n');
 
   return {
-    from: FROM,
+    from: NOTIFY_FROM,
     to: [NOTIFY_TO],
     reply_to: contact.email,
     subject: 'MGI: ' + contact.firstName + ', ' + contact.company + ' · ' + result.state.name.toUpperCase() +
@@ -345,7 +355,7 @@ function managerReport(contact, result) {
   return {
     from: FROM,
     to: [contact.email],
-    reply_to: NOTIFY_TO,
+    reply_to: REPLY_TO,
     subject: 'Your Manager Gap Index result: most likely ' + result.state.name +
       ' (' + result.confidence.label.toLowerCase() + ')',
     html: h.join(''),
