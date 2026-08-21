@@ -158,6 +158,15 @@ watch note. Without this, a manager in Cruise who answered "within the last week
 everything was told their read "rests on nothing more recent than last week", which
 scolds them for the best answer the instrument offers.
 
+**The action** comes from a matrix of state by weakest area, twenty in all, selected as
+`ACTIONS[state][ranked[0]]`. The state alone never decides it: two managers both in Drift,
+one whose truth channel has closed and one who has not looked at the work in a month, need
+different weeks. At Low confidence the exposure sentence is still appended.
+
+**Consent** is a gate, not a field. The submit button stays disabled until the box is
+ticked, and the server refuses anything without `consent: true` rather than storing it.
+The flag and its timestamp are stored with the submission.
+
 **The manager gap.** Gut severity: great shape 0, fine 1, something off 2, struggling 3.
 State severity: Cruise 0 or 1, Drift 2, Headwinds 2, Stall 3. Gut below the state's range
 is "instinct behind the evidence", above it is "instinct ahead", inside it is "aligned".
@@ -246,7 +255,12 @@ alongside for fidelity and for anything the columns do not anticipate.
 | Derived | `state`, `decision_rule`, `confidence`, `gap`, `signal`, `behaviour`, `weak_areas`, `area_ranking` |
 | Per area | `area_<key>` mean and `area_<key>_recency` for each of the five areas |
 
-Plus `id`, `submitted_at`, `created_at` and `answers` (jsonb).
+Plus `id`, `submitted_at`, `created_at`, `consent`, `consent_at` and `answers` (jsonb).
+
+`scripts/export-csv.py` writes the whole table to CSV, one row per submission and one
+column per question, with the question text in the header so the file reads without a
+codebook. Pass `--anon` to drop name, email and company for anything that leaves the
+machine.
 
 `industry` holds what a human should read, so it carries the free text when the manager
 chose Other. `industry_option` holds the dropdown value, so grouping by sector still

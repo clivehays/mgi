@@ -70,6 +70,12 @@ module.exports = async function handler(req, res) {
     exposure: body.exposure
   };
 
+  /* consent is a gate, not a field. Storing answers for research without it
+     would be the one failure this instrument cannot recover from. */
+  if (body.consent !== true) {
+    return res.status(400).json({ ok: false, error: 'Consent required' });
+  }
+
   if (!MGI.validAnswers(answers)) {
     return res.status(400).json({ ok: false, error: 'Invalid answers' });
   }
@@ -81,7 +87,8 @@ module.exports = async function handler(req, res) {
     role: clean(body.role, 120),
     industry: clean(body.industry, 60),
     industryOther: clean(body.industryOther, 80),
-    teamSize: clean(body.teamSize, 20) || 'Not given'
+    teamSize: clean(body.teamSize, 20) || 'Not given',
+    consentAt: clean(body.consentAt, 40)
   };
 
   /* what to show a human: the free text when they chose Other, the option otherwise */
@@ -112,6 +119,8 @@ module.exports = async function handler(req, res) {
     industry: contact.industryLabel,
     industry_option: contact.industry || null,
     team_size: contact.teamSize,
+    consent: true,
+    consent_at: clean(body.consentAt, 40) || submittedAt,
 
     gut: answers.gut,
     output: answers.output,
@@ -265,6 +274,7 @@ function notification(contact, result, submittedAt) {
   lines.push('Role: ' + contact.role);
   lines.push('Industry: ' + contact.industryLabel);
   lines.push('Team size: ' + contact.teamSize);
+  lines.push('Consent: given at ' + (contact.consentAt || submittedAt));
   lines.push('Submitted: ' + submittedAt);
   lines.push('');
   lines.push('State: ' + result.state.name + ' (decision rule ' + result.rule + ')');
@@ -409,7 +419,7 @@ function managerReport(contact, result) {
   h.push('<hr style="border:0;border-top:1px solid ' + ink + ';margin:0 0 26px;">');
 
   // 6. closing
-  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 26px;"><strong>Talk your result through.</strong> The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA\u2019s co-founder, walks a small number of participants through their result each week: thirty minutes, your answers, what they mean, and what to do next. If you would like one of those conversations, reply to this email and say so. We will also reach out to some participants directly.</p>');
+  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 26px;"><strong>Talk your result through.</strong> The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA\u2019s co-founder, walks a small number of participants through their result each week: thirty minutes on your answers, and you leave with a written plan of three specific actions built from them. If you would like one of those conversations, reply to this email and say so. We will also reach out to some participants directly.</p>');
 
   h.push('<hr style="border:0;border-top:1px solid ' + ink + ';margin:0 0 16px;">');
   h.push('<p style="font-family:' + mono + ';font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:' + mute +
@@ -487,7 +497,7 @@ function managerReportText(result) {
   L.push(result.action);
   L.push('');
   L.push('TALK YOUR RESULT THROUGH');
-  L.push('The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA\u2019s co-founder, walks a small number of participants through their result each week: thirty minutes, your answers, what they mean, and what to do next. If you would like one of those conversations, reply to this email and say so. We will also reach out to some participants directly.');
+  L.push('The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA\u2019s co-founder, walks a small number of participants through their result each week: thirty minutes on your answers, and you leave with a written plan of three specific actions built from them. If you would like one of those conversations, reply to this email and say so. We will also reach out to some participants directly.');
   L.push('');
   L.push('The Manager Gap Index is a Clover ERA research instrument. cloverera.com');
   L.push('contact@cloverera.com');

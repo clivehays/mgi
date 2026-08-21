@@ -43,6 +43,7 @@
       'btn-start', 'btn-back', 'btn-next', 'btn-submit',
       'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
       'contact-form', 'form-error', 'f-industry', 'field-industry-other', 'f-industry-other',
+      'f-consent',
       'state-call', 'confidence-line', 'state-desc', 'state-caution', 'gap-body',
       'compass-desc', 'marker-halo', 'marker-dot',
       'signal-score', 'signal-framing', 'signal-copy', 'areas-list', 'areas-summary',
@@ -62,6 +63,7 @@
     el['btn-next'].addEventListener('click', next);
     el['contact-form'].addEventListener('submit', onSubmit);
     el['f-industry'].addEventListener('change', onIndustryChange);
+    el['f-consent'].addEventListener('change', onConsentChange);
 
     document.addEventListener('keydown', onKeydown);
     window.addEventListener('popstate', onPopState);
@@ -266,6 +268,12 @@
     else el['f-industry-other'].value = '';
   }
 
+  /* the button is the gate: nothing can be submitted until consent is given,
+     and the submit handler checks again in case the two ever drift apart */
+  function onConsentChange() {
+    el['btn-submit'].disabled = !el['f-consent'].checked;
+  }
+
   function onSubmit(e) {
     e.preventDefault();
 
@@ -278,6 +286,7 @@
       industry: form.industry.value,
       industryOther: form.industryOther.value.trim(),
       teamSize: form.teamSize.value,
+      consent: form.consent.checked,
       website: form.website.value
     };
 
@@ -286,6 +295,7 @@
     if (!contact.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) missing.push('a valid work email');
     if (!contact.company) missing.push('company');
     if (!contact.role) missing.push('role');
+    if (!contact.consent) missing.push('your consent to take part');
     if (!contact.industry) missing.push('industry');
     else if (contact.industry === 'Other' && !contact.industryOther) missing.push('which industry');
 
@@ -323,6 +333,8 @@
       industry: contact.industry,
       industryOther: contact.industryOther,
       teamSize: contact.teamSize,
+      consent: contact.consent,
+      consentAt: new Date().toISOString(),
       website: contact.website,
       gut: answers.gut,
       evidence: answers.evidence,

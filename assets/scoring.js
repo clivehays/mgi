@@ -179,32 +179,66 @@
       name: 'Cruise',
       colour: '#1B7A4A',
       severity: [0, 1],
-      description: 'Output is holding and the behaviours of a healthy team are visible around you: disagreement reaches you, problems arrive early, ideas show up unprompted. Cruise is the state every team should return to, not a state to coast in. Teams rarely leave Cruise with an announcement. They leave it quietly, through the exact behaviours this diagnostic asked about.',
-      action: 'Protect the behaviours that told you this. Disagreement, early problems, unprompted ideas: these are the instruments that will tell you the moment Cruise ends. This week, notice one of them happening and make sure the person who did it would do it again.'
+      description: 'Output is holding and the behaviours of a healthy team are visible around you: disagreement reaches you, problems arrive early, ideas show up unprompted. Cruise is the state every team should return to, not a state to coast in. Teams rarely leave Cruise with an announcement. They leave it quietly, through the exact behaviours this diagnostic asked about.'
     },
     drift: {
       key: 'drift',
       name: 'Drift',
       colour: '#C2842F',
       severity: [2, 2],
-      description: 'Your output is holding, which is why this state is dangerous: nothing in the numbers says anything is wrong. But the behaviours that produce that output have stopped reaching you. Fewer unprompted ideas. Less open disagreement. Problems arriving late or second-hand. Drift is the state managers miss most, because everything that would reveal it is something that quietly stops happening. By the time Drift shows up in output, it has a new name.',
-      action: 'Do not announce an initiative. Drift deepens under programmes and retreats under attention. This week, pick the person you are least sure about and have one unhurried conversation with no agenda. Then look again at your thinnest signal area above and create one situation where fresh signal can reach you in it.'
+      description: 'Your output is holding, which is why this state is dangerous: nothing in the numbers says anything is wrong. But the behaviours that produce that output have stopped reaching you. Fewer unprompted ideas. Less open disagreement. Problems arriving late or second-hand. Drift is the state managers miss most, because everything that would reveal it is something that quietly stops happening. By the time Drift shows up in output, it has a new name.'
     },
     headwinds: {
       key: 'headwinds',
       name: 'Headwinds',
       colour: '#6B5BD2',
       severity: [2, 2],
-      description: 'Your output is falling, but the evidence says the team itself is holding: the behaviours of a healthy team are still visible, and there is a clear external force acting on it. This is the most misdiagnosed state there is. Managers who miss the external cause conclude the team is failing, and treat a healthy team like a broken one. The right response to Headwinds is to name the weather, shield the team where you can, and flag the cause upward loudly. The wrong response is to push the team harder.',
-      action: 'Name the weather out loud to the team this week; they already feel it, and hearing you name it converts private stress into shared context. Then flag the cause upward, specifically and in writing. Your team’s output is the evidence; your job is to make sure it is read as weather, not as failure.'
+      description: 'Your output is falling, but the evidence says the team itself is holding: the behaviours of a healthy team are still visible, and there is a clear external force acting on it. This is the most misdiagnosed state there is. Managers who miss the external cause conclude the team is failing, and treat a healthy team like a broken one. The right response to Headwinds is to name the weather, shield the team where you can, and flag the cause upward loudly. The wrong response is to push the team harder.'
     },
     stall: {
       key: 'stall',
       name: 'Stall',
       colour: '#B03A2E',
       severity: [3, 3],
-      description: 'The decline has reached the output, and the behaviours of a healthy team are not visible around you. Stall is the one state every manager detects, because it is the only one that announces itself. The honest news: teams recover from Stall, but not by pushing on output. Output is the last thing to fall and the last thing to return. Recovery starts where the slide started, in the behaviours this diagnostic asked about, and it starts with signal: you cannot steer a recovery you cannot see.',
-      action: 'Resist the instinct to push on output. This week, restart the signal: one real conversation with each person you can reach, asking what has actually been happening, and listening without defending. What you hear will be the map of the way back. It will not be comfortable, and it will be the most useful thing you have heard in months.'
+      description: 'The decline has reached the output, and the behaviours of a healthy team are not visible around you. Stall is the one state every manager detects, because it is the only one that announces itself. The honest news: teams recover from Stall, but not by pushing on output. Output is the last thing to fall and the last thing to return. Recovery starts where the slide started, in the behaviours this diagnostic asked about, and it starts with signal: you cannot steer a recovery you cannot see.'
+    }
+  };
+
+  /* ---------- the action matrix ----------
+     One action per state and weakest-area pair, twenty in all. The state
+     alone never decides it: two managers both in Drift, one whose truth
+     channel has closed and one who has not looked at the work in a month,
+     need different weeks. The weakest area is ranked[0] from the existing
+     ranking, so the advice lands on the gap the report just named. */
+
+  var ACTIONS = {
+    cruise: {
+      equipped: 'Ask in your next stand-up: what’s slowing anyone down that hasn’t felt worth mentioning? Then fix the first thing named within 48 hours, visibly. In Cruise, the speed of response to small blockers is what keeps the big ones arriving early.',
+      work: 'Pick one piece of live work and review it with the person who made it. Not to check it; to understand it. Ask what they’d improve with one more day. Note whether the answer surprises you. Surprise is your signal working.',
+      invested: 'Take the last unprompted idea someone brought you and give it a visible next step this week, even a small one. Ideas keep arriving at the rate the last one was seen to matter.',
+      why: 'At the end of your next team session, ask someone to say what the current priority is in their own words, and why it’s the priority. If the why comes back thin, that’s your earliest warning, months ahead of anything showing in output.',
+      truth: 'State your own current plan in front of the team and ask, specifically, what’s wrong with it. Count the seconds before someone answers, and say nothing until they do. The length of that silence is a number worth tracking.'
+    },
+    drift: {
+      equipped: 'Ask each person, one-to-one this week: what’s in your way right now that you’ve stopped bothering to raise? The phrasing matters. “Stopped bothering” gives permission to name the thing they’ve written off. Then fix one raised item within the week, visibly.',
+      work: 'Choose the piece of work you know least about and spend thirty minutes inside it with the person doing it. Not a status conversation; the actual work on the actual screen. What you learn that wasn’t in any update is the size of your gap.',
+      invested: 'Do not announce an initiative. Drift deepens under programmes and retreats under attention. Pick the person you are least sure about and have one unhurried conversation with no agenda. Open with: what are you working on that you wish got more notice? Then let silence do the work.',
+      why: 'Ask two people, separately and casually: what’s the most important thing we’re doing right now, and why? Two different answers, or the same answer with no why, shows you where the drift started.',
+      truth: 'In your next team discussion, state your own current idea and then ask, specifically, what’s wrong with it. Count the seconds before someone answers, and say nothing until they do. If the silence holds past ten, name it: “the fact that nobody will say anything is the most useful information in this room.”'
+    },
+    headwinds: {
+      equipped: 'List what the external pressure has taken from this team: time, tools, people, decision speed. Ask the team what’s missing from your list. Send the combined list upward in writing this week. Equipping a team in weather starts with an inventory someone above you can act on.',
+      work: 'Take one concrete piece of the team’s output from this month and attach it to the external cause in writing: what it would have been without the weather, and what it was. One specific example does what no summary can. It makes the cause legible above you.',
+      invested: 'Tell the team, in plain words, that you can see the effort and you can see the conditions. Name one person’s specific work from the last fortnight when you do. In headwinds, invisible effort curdles fastest. Witnessed effort holds.',
+      why: 'Re-state the priority for the next month yourself, out loud, sized to the weather: what still matters, what’s parked, and what would count as a good month under these conditions. Teams in headwinds don’t lose the why. They lose the how much, and nobody resets it.',
+      truth: 'Ask the team directly: what do you know about this situation that you think I don’t? The weather always looks different from inside the work. Then repeat what you hear upward, attributed to the front line, in writing.'
+    },
+    stall: {
+      equipped: 'Ask each person you can reach one question: what would you need to do your best work here again? Write the answers down without defending or promising anything. The list will be shorter and more concrete than you fear, and it is the first draft of the recovery plan.',
+      work: 'Go to the work itself before any meeting about the work. Sit with one person and one live piece of output and establish where it actually stands, not where the reporting says it stands. Recoveries planned from reports fail, because the reporting is part of what stalled.',
+      invested: 'Have one real conversation with each person you can reach, asking what has actually been happening, and listen without defending. What you hear is the map of the way back. It will not be comfortable, and it will be the most useful thing you have heard in months.',
+      why: 'Stop asking for more output and answer the question the team has stopped asking: why does this work matter now? If you cannot answer it convincingly, that is the actual stall, and it sits above you, which changes what you escalate and to whom.',
+      truth: 'Tell the team one true thing about the situation that you would normally soften, then ask what they would add. Stalls run on mutual pretence, and the first unsoftened sentence usually breaks it. What comes back will be rougher than you would like and truer than what you currently have.'
     }
   };
 
@@ -478,7 +512,7 @@
       ranked: ranked,
       weakCount: weakCount,
       summary: summary,
-      action: isLow ? state.action + ' ' + LOW_CONFIDENCE_ACTION : state.action,
+      action: isLow ? actionFor(state, ranked[0]) + ' ' + LOW_CONFIDENCE_ACTION : actionFor(state, ranked[0]),
       responses: responses,
       headline: 'Based on what you’ve observed, your team is most likely in ' + state.name + '.'
     };
@@ -494,6 +528,10 @@
 
   var COHORT_DRIFT = ' In our research cohort, this is where managers\u2019 pictures drift furthest from what teams actually report.';
   var COHORT_WATCH = ' In our research cohort this is the area that fades first, so it is the one to keep an eye on.';
+
+  function actionFor(state, weakestArea) {
+    return ACTIONS[state.key][weakestArea.key];
+  }
 
   function lowestCallout(area) {
     var name = lower(area.name);
@@ -551,6 +589,7 @@
     EXPOSURE: EXPOSURE,
     AREAS: AREAS,
     STATES: STATES,
+    ACTIONS: ACTIONS,
     CONFIDENCE: CONFIDENCE,
     SIGNAL_FRAMING: SIGNAL_FRAMING,
     score: score,

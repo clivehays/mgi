@@ -44,6 +44,10 @@ create table if not exists mgi_v5_submissions (
   industry_option       text,
   team_size             text,
 
+  -- research consent, required before anything is stored
+  consent               boolean not null default false,
+  consent_at            timestamptz,
+
   -- the seventeen answers, one column each so cohort queries are plain SQL
   gut                   text not null,
   q1  smallint, q2  smallint, q3  smallint, q4  smallint,
