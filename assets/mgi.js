@@ -363,7 +363,7 @@
     call.appendChild(name);
     call.appendChild(document.createTextNode('.'));
 
-    el['confidence-line'].textContent = r.confidence.label + ' · based on how often you’re positioned to see this team';
+    el['confidence-line'].textContent = r.confidence.label + ' · based on how much of this team’s week you see';
     el['state-desc'].textContent = r.state.description;
 
     /* the caution only appears when the manager sees the team less than weekly */
@@ -398,6 +398,11 @@
     dot.setAttribute('cy', pos.y);
     dot.setAttribute('r', style.dot);
     dot.setAttribute('fill', r.state.colour);
+
+    var caption = document.querySelector('.compass-caption');
+    if (caption) {
+      caption.textContent = 'The dot marks ' + r.state.name + '. The halo shows how much of this team’s week you see.';
+    }
 
     el['compass-desc'].textContent =
       'The evidence points to ' + r.state.name + ', with ' + r.confidence.label.toLowerCase() +

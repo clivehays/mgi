@@ -133,9 +133,15 @@ no named area.
 | Whether everyone knows why | 7, 8 |
 | Whether truth travels upward | 9, 10 |
 
-Each area reports a recency fact taken from the **most recent** answer across its two
-items: within the last week, within the last month, over a month ago, or nothing you
-could recall. No label sits on top of that.
+Each area reports a recency fact built from **both** of its items. When they match it
+states one: "Most recent signal: within the last month". When they differ it states both:
+"Most recent signal: within the last month. The other: nothing you could recall". No
+label sits on top of that.
+
+Reporting only the more recent of the two hid the weaker half of every area. An area
+holding one answer from last month and one nobody could recall printed identically to one
+holding last month and last quarter, which made the ranking behind the callouts invisible
+and contradicted the signal-score copy, which counts every item.
 
 An area is weak if its mean is below 1.0. If three or more areas are weak, the report
 shows one summary block and no per-area callouts. Otherwise the two lowest-ranked areas

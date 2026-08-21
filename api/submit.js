@@ -337,7 +337,7 @@ function managerReport(contact, result) {
   h.push('<p style="font-size:27px;line-height:1.2;margin:0 0 12px;">Based on what you have observed, your team is most likely in <em style="color:' +
     result.state.colour + ';font-weight:bold;">' + esc(result.state.name) + '</em>.</p>');
   h.push('<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:' +
-    mute + ';margin:0 0 20px;">' + esc(result.confidence.label) + ' \u00b7 based on how often you are positioned to see this team</p>');
+    mute + ';margin:0 0 20px;">' + esc(result.confidence.label) + ' \u00b7 based on how much of this team\u2019s week you see</p>');
   h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 20px;">' + esc(result.state.description) + '</p>');
 
   if (result.caution) {
@@ -371,7 +371,7 @@ function managerReport(contact, result) {
   });
   h.push('</table>');
   h.push('<p style="font-family:' + sans + ';font-size:13px;line-height:1.55;color:' + mute +
-    ';margin:0 0 28px;">The marked state is the most likely one, given what you reported. The confidence beside it reflects how much of the team\u2019s week you are positioned to see.</p>');
+    ';margin:0 0 28px;">The marked state is the most likely one, given what you reported. The confidence beside it reflects how much of this team\u2019s week you see.</p>');
 
   h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:0 0 26px;">');
 
@@ -449,7 +449,7 @@ function managerReportText(result) {
   L.push('');
   L.push('YOUR RESULT');
   L.push('Based on what you have observed, your team is most likely in ' + result.state.name + '.');
-  L.push(result.confidence.label + ', based on how often you are positioned to see this team.');
+  L.push(result.confidence.label + ', based on how much of this team’s week you see.');
   L.push('');
   L.push(result.state.description);
   if (result.caution) {

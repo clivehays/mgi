@@ -187,7 +187,7 @@
       name: 'Drift',
       colour: '#C2842F',
       severity: [2, 2],
-      description: 'Your output is holding, which is why this state is dangerous: nothing in the numbers says anything is wrong. But the behaviours that produce that output have stopped reaching you. Fewer unprompted ideas. Less open disagreement. Problems arriving late or second-hand. Drift is the state managers miss most, because everything that would reveal it is a thing that quietly stops happening. By the time Drift shows up in output, it has a new name.',
+      description: 'Your output is holding, which is why this state is dangerous: nothing in the numbers says anything is wrong. But the behaviours that produce that output have stopped reaching you. Fewer unprompted ideas. Less open disagreement. Problems arriving late or second-hand. Drift is the state managers miss most, because everything that would reveal it is something that quietly stops happening. By the time Drift shows up in output, it has a new name.',
       action: 'Do not announce an initiative. Drift deepens under programmes and retreats under attention. This week, pick the person you are least sure about and have one unhurried conversation with no agenda. Then look again at your thinnest signal area above and create one situation where fresh signal can reach you in it.'
     },
     headwinds: {
@@ -227,7 +227,7 @@
   var SIGNAL_BANDS = [
     { min: 27, max: 36, copy: 'Yours is current. Whatever this team does next, you are positioned to see it early.' },
     { min: 15, max: 26, copy: 'Parts of your picture are live; parts are running on memory. The areas below show which.' },
-    { min: 0, max: 14, copy: 'Most of your answers reached back a quarter or further. Whatever state this team is truly in, signal this old would not show you a change. A team can leave Cruise and travel a long way before a manager on old signal notices.' }
+    { min: 0, max: 14, copy: 'Most of your answers reached back a quarter or further. Whatever state this team is truly in, signal that old would not show you a change. A team can leave Cruise and travel a long way before a manager on old signal notices.' }
   ];
 
   var EXPOSURE_PHRASE = {
@@ -245,7 +245,7 @@
 
   function closeUpSignalCopy(s, phrase) {
     if (s <= 14) {
-      return 'You told us you are with this team ' + phrase + '. Most of these things still reached back a quarter or further. That combination is the finding. A thin picture usually means distance. Yours does not. You are close enough to see, and the things worth seeing have stopped happening.';
+      return 'You told us you are with this team ' + phrase + '. Even so, most of what this asked about has not reached you inside a month. That combination is the finding. A thin picture usually means distance. Yours does not: you are close enough to see, and the things worth seeing have stopped happening.';
     }
     return 'Parts of your picture are live. Parts are not. You are with this team ' + phrase + ', so that gap is not distance. Some of this stopped reaching you while you were there to see it. The areas below show which.';
   }
@@ -260,12 +260,23 @@
      which is the honest summary: it names what the manager has, not
      a label invented on top of it. */
 
-  var RECENCY_FACT = {
-    3: 'Most recent signal: within the last week',
-    2: 'Most recent signal: within the last month',
-    1: 'Most recent signal: over a month ago',
-    0: 'Most recent signal: nothing you could recall'
+  var RECENCY_PHRASE = {
+    3: 'within the last week',
+    2: 'within the last month',
+    1: 'over a month ago',
+    0: 'nothing you could recall'
   };
+
+  /* Reporting only the most recent of the two items hid the weaker half of
+     every area: an area holding one answer from last month and one nobody
+     could recall read identically to an area holding last month and last
+     quarter. That made the ranking behind the callouts invisible, and it
+     contradicted the signal-score copy, which counts every item. When the two
+     differ, both are stated. */
+  function recencyFact(best, worst) {
+    if (best === worst) return 'Most recent signal: ' + RECENCY_PHRASE[best];
+    return 'Most recent signal: ' + RECENCY_PHRASE[best] + '. The other: ' + RECENCY_PHRASE[worst];
+  }
 
   /* "All five of your five areas" reads redundantly, so the
      five case carries its own phrasing */
@@ -392,6 +403,7 @@
       var v1 = evidence[a.items[0] - 1];
       var v2 = evidence[a.items[1] - 1];
       var best = Math.max(v1, v2);
+      var worst = Math.min(v1, v2);
       var m = (v1 + v2) / 2;
       return {
         key: a.key,
@@ -401,7 +413,8 @@
         tie: a.tie,
         mean: m,
         best: best,
-        recencyFact: RECENCY_FACT[best],
+        worst: worst,
+        recencyFact: recencyFact(best, Math.min(v1, v2)),
         isWeak: m < 1.0
       };
     });
@@ -485,25 +498,23 @@
   function lowestCallout(area) {
     var name = lower(area.name);
     if (area.best >= 3) {
-      return 'Your read on ' + name + ' is the thinnest of the five, though something in it did reach you within the last week.' + COHORT_WATCH;
+      return 'Less sits behind your read on ' + name + ' than any of the other four, though something in it did reach you within the last week.' + COHORT_WATCH;
     }
     if (area.best === 2) {
-      return 'Your read on ' + name + ' is the thinnest of the five, and the freshest thing in it is a month old.' + COHORT_DRIFT;
+      return 'Less sits behind your read on ' + name + ' than any of the other four, and the freshest thing in it is a month old.' + COHORT_DRIFT;
     }
     if (area.best === 1) {
-      return 'Your read on ' + name + ' rests on nothing more recent than a month ago.' + COHORT_DRIFT;
+      return 'Nothing more recent than a month ago sits behind your read on ' + name + '.' + COHORT_DRIFT;
     }
-    return 'Your read on ' + name + ' rests on nothing you could recall.' + COHORT_DRIFT;
+    return 'Nothing you could recall sits behind your read on ' + name + '.' + COHORT_DRIFT;
   }
 
   function secondCallout(area) {
     var name = lower(area.name);
     if (area.best >= 3) {
-      /* describes only itself: the lowest-ranked area may be stale, and
-         a claim about "these two" would contradict it */
-      return 'Your read on ' + name + ' is the next thinnest, though it is current too. Worth keeping an eye on rather than fixing.';
+      return 'Almost as little sits behind your read on ' + name + ', though it is current too. Worth keeping an eye on rather than fixing.';
     }
-    return 'Your read on ' + name + ' runs nearly as thin. This is the area a fresh look would change fastest.';
+    return 'Almost as little sits behind your read on ' + name + '. This is where a fresh look would change most.';
   }
 
   function lower(name) {
