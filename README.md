@@ -188,6 +188,17 @@ individual is ever published, research outputs are aggregated, nothing is sold o
 contact is limited to one message about their result, and answers are deleted on request.
 A lint fails the build if any blanket anonymity claim appears.
 
+## Brand assets
+
+The mark, favicons and share card are cut from the logo lockup by
+`scripts/build-brand-assets.py`, which drops the cream background to alpha so the mark
+sits on the site's own paper rather than showing a lighter box.
+
+The accent is the wordmark navy from the logo. **The logo orange is deliberately absent
+from the interface**: it sits within a few degrees of the Drift amber on the compass, and
+a reader should never have to work out whether an orange thing is a brand colour or a
+state. Orange appears only inside the mark itself. The four state colours are untouched.
+
 ## The contact form
 
 First name, work email, company, role and industry are required. Team size is optional.

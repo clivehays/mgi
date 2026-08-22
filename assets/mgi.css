@@ -10,7 +10,10 @@
   --ink-mute: #6F6A60;
   --rule: #C9C2B4;
   --rule-soft: #D9D3C5;
-  --accent: #2196F3;
+  /* the wordmark navy from the logo */
+  --accent: #1A3565;
+  /* the rising arrow blue, used for hover so the button lifts rather than darkens */
+  --accent-lift: #225A8D;
 
   --cruise: #1B7A4A;
   --drift: #C2842F;
@@ -143,6 +146,15 @@ p{ margin: 0 0 18px; }
   text-decoration: none;
 }
 
+/* the mark stays inline rather than flex, so the wordmark and its full
+   stop keep normal text flow */
+.wordmark-mark{
+  width: 30px;
+  height: 30px;
+  vertical-align: -8px;
+  margin-right: 9px;
+}
+
 .wordmark .dot{ color: var(--accent); }
 
 .masthead .meta{
@@ -251,7 +263,7 @@ p{ margin: 0 0 18px; }
   transition: background 120ms ease, border-color 120ms ease;
 }
 
-.btn:hover{ background: var(--ink); border-color: var(--ink); }
+.btn:hover{ background: var(--accent-lift); border-color: var(--accent-lift); }
 .btn:disabled{ opacity: 0.35; cursor: not-allowed; }
 .btn:disabled:hover{ background: var(--accent); border-color: var(--accent); }
 
