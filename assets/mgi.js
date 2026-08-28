@@ -9,7 +9,7 @@
 
   var STORE_KEY = 'mgi-v5';
   var ADVANCE_DELAY = 200;
-  var TOTAL = 17;
+  var TOTAL = 20;
 
   /* where the dot sits in each quadrant, at mid-radius */
   var MARKER_POS = {
@@ -79,11 +79,11 @@
   function toAnswers() {
     return {
       gut: state.values[0],
-      evidence: state.values.slice(1, 13),
-      output: state.values[13],
-      external: state.values[14],
-      energy: state.values[15],
-      exposure: state.values[16]
+      evidence: state.values.slice(1, 16),
+      output: state.values[16],
+      external: state.values[17],
+      energy: state.values[18],
+      exposure: state.values[19]
     };
   }
 
@@ -390,7 +390,7 @@
 
     renderCompass(r);
 
-    el['signal-score'].textContent = r.signal + ' / 36';
+    el['signal-score'].textContent = r.signal + ' / ' + (MGI.EVIDENCE.length * 3);
     el['signal-framing'].textContent = MGI.SIGNAL_FRAMING;
     el['signal-copy'].textContent = r.signalCopy;
     renderAreas(r);

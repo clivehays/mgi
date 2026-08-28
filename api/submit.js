@@ -146,8 +146,8 @@ module.exports = async function handler(req, res) {
     answers: answers
   };
 
-  // the twelve evidence items, q1 through q12
-  for (var q = 0; q < 12; q++) {
+  // the evidence items, q1 through q15
+  for (var q = 0; q < answers.evidence.length; q++) {
     record['q' + (q + 1)] = answers.evidence[q];
   }
 
@@ -236,7 +236,7 @@ async function post(key, msg) {
 
 /* Moving the sending domain is a two-part change: the address here and the
    scope of the API key. Get them out of step and every message is refused,
-   which costs a real manager the report they just answered seventeen
+   which costs a real manager the report they just answered twenty
    questions for. So a refusal that names the domain is retried from an
    address the key is known to allow. */
 function isDomainRefusal(status, body) {

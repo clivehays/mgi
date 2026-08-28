@@ -56,11 +56,13 @@ create table if not exists mgi_v5_submissions (
   consent               boolean not null default false,
   consent_at            timestamptz,
 
-  -- the seventeen answers, one column each so cohort queries are plain SQL
+  -- the twenty answers, one column each so cohort queries are plain SQL
   gut                   text not null,
   q1  smallint, q2  smallint, q3  smallint, q4  smallint,
   q5  smallint, q6  smallint, q7  smallint, q8  smallint,
   q9  smallint, q10 smallint, q11 smallint, q12 smallint,
+  -- added in v6, the third item in each of equipped, work and why
+  q13 smallint, q14 smallint, q15 smallint,
   output                text not null,
   external_pressure     text not null,
   energy                text not null,
@@ -92,6 +94,9 @@ create table if not exists mgi_v5_submissions (
 alter table mgi_v5_submissions add column if not exists instrument_version     text;
 alter table mgi_v5_submissions add column if not exists instrument_fingerprint text;
 alter table mgi_v5_submissions add column if not exists tenure                 text;
+alter table mgi_v5_submissions add column if not exists q13                    smallint;
+alter table mgi_v5_submissions add column if not exists q14                    smallint;
+alter table mgi_v5_submissions add column if not exists q15                    smallint;
 
 create index if not exists mgi_v5_submitted_at_idx on mgi_v5_submissions (submitted_at desc);
 create index if not exists mgi_v5_instrument_idx   on mgi_v5_submissions (instrument_version, instrument_fingerprint);

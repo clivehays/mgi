@@ -52,7 +52,7 @@ for ln in lines:
 
 d.line([(x, y + 26), (x + 120, y + 26)], fill=NAVY, width=3)
 try:
-    d.text((x, y + 46), 'SEVENTEEN QUESTIONS  \u00b7  FOUR MINUTES', font=mono, fill=MUTE)
+    d.text((x, y + 46), 'TWENTY QUESTIONS  \u00b7  FIVE MINUTES', font=mono, fill=MUTE)
 except Exception:
     pass
 

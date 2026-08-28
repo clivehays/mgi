@@ -1,23 +1,28 @@
 /* =============================================================
-   Manager Gap Index v5 - the instrument
+   Manager Gap Index v6 - the instrument
 
    Single source of truth. Loaded by the browser as a global (MGI)
    and required by the serverless function as a CommonJS module,
    so the client and the emails can never disagree.
 
-   Seventeen questions:
+   Twenty questions:
      Q0        gut check, unscored, compared to the computed state
-     Q1-Q12    evidence items, recency scale, 3/2/1/0
-     Q13-Q15   trajectory items, output / external / energy
-     Q16       exposure, drives confidence and nothing else
+     Q1-Q15    evidence items, recency scale, 3/2/1/0, three per area
+     Q16-Q18   trajectory items, output / external / energy
+     Q19       exposure, drives confidence and nothing else
 
    Three outputs from three distinct sources, deliberately kept
    apart:
      state       evidence items plus the trajectory items
      confidence  exposure only. It never changes the state call,
                  only how firmly the report stands behind it.
-     signal      sum of the twelve evidence items. Reported as
+     signal      sum of the fifteen evidence items. Reported as
                  what it is, evidence freshness. Never confidence.
+
+   v6 changed the item set only. The state decision tree, its
+   thresholds and BEHAVIOUR_ITEMS are byte-for-byte what v5 used,
+   so every state finding carries over untouched. What changed is
+   the resolution of the area ranking, which decides the action.
    ============================================================= */
 
 (function (root, factory) {
@@ -36,7 +41,7 @@
      change made without bumping VERSION still shows up in the data. Two
      rows are comparable only if both match. */
 
-  var VERSION = '5.0.0';
+  var VERSION = '6.0.0';
 
   /* ---------- Q0: the gut check ---------- */
 
@@ -52,7 +57,15 @@
     ]
   };
 
-  /* ---------- Q1-Q12: the evidence items ---------- */
+  /* ---------- Q1-Q15: the evidence items ----------
+     Fifteen, three per area. Two items per area gave only seven possible
+     area means, so a quarter of respondents had two areas holding an
+     identical pair of answers and the weakest-area call fell to a fixed
+     priority list. That list systematically picked the same areas: truth
+     was selected twice as often as why, from the list rather than from
+     anyone's data. A third item roughly halves it. Items 13, 14 and 15
+     were added for that reason; 11 and 12 already existed and are now
+     assigned to the areas they always belonged to. */
 
   var SCALE = [
     { value: 3, label: 'Within the last week' },
@@ -73,10 +86,13 @@
     'When did someone last disagree with you openly, in front of others?',
     'When did you last learn about a problem from the person involved, rather than finding out another way?',
     'Think of the team member you are least sure about right now. When did you last have a real conversation with them?',
-    'When did you last change your mind because of something a team member said?'
+    'When did you last change your mind because of something a team member said?',
+    'When did you last clear something out of the team’s way that someone had raised with you?',
+    'When did a team member last walk you through how they actually did a piece of work, not just the outcome?',
+    'When did you last explain to the team why the current priority is the priority, rather than just what it is?'
   ];
 
-  /* ---------- Q13-Q15: the trajectory items ---------- */
+  /* ---------- Q16-Q18: the trajectory items ---------- */
 
   var OUTPUT = {
     key: 'output',
@@ -144,40 +160,43 @@
     {
       key: 'equipped',
       name: 'How equipped the team is',
-      items: [1, 2],
+      items: [1, 2, 13],
       tie: 2,
-      desc: 'Whether blockers reach you before they bite, and whether the team helps each other without routing through you.'
+      desc: 'Whether blockers reach you before they bite, whether the team helps each other without routing through you, and whether anything actually gets cleared once it is raised.'
     },
     {
       key: 'work',
       name: 'The work itself',
-      items: [3, 4],
+      items: [3, 4, 14],
       tie: 3,
-      desc: 'Your direct contact with the output, and unprompted comment on it from outside the team.'
+      desc: 'Your direct contact with the output, unprompted comment on it from outside the team, and the team walking you through how the work was really done.'
     },
     {
       key: 'invested',
       name: 'How invested people are',
-      items: [5, 6],
+      items: [5, 6, 11],
       tie: 1,
-      desc: 'Contribution nobody asked for, and unhurried time with every person on the team.'
+      desc: 'Contribution nobody asked for, unhurried time with every person on the team, and real contact with the person you are least sure about.'
     },
     {
       key: 'why',
       name: 'Whether everyone knows why',
-      items: [7, 8],
+      items: [7, 8, 15],
       tie: 4,
-      desc: 'Whether the priority is understood in the team’s own words, and whether work gets challenged as worth doing.'
+      desc: 'Whether the priority is understood in the team’s own words, whether work gets challenged as worth doing, and whether you have said why it is the priority rather than only what it is.'
     },
     {
       key: 'truth',
       name: 'Whether truth travels upward',
-      items: [9, 10],
+      items: [9, 10, 12],
       tie: 0,
-      desc: 'Open disagreement in the room, and problems reaching you from the person involved rather than second hand.'
+      desc: 'Open disagreement in the room, problems reaching you from the person involved rather than second hand, and whether what you hear ever changes your mind.'
     }
   ];
 
+  /* Unchanged from v5, deliberately. The state tree is calibrated against
+     exactly these eight items, so the three items added in v6 sharpen the
+     area ranking without disturbing a single state call. */
   var BEHAVIOUR_ITEMS = [1, 2, 5, 6, 9, 10, 11, 12];
 
   /* ---------- states ---------- */
@@ -265,12 +284,19 @@
 
   /* ---------- signal score: freshness of evidence, not confidence ---------- */
 
-  var SIGNAL_FRAMING = 'Twelve of the seventeen questions measured how recently real, first-hand signal from this team has reached you. This score is what your current picture of the team is built on.';
+  var SIGNAL_FRAMING = 'Fifteen of the twenty questions measured how recently real, first-hand signal from this team has reached you. This score is what your current picture of the team is built on.';
+
+  /* Fifteen items at 0-3 puts the maximum at 45. The band edges are the v5
+     edges scaled by 45/36, so a manager scores the same band on the same
+     answers as they would have under v5. */
+  var SIGNAL_MAX = 45;   // fifteen items at 0-3
+  var SIGNAL_LOW = 18;   // top of the thin band
+  var SIGNAL_MID = 33;   // top of the middle band
 
   var SIGNAL_BANDS = [
-    { min: 27, max: 36, copy: 'Yours is current. Whatever this team does next, you are positioned to see it early.' },
-    { min: 15, max: 26, copy: 'Parts of your picture are live; parts are running on memory. The areas below show which.' },
-    { min: 0, max: 14, copy: 'Most of your answers reached back a quarter or further. Whatever state this team is truly in, signal that old would not show you a change. A team can leave Cruise and travel a long way before a manager on old signal notices.' }
+    { min: 34, max: 45, copy: 'Yours is current. Whatever this team does next, you are positioned to see it early.' },
+    { min: 19, max: 33, copy: 'Parts of your picture are live; parts are running on memory. The areas below show which.' },
+    { min: 0, max: 18, copy: 'Most of your answers reached back a quarter or further. Whatever state this team is truly in, signal that old would not show you a change. A team can leave Cruise and travel a long way before a manager on old signal notices.' }
   ];
 
   var EXPOSURE_PHRASE = {
@@ -287,7 +313,7 @@
      be most certain about, so high exposure gets its own wording. */
 
   function closeUpSignalCopy(s, phrase) {
-    if (s <= 14) {
+    if (s <= SIGNAL_LOW) {
       return 'You told us you are with this team ' + phrase + '. Even so, most of what this asked about has not reached you inside a month. That combination is the finding. A thin picture usually means distance. Yours does not: you are close enough to see, and the things worth seeing have stopped happening.';
     }
     return 'Parts of your picture are live. Parts are not. You are with this team ' + phrase + ', so that gap is not distance. Some of this stopped reaching you while you were there to see it. The areas below show which.';
@@ -310,15 +336,31 @@
     0: 'nothing you could recall'
   };
 
-  /* Reporting only the most recent of the two items hid the weaker half of
-     every area: an area holding one answer from last month and one nobody
-     could recall read identically to an area holding last month and last
-     quarter. That made the ranking behind the callouts invisible, and it
-     contradicted the signal-score copy, which counts every item. When the two
-     differ, both are stated. */
-  function recencyFact(best, worst) {
-    if (best === worst) return 'Most recent signal: ' + RECENCY_PHRASE[best];
-    return 'Most recent signal: ' + RECENCY_PHRASE[best] + '. The other: ' + RECENCY_PHRASE[worst];
+  /* Reporting only the most recent item hid the weaker part of every area:
+     an area holding one answer from last month and one nobody could recall
+     read identically to an area holding last month and last quarter. That
+     made the ranking behind the callouts invisible, and it contradicted the
+     signal-score copy, which counts every item. So the freshest is named,
+     and the rest of the area is named with it.
+
+     With three items the same principle holds, stated in the shape the
+     numbers take: all three the same, or the freshest plus the others. */
+  function recencyFact(values) {
+    var sorted = values.slice().sort(function (a, b) { return b - a; });
+    var best = sorted[0];
+    var rest = sorted.slice(1);
+
+    var allSame = rest.every(function (v) { return v === best; });
+    if (allSame) return 'Most recent signal: ' + RECENCY_PHRASE[best];
+
+    var restSame = rest.every(function (v) { return v === rest[0]; });
+    if (restSame) {
+      return 'Most recent signal: ' + RECENCY_PHRASE[best] +
+             '. The other two: ' + RECENCY_PHRASE[rest[0]];
+    }
+    return 'Most recent signal: ' + RECENCY_PHRASE[best] +
+           '. Then ' + RECENCY_PHRASE[rest[0]] +
+           ', then ' + RECENCY_PHRASE[rest[1]] + '.';
   }
 
   /* "All five of your five areas" reads redundantly, so the
@@ -418,14 +460,14 @@
   }
 
   /* ---------- score ----------
-     answers: { gut, evidence: [12 ints 0-3], output, external, energy, exposure } */
+     answers: { gut, evidence: [15 ints 0-3], output, external, energy, exposure } */
 
   function score(answers) {
     var evidence = answers.evidence;
     var i;
 
     var s = 0;
-    for (i = 0; i < 12; i++) s += evidence[i];
+    for (i = 0; i < EVIDENCE.length; i++) s += evidence[i];
 
     var b = mean(evidence, BEHAVIOUR_ITEMS);
 
@@ -443,30 +485,57 @@
     var gap = decideGap(answers.gut, state);
 
     var areas = AREAS.map(function (a) {
-      var v1 = evidence[a.items[0] - 1];
-      var v2 = evidence[a.items[1] - 1];
-      var best = Math.max(v1, v2);
-      var worst = Math.min(v1, v2);
-      var m = (v1 + v2) / 2;
+      var values = a.items.map(function (n) { return evidence[n - 1]; });
+      var sorted = values.slice().sort(function (p, q) { return p - q; });
+      var total = values.reduce(function (p, q) { return p + q; }, 0);
       return {
         key: a.key,
         name: a.name,
         items: a.items,
         desc: a.desc,
         tie: a.tie,
-        mean: m,
-        best: best,
-        worst: worst,
-        recencyFact: recencyFact(best, Math.min(v1, v2)),
-        isWeak: m < 1.0
+        values: values,
+        mean: total / values.length,
+        best: sorted[sorted.length - 1],
+        worst: sorted[0],
+        /* the answers low-to-high, the finest comparison the area supports */
+        profile: sorted,
+        recencyFact: recencyFact(values),
+        isWeak: total / values.length < 1.0
       };
     });
 
+    /* Ranking, weakest first.
+
+       Mean is the primary key. Where means are equal the areas are compared
+       item by item from the lowest answer upward, because an area holding a
+       "can't recall" is a sharper blind spot than one that is evenly stale
+       at the same mean. That comparison uses everything the area contains:
+       once the sorted answers match, the two areas hold identical data and
+       nothing inside the instrument can separate them.
+
+       Only then does the fixed priority run, and the report stops claiming
+       a single weakest area when it gets that far. In v5 that list decided
+       roughly a quarter of all reports on its own, which is why the same
+       areas kept being selected. */
     var ranked = areas.slice().sort(function (x, y) {
       if (x.mean !== y.mean) return x.mean - y.mean;
+      for (var k = 0; k < x.profile.length; k++) {
+        if (x.profile[k] !== y.profile[k]) return x.profile[k] - y.profile[k];
+      }
       return x.tie - y.tie;
     });
     areas.forEach(function (a) { a.rank = ranked.indexOf(a); });
+
+    /* how many areas hold answers identical to the thinnest. Two or more
+       means the pick between them would be the fixed list talking rather
+       than the manager's data. All five means the answers are flat and
+       there is no thinnest area at all. */
+    var tiedCount = ranked.filter(function (a) {
+      return a.mean === ranked[0].mean &&
+        a.profile.join(',') === ranked[0].profile.join(',');
+    }).length;
+    var indistinguishable = tiedCount >= 2;
 
     var weakCount = areas.filter(function (a) { return a.isWeak; }).length;
 
@@ -479,6 +548,14 @@
       summary = closeUp
         ? closeUpSummary(COUNT_PHRASE[weakCount], exposurePhrase)
         : COUNT_PHRASE[weakCount] + ' are running on little or nothing recent. At that point the gaps stop being local. Your picture of this team is a picture of a previous team.';
+    } else if (indistinguishable) {
+      /* The two thinnest areas hold the same answers. Asserting one of them
+         as the weakest would be the fixed list talking, not the manager's
+         data, so both are named and the report says why. */
+      callouts = [
+        { key: ranked[0].key, copy: tiedCallout(ranked[0], ranked[1], tiedCount) },
+        { key: ranked[1].key, copy: tiedSecondCallout(ranked[1]) }
+      ];
     } else {
       callouts = [
         { key: ranked[0].key, copy: lowestCallout(ranked[0]) },
@@ -514,14 +591,17 @@
       gap: gap,
       signal: s,
       signalFraming: SIGNAL_FRAMING,
-      signalCopy: (closeUp && s <= 26) ? closeUpSignalCopy(s, exposurePhrase) : signalBandFor(s).copy,
+      signalCopy: (closeUp && s <= SIGNAL_MID) ? closeUpSignalCopy(s, exposurePhrase) : signalBandFor(s).copy,
       closeUp: closeUp,
       behaviour: b,
       areas: areas,
       ranked: ranked,
       weakCount: weakCount,
       summary: summary,
-      action: isLow ? actionFor(state, ranked[0]) + ' ' + LOW_CONFIDENCE_ACTION : actionFor(state, ranked[0]),
+      indistinguishable: indistinguishable,
+      tiedWith: indistinguishable ? ranked[1].name : null,
+      tiedCount: tiedCount,
+      action: buildAction(state, ranked, isLow, indistinguishable, tiedCount),
       responses: responses,
       headline: 'Based on what you’ve observed, your team is most likely in ' + state.name + '.'
     };
@@ -540,6 +620,74 @@
 
   function actionFor(state, weakestArea) {
     return ACTIONS[state.key][weakestArea.key];
+  }
+
+  /* When the two thinnest areas hold identical answers there is no honest
+     basis for doing one before the other, so the action names both and
+     leaves the order to the manager, who knows things the instrument
+     does not. One action still gets spelled out, because a report that
+     hands over two competing plans gets neither of them done. */
+  function buildAction(state, ranked, isLow, indistinguishable, tiedCount) {
+    var action = actionFor(state, ranked[0]);
+
+    if (indistinguishable) {
+      var preamble = tiedCount === 5
+        ? 'Your five areas came back level, so this week is yours to choose. ' +
+          'Taking ' + lower(ranked[0].name) + ' as the starting point: '
+        : 'Your answers put ' + lower(ranked[0].name) + ' and ' +
+          lower(ranked[1].name) + ' level, on the same evidence, so take ' +
+          'whichever you think is closer to the truth of this team. Starting ' +
+          'with the first: ';
+      action = preamble + lowerFirst(action);
+    }
+
+    return isLow ? action + ' ' + LOW_CONFIDENCE_ACTION : action;
+  }
+
+  function lowerFirst(sentence) {
+    /* only when the opening word is ordinary prose, so "Ask" becomes "ask"
+       but a name or an "I" is left alone */
+    var first = sentence.split(' ')[0];
+    if (first !== first.toUpperCase() && first === first.charAt(0).toUpperCase() + first.slice(1)) {
+      return sentence.charAt(0).toLowerCase() + sentence.slice(1);
+    }
+    return sentence;
+  }
+
+  var REST_PHRASE = { 2: 'the other three', 3: 'the other two', 4: 'the fifth' };
+
+  function tiedCallout(area, other, tiedCount) {
+    /* freshness, stated the same way the single-area callouts state it */
+    var freshness = area.best >= 3
+      ? 'Something in each did reach you within the last week.'
+      : area.best === 2
+        ? 'The freshest thing in each is a month old.'
+        : area.best === 1
+          ? 'Nothing more recent than a month ago sits behind any of them.'
+          : 'Nothing you could recall sits behind any of them.';
+
+    /* all five level is a different finding from two level and three above */
+    if (tiedCount === 5) {
+      return 'Your five areas came back level, on exactly the same answers. ' +
+        freshness + ' Nothing here points to one area over another, so the ' +
+        'place to start is whichever you have the least confidence in ' +
+        'independently of this.' + (area.best >= 3 ? COHORT_WATCH : COHORT_DRIFT);
+    }
+
+    var subject = tiedCount === 2
+      ? 'Your read on ' + lower(area.name) + ' and your read on ' + lower(other.name) +
+        ' rest on exactly the same answers.'
+      : tiedCount + ' of your areas came back level, on exactly the same answers, ' +
+        lower(area.name) + ' and ' + lower(other.name) + ' among them.';
+
+    return subject + ' Less sits behind them than behind ' +
+      (REST_PHRASE[tiedCount] || 'the rest') + '. ' + freshness +
+      ' Nothing you told us separates them, so treat them as one gap rather ' +
+      'than a ranking.' + (area.best >= 3 ? COHORT_WATCH : COHORT_DRIFT);
+  }
+
+  function tiedSecondCallout(area) {
+    return 'Level with the area above, on the same evidence, not behind it.';
   }
 
   function lowestCallout(area) {
@@ -573,8 +721,8 @@
   function validAnswers(a) {
     if (!a || typeof a !== 'object') return false;
 
-    if (!Array.isArray(a.evidence) || a.evidence.length !== 12) return false;
-    for (var i = 0; i < 12; i++) {
+    if (!Array.isArray(a.evidence) || a.evidence.length !== EVIDENCE.length) return false;
+    for (var i = 0; i < EVIDENCE.length; i++) {
       if (a.evidence[i] !== 0 && a.evidence[i] !== 1 && a.evidence[i] !== 2 && a.evidence[i] !== 3) return false;
     }
 
