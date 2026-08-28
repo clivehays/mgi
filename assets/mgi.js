@@ -287,6 +287,8 @@
       industryOther: form.industryOther.value.trim(),
       teamSize: form.teamSize.value,
       tenure: form.tenure.value,
+      left6m: form.left6m.value,
+      joined6m: form.joined6m.value,
       consent: form.consent.checked,
       website: form.website.value
     };
@@ -299,6 +301,8 @@
     if (!contact.consent) missing.push('your consent to take part');
     if (!contact.teamSize) missing.push('team size');
     if (!contact.tenure) missing.push('how long you have led this team');
+    if (!contact.left6m) missing.push('how many people have left');
+    if (!contact.joined6m) missing.push('how many have joined');
     if (!contact.industry) missing.push('industry');
     else if (contact.industry === 'Other' && !contact.industryOther) missing.push('which industry');
 
@@ -337,6 +341,8 @@
       industryOther: contact.industryOther,
       teamSize: contact.teamSize,
       tenure: contact.tenure,
+      left6m: contact.left6m,
+      joined6m: contact.joined6m,
       consent: contact.consent,
       consentAt: new Date().toISOString(),
       website: contact.website,

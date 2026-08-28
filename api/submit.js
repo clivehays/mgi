@@ -89,6 +89,9 @@ module.exports = async function handler(req, res) {
     industryOther: clean(body.industryOther, 80),
     teamSize: clean(body.teamSize, 20) || 'Not given',
     tenure: clean(body.tenure, 20) || 'Not given',
+    /* research only: never reaches the report or the scoring */
+    left6m: clean(body.left6m, 20) || 'Not given',
+    joined6m: clean(body.joined6m, 20) || 'Not given',
     consentAt: clean(body.consentAt, 40)
   };
 
@@ -125,6 +128,8 @@ module.exports = async function handler(req, res) {
     industry_option: contact.industry || null,
     team_size: contact.teamSize,
     tenure: contact.tenure,
+    left_6m: contact.left6m,
+    joined_6m: contact.joined6m,
     consent: true,
     consent_at: clean(body.consentAt, 40) || submittedAt,
 
@@ -281,6 +286,7 @@ function notification(contact, result, submittedAt) {
   lines.push('Industry: ' + contact.industryLabel);
   lines.push('Team size: ' + contact.teamSize);
   lines.push('Leading this team: ' + contact.tenure);
+  lines.push('Left in 6 months: ' + contact.left6m + '   Joined: ' + contact.joined6m);
   lines.push('Consent: given at ' + (contact.consentAt || submittedAt));
   lines.push('Submitted: ' + submittedAt);
   lines.push('');

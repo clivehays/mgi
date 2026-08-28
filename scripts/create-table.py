@@ -51,6 +51,13 @@ create table if not exists mgi_v5_submissions (
   -- how long they have led this team. Recency answers scale with both team
   -- size and tenure, so both are needed to control the signal score
   tenure                text,
+  -- movement in the last six months. Research only: neither field reaches
+  -- the report or the scoring. Departures are the nearest thing this study
+  -- has to an outcome; arrivals are both a second outcome and a confound,
+  -- because a new joiner generates the very events the recency items ask
+  -- about and will freshen several of them on their own
+  left_6m               text,
+  joined_6m             text,
 
   -- research consent, required before anything is stored
   consent               boolean not null default false,
@@ -97,6 +104,8 @@ alter table mgi_v5_submissions add column if not exists tenure                 t
 alter table mgi_v5_submissions add column if not exists q13                    smallint;
 alter table mgi_v5_submissions add column if not exists q14                    smallint;
 alter table mgi_v5_submissions add column if not exists q15                    smallint;
+alter table mgi_v5_submissions add column if not exists left_6m                text;
+alter table mgi_v5_submissions add column if not exists joined_6m              text;
 
 create index if not exists mgi_v5_submitted_at_idx on mgi_v5_submissions (submitted_at desc);
 create index if not exists mgi_v5_instrument_idx   on mgi_v5_submissions (instrument_version, instrument_fingerprint);
