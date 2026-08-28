@@ -553,7 +553,7 @@
          as the weakest would be the fixed list talking, not the manager's
          data, so both are named and the report says why. */
       callouts = [
-        { key: ranked[0].key, copy: tiedCallout(ranked[0], ranked[1], tiedCount) },
+        { key: ranked[0].key, copy: tiedCallout(ranked, tiedCount) },
         { key: ranked[1].key, copy: tiedSecondCallout(ranked[1]) }
       ];
     } else {
@@ -618,6 +618,10 @@
   var COHORT_DRIFT = ' In our research cohort, this is where managers\u2019 pictures drift furthest from what teams actually report.';
   var COHORT_WATCH = ' In our research cohort this is the area that fades first, so it is the one to keep an eye on.';
 
+  /* the same two sentences for a callout that has named more than one area */
+  var COHORT_DRIFT_PLURAL = ' In our research cohort, these are the areas where managers\u2019 pictures drift furthest from what teams actually report.';
+  var COHORT_WATCH_PLURAL = ' In our research cohort these are the areas that fade first, so they are the ones to keep an eye on.';
+
   function actionFor(state, weakestArea) {
     return ACTIONS[state.key][weakestArea.key];
   }
@@ -627,18 +631,36 @@
      leaves the order to the manager, who knows things the instrument
      does not. One action still gets spelled out, because a report that
      hands over two competing plans gets neither of them done. */
+  var COUNT_WORD = { 2: 'Two', 3: 'Three', 4: 'Four' };
+
+  /* Four of the five area names open with "how" or "whether", so they read as
+     embedded questions and will not sit inside a clause: "your answers put the
+     work itself and whether everyone knows why level" is unreadable. The names
+     go after a colon, where a question-shaped phrase reads naturally, and the
+     action is introduced by position rather than by splicing a name again. */
+  function tiedPreamble(ranked, tiedCount) {
+    if (tiedCount === 5) {
+      /* not "one way in", because several actions open with "in your next..."
+         and the repetition trips the reader */
+      return 'All five of your areas came back level, on the same evidence, so ' +
+        'where to start is your call. One option: ';
+    }
+
+    var names = ranked.slice(0, tiedCount).map(function (a) { return lower(a.name); });
+    var list = names.length === 2
+      ? names[0] + ' and ' + names[1]
+      : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+
+    return COUNT_WORD[tiedCount] + ' of your areas came back level, on the same ' +
+      'evidence: ' + list + '. Take whichever you think is closer to the truth ' +
+      'of this team. For the first: ';
+  }
+
   function buildAction(state, ranked, isLow, indistinguishable, tiedCount) {
     var action = actionFor(state, ranked[0]);
 
     if (indistinguishable) {
-      var preamble = tiedCount === 5
-        ? 'Your five areas came back level, so this week is yours to choose. ' +
-          'Taking ' + lower(ranked[0].name) + ' as the starting point: '
-        : 'Your answers put ' + lower(ranked[0].name) + ' and ' +
-          lower(ranked[1].name) + ' level, on the same evidence, so take ' +
-          'whichever you think is closer to the truth of this team. Starting ' +
-          'with the first: ';
-      action = preamble + lowerFirst(action);
+      action = tiedPreamble(ranked, tiedCount) + lowerFirst(action);
     }
 
     return isLow ? action + ' ' + LOW_CONFIDENCE_ACTION : action;
@@ -656,7 +678,15 @@
 
   var REST_PHRASE = { 2: 'the other three', 3: 'the other two', 4: 'the fifth' };
 
-  function tiedCallout(area, other, tiedCount) {
+  function nameList(ranked, n) {
+    var names = ranked.slice(0, n).map(function (a) { return lower(a.name); });
+    if (names.length === 2) return names[0] + ' and ' + names[1];
+    return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+  }
+
+  function tiedCallout(ranked, tiedCount) {
+    var area = ranked[0];
+    var other = ranked[1];
     /* freshness, stated the same way the single-area callouts state it */
     var freshness = area.best >= 3
       ? 'Something in each did reach you within the last week.'
@@ -671,19 +701,26 @@
       return 'Your five areas came back level, on exactly the same answers. ' +
         freshness + ' Nothing here points to one area over another, so the ' +
         'place to start is whichever you have the least confidence in ' +
-        'independently of this.' + (area.best >= 3 ? COHORT_WATCH : COHORT_DRIFT);
+        'independently of this.' +
+        (area.best >= 3 ? COHORT_WATCH_PLURAL : COHORT_DRIFT_PLURAL);
     }
 
     var subject = tiedCount === 2
       ? 'Your read on ' + lower(area.name) + ' and your read on ' + lower(other.name) +
         ' rest on exactly the same answers.'
-      : tiedCount + ' of your areas came back level, on exactly the same answers, ' +
-        lower(area.name) + ' and ' + lower(other.name) + ' among them.';
+      : COUNT_WORD[tiedCount] + ' of your areas rest on exactly the same answers: ' +
+        nameList(ranked, tiedCount) + '.';
+
+    /* the cohort sentence was written for a single named area, so it needs a
+       plural form once the callout names three or four of them */
+    var cohort = area.best >= 3
+      ? (tiedCount === 2 ? COHORT_WATCH : COHORT_WATCH_PLURAL)
+      : (tiedCount === 2 ? COHORT_DRIFT : COHORT_DRIFT_PLURAL);
 
     return subject + ' Less sits behind them than behind ' +
       (REST_PHRASE[tiedCount] || 'the rest') + '. ' + freshness +
       ' Nothing you told us separates them, so treat them as one gap rather ' +
-      'than a ranking.' + (area.best >= 3 ? COHORT_WATCH : COHORT_DRIFT);
+      'than a ranking.' + cohort;
   }
 
   function tiedSecondCallout(area) {
