@@ -286,6 +286,7 @@
       industry: form.industry.value,
       industryOther: form.industryOther.value.trim(),
       teamSize: form.teamSize.value,
+      tenure: form.tenure.value,
       consent: form.consent.checked,
       website: form.website.value
     };
@@ -296,6 +297,8 @@
     if (!contact.company) missing.push('company');
     if (!contact.role) missing.push('role');
     if (!contact.consent) missing.push('your consent to take part');
+    if (!contact.teamSize) missing.push('team size');
+    if (!contact.tenure) missing.push('how long you have led this team');
     if (!contact.industry) missing.push('industry');
     else if (contact.industry === 'Other' && !contact.industryOther) missing.push('which industry');
 
@@ -333,6 +336,7 @@
       industry: contact.industry,
       industryOther: contact.industryOther,
       teamSize: contact.teamSize,
+      tenure: contact.tenure,
       consent: contact.consent,
       consentAt: new Date().toISOString(),
       website: contact.website,

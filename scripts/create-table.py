@@ -35,6 +35,11 @@ create table if not exists mgi_v5_submissions (
   submitted_at          timestamptz not null,
   created_at            timestamptz not null default now(),
 
+  -- which instrument produced this row. Rows are only comparable to each
+  -- other when both of these match; see the provenance block in scoring.js
+  instrument_version    text,
+  instrument_fingerprint text,
+
   -- who answered
   first_name            text not null,
   email                 text not null,
@@ -43,6 +48,9 @@ create table if not exists mgi_v5_submissions (
   industry              text,
   industry_option       text,
   team_size             text,
+  -- how long they have led this team. Recency answers scale with both team
+  -- size and tenure, so both are needed to control the signal score
+  tenure                text,
 
   -- research consent, required before anything is stored
   consent               boolean not null default false,
@@ -79,7 +87,14 @@ create table if not exists mgi_v5_submissions (
   answers               jsonb not null
 );
 
+-- "create table if not exists" does nothing to a table that already exists,
+-- so columns added after the first deploy need their own statements.
+alter table mgi_v5_submissions add column if not exists instrument_version     text;
+alter table mgi_v5_submissions add column if not exists instrument_fingerprint text;
+alter table mgi_v5_submissions add column if not exists tenure                 text;
+
 create index if not exists mgi_v5_submitted_at_idx on mgi_v5_submissions (submitted_at desc);
+create index if not exists mgi_v5_instrument_idx   on mgi_v5_submissions (instrument_version, instrument_fingerprint);
 create index if not exists mgi_v5_state_idx        on mgi_v5_submissions (state);
 create index if not exists mgi_v5_industry_idx     on mgi_v5_submissions (industry_option);
 create index if not exists mgi_v5_email_idx        on mgi_v5_submissions (email);

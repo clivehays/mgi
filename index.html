@@ -159,12 +159,23 @@
 
       <div class="field">
         <label for="f-team">Team size</label>
-        <select id="f-team" name="teamSize">
+        <select id="f-team" name="teamSize" required>
           <option value="">Select</option>
           <option value="2-5">2 to 5</option>
           <option value="6-10">6 to 10</option>
           <option value="11-20">11 to 20</option>
           <option value="20+">20+</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="f-tenure">How long you have led this team</label>
+        <select id="f-tenure" name="tenure" required>
+          <option value="">Select</option>
+          <option value="under-3m">Less than 3 months</option>
+          <option value="3-12m">3 to 12 months</option>
+          <option value="1-3y">1 to 3 years</option>
+          <option value="over-3y">More than 3 years</option>
         </select>
       </div>
 

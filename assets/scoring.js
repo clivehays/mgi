@@ -29,6 +29,15 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
+  /* ---------- provenance ----------
+     Every stored row records which instrument produced it. VERSION is
+     declared by hand and should be bumped whenever an item, a threshold or
+     the tree changes. FINGERPRINT is computed from those same things, so a
+     change made without bumping VERSION still shows up in the data. Two
+     rows are comparable only if both match. */
+
+  var VERSION = '5.0.0';
+
   /* ---------- Q0: the gut check ---------- */
 
   var GUT = {
@@ -578,7 +587,61 @@
     return true;
   }
 
+  /* ---------- the fingerprint ----------
+     FNV-1a over a canonical description of everything that affects
+     comparability: item wording, the scale, area composition, the state
+     severities, and the source of the decision tree itself. Two rows with
+     different fingerprints were produced by different instruments and
+     should not be pooled, whatever the version column says. */
+
+  function fingerprint() {
+    var parts = [];
+
+    parts.push(GUT.text);
+    GUT.options.forEach(function (o) { parts.push(o.value + ':' + o.severity); });
+
+    SCALE.forEach(function (o) { parts.push(o.value + ':' + o.label); });
+    EVIDENCE.forEach(function (t) { parts.push(t); });
+
+    [OUTPUT, EXTERNAL, ENERGY, EXPOSURE].forEach(function (q) {
+      parts.push(q.key + ':' + q.text);
+      q.options.forEach(function (o) {
+        parts.push(o.value + ':' + (o.holding === undefined ? '' : o.holding) +
+                   ':' + (o.confidence || ''));
+      });
+    });
+
+    AREAS.forEach(function (a) {
+      parts.push(a.key + ':' + a.items.join(',') + ':' + a.tie);
+    });
+    parts.push('behaviour:' + BEHAVIOUR_ITEMS.join(','));
+
+    Object.keys(STATES).forEach(function (k) {
+      parts.push(k + ':' + STATES[k].severity.join(','));
+    });
+
+    /* the tree source with comments stripped and whitespace collapsed, so
+       reformatting it does not read as a change but editing a threshold does */
+    parts.push(String(decideState)
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(/\/\/[^\r\n]*/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim());
+
+    var str = parts.join('|~|');
+    var h = 2166136261;
+    for (var i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+    }
+    return ('0000000' + h.toString(16)).slice(-8);
+  }
+
+  var FINGERPRINT = fingerprint();
+
   return {
+    VERSION: VERSION,
+    FINGERPRINT: FINGERPRINT,
     ITEMS: ITEMS,
     GUT: GUT,
     SCALE: SCALE,

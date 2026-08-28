@@ -88,6 +88,7 @@ module.exports = async function handler(req, res) {
     industry: clean(body.industry, 60),
     industryOther: clean(body.industryOther, 80),
     teamSize: clean(body.teamSize, 20) || 'Not given',
+    tenure: clean(body.tenure, 20) || 'Not given',
     consentAt: clean(body.consentAt, 40)
   };
 
@@ -111,6 +112,10 @@ module.exports = async function handler(req, res) {
      plain SQL rather than json extraction. The blob is kept alongside for
      fidelity and for anything the columns do not anticipate. */
   var record = {
+    /* which instrument produced this row; see scoring.js */
+    instrument_version: MGI.VERSION,
+    instrument_fingerprint: MGI.FINGERPRINT,
+
     submitted_at: submittedAt,
     first_name: contact.firstName,
     email: contact.email,
@@ -119,6 +124,7 @@ module.exports = async function handler(req, res) {
     industry: contact.industryLabel,
     industry_option: contact.industry || null,
     team_size: contact.teamSize,
+    tenure: contact.tenure,
     consent: true,
     consent_at: clean(body.consentAt, 40) || submittedAt,
 
@@ -274,6 +280,7 @@ function notification(contact, result, submittedAt) {
   lines.push('Role: ' + contact.role);
   lines.push('Industry: ' + contact.industryLabel);
   lines.push('Team size: ' + contact.teamSize);
+  lines.push('Leading this team: ' + contact.tenure);
   lines.push('Consent: given at ' + (contact.consentAt || submittedAt));
   lines.push('Submitted: ' + submittedAt);
   lines.push('');
