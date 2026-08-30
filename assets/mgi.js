@@ -35,6 +35,98 @@
 
   var el = {};
 
+  /* ---------- funnel telemetry ----------
+     Only finished assessments reach the database, so without this there
+     is no way to tell three finishers out of five from three out of
+     fifty. It sends a random per-visit id, how far the visitor got, two
+     flags and a coarse device word. No answers, no identity, nothing
+     that could be personal: people abandon before the consent box, so
+     nothing gathered here may be research data.
+
+     Every call is fire and forget. The assessment must work identically
+     with this endpoint broken, blocked or absent. */
+
+  var funnel = {
+    sid: null,
+    furthest: 0,
+    reachedContact: false,
+    submitted: false,
+    lastSent: -1
+  };
+
+  function funnelId() {
+    try {
+      var k = 'mgi-visit';
+      var v = sessionStorage.getItem(k);
+      if (!v) {
+        var raw = new Uint8Array(16);
+        if (window.crypto && window.crypto.getRandomValues) {
+          window.crypto.getRandomValues(raw);
+        } else {
+          for (var i = 0; i < 16; i++) raw[i] = Math.floor(Math.random() * 256);
+        }
+        v = Array.prototype.map.call(raw, function (b) {
+          return ('0' + b.toString(16)).slice(-2);
+        }).join('');
+        sessionStorage.setItem(k, v);
+      }
+      return v;
+    } catch (e) {
+      return null;   /* private mode, storage blocked: telemetry simply stops */
+    }
+  }
+
+  function device() {
+    var w = window.innerWidth || 1024;
+    if (w < 620) return 'mobile';
+    if (w < 1024) return 'tablet';
+    return 'desktop';
+  }
+
+  function funnelSend(useBeacon) {
+    if (!funnel.sid) return;
+    /* nothing new to report, and the leave-beacon is always worth sending */
+    if (!useBeacon && funnel.furthest <= funnel.lastSent && !funnel.submitted) return;
+    funnel.lastSent = funnel.furthest;
+
+    var payload = JSON.stringify({
+      sid: funnel.sid,
+      furthest: funnel.furthest,
+      reachedContact: funnel.reachedContact,
+      submitted: funnel.submitted,
+      device: device()
+    });
+
+    try {
+      if (useBeacon && navigator.sendBeacon) {
+        navigator.sendBeacon('/api/funnel', new Blob([payload], { type: 'application/json' }));
+        return;
+      }
+      fetch('/api/funnel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: true
+      }).catch(function () {});
+    } catch (e) { /* telemetry never interrupts the assessment */ }
+  }
+
+  function funnelMark(n) {
+    if (n > funnel.furthest) funnel.furthest = n;
+    /* checkpoint every fifth question, so a lost leave-beacon still
+       leaves a usable trace of roughly how far someone got */
+    if (funnel.furthest % 5 === 0) funnelSend(false);
+  }
+
+  function funnelInit() {
+    funnel.sid = funnelId();
+    if (!funnel.sid) return;
+    window.addEventListener('pagehide', function () { funnelSend(true); });
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') funnelSend(true);
+    });
+  }
+
   /* ---------- boot ---------- */
 
   function init() {
@@ -53,6 +145,7 @@
     });
 
     restore();
+    funnelInit();
 
     /* claim the entry we land on, so the in-page Back button can pop
        history without ever stepping off the site */
@@ -143,6 +236,7 @@
 
   function go(i) {
     state.index = i;
+    funnelMark(i + 1);
     renderQuestion();
     show('questions');
     focusScale();
@@ -218,6 +312,9 @@
     if (state.index < TOTAL - 1) {
       go(state.index + 1);
     } else {
+      funnel.reachedContact = true;
+      funnelMark(TOTAL);
+      funnelSend(false);
       show('contact');
       var first = document.getElementById('f-first');
       if (first) first.focus({ preventScroll: true });
@@ -285,6 +382,7 @@
       role: form.role.value.trim(),
       industry: form.industry.value,
       industryOther: form.industryOther.value.trim(),
+      currentlyLeading: form.currentlyLeading.value,
       teamSize: form.teamSize.value,
       tenure: form.tenure.value,
       left6m: form.left6m.value,
@@ -299,6 +397,7 @@
     if (!contact.company) missing.push('company');
     if (!contact.role) missing.push('role');
     if (!contact.consent) missing.push('your consent to take part');
+    if (!contact.currentlyLeading) missing.push('whether you lead this team at the moment');
     if (!contact.teamSize) missing.push('team size');
     if (!contact.tenure) missing.push('how long you have led this team');
     if (!contact.left6m) missing.push('how many people have left');
@@ -329,6 +428,8 @@
   }
 
   function send(contact) {
+    funnel.submitted = true;
+    funnelSend(false);
     el['report-sent'].textContent = 'A copy of this report is on its way to ' + contact.email + '.';
 
     var answers = toAnswers();
@@ -339,6 +440,7 @@
       role: contact.role,
       industry: contact.industry,
       industryOther: contact.industryOther,
+      currentlyLeading: contact.currentlyLeading,
       teamSize: contact.teamSize,
       tenure: contact.tenure,
       left6m: contact.left6m,

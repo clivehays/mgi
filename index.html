@@ -64,7 +64,7 @@
       <h2 class="note-heading mono" id="privacy-heading">What happens to your answers</h2>
       <p>Your answers are stored so the cohort can be studied as a whole. Nothing individual is ever published. The research that comes out of this, including the Index and the book, reports patterns across everyone who takes part, never one person&rsquo;s answers.</p>
       <p>Your name and email are used to send you your report, and Clive may write to you once about your result. That is the only contact. Nothing here is sold or passed to anyone else, and you can have your answers deleted at any time by replying to the report or writing to <a href="mailto:contact@cloverera.com">contact@cloverera.com</a>.</p>
-      <p>This page sets no cookies and runs no analytics.</p>
+      <p>This page sets no cookies and runs no third-party analytics. It does record how far each visit gets through the questions, under a random number that is discarded when you close the tab and is never attached to your answers, your name or your email. That is used for one thing: seeing where the questions lose people.</p>
     </section>
 
     <section class="landing-note" aria-labelledby="who-heading">
@@ -155,6 +155,15 @@
       <div class="field" id="field-industry-other" hidden>
         <label for="f-industry-other">Which industry?</label>
         <input type="text" id="f-industry-other" name="industryOther" autocomplete="off">
+      </div>
+
+      <div class="field">
+        <label for="f-leading">Are you leading this team at the moment?</label>
+        <select id="f-leading" name="currentlyLeading" required>
+          <option value="">Select</option>
+          <option value="yes">Yes</option>
+          <option value="previous">No, this is a team I led previously</option>
+        </select>
       </div>
 
       <div class="field">

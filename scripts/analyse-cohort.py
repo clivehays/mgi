@@ -340,6 +340,60 @@ instrument, not a discovery about managers.
   eight observable behaviours each having happened within the month."
   State the standard. Never report the complement as a finding.""")
 
+    # ---------------------------------------------------------------- 5b
+    print()
+    rule("=")
+    print("5b. WHO GOT THIS FAR")
+    rule("=")
+    print("""
+Completion and drop-off, from the funnel table. Anonymous and unlinked to
+any submission, so this says where people leave and nothing about who.
+""")
+    conn2 = connect()
+    c2 = conn2.cursor()
+    try:
+        c2.execute("select furthest, reached_contact, submitted, device from mgi_funnel")
+        f = c2.fetchall()
+    except Exception:
+        f = []
+        print("  No funnel table yet.")
+    c2.close()
+    conn2.close()
+
+    if f:
+        starts = len(f)
+        done = sum(1 for r in f if r[2])
+        contact = sum(1 for r in f if r[1])
+        lo, hi = prop_ci(done, starts)
+        print("  visits that answered at least one question: %d" % starts)
+        print("  reached the contact form:                   %d  (%.0f%%)" %
+              (contact, contact / float(starts) * 100))
+        print("  submitted:                                  %d  (%.0f%%  [%.0f-%.0f])" %
+              (done, done / float(starts) * 100, lo * 100, hi * 100))
+
+        drop = [r[0] for r in f if not r[2]]
+        if drop:
+            print("\n  Where the %d who did not finish stopped:" % len(drop))
+            buckets = Counter()
+            for d in drop:
+                buckets[min(20, (d // 5) * 5)] += 1
+            for b in sorted(buckets):
+                label = "q%d-%d" % (b + 1, b + 5) if b < 20 else "at the contact form"
+                bar = "#" * buckets[b]
+                print("    %-20s %3d  %s" % (label, buckets[b], bar))
+            print("\n  A spike at the contact form is a form problem, not a")
+            print("  question problem. A spike early is a length problem.")
+
+        byd = defaultdict(lambda: [0, 0])
+        for r in f:
+            byd[r[3]][0] += 1
+            if r[2]:
+                byd[r[3]][1] += 1
+        print("\n  Completion by device:")
+        for d in sorted(byd):
+            t, s_ = byd[d]
+            print("    %-9s %3d started, %3d finished (%.0f%%)" % (d, t, s_, s_ / float(t) * 100))
+
     # ---------------------------------------------------------------- 6
     print()
     rule("=")

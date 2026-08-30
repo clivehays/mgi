@@ -47,6 +47,10 @@ create table if not exists mgi_v5_submissions (
   role                  text not null,
   industry              text,
   industry_option       text,
+  -- whether this is a team they lead now. The recency items ask "when did
+  -- you last", which means something different about a team someone has
+  -- left, so those rows are labelled rather than mixed in or turned away
+  currently_leading     text,
   team_size             text,
   -- how long they have led this team. Recency answers scale with both team
   -- size and tenure, so both are needed to control the signal score
@@ -106,6 +110,25 @@ alter table mgi_v5_submissions add column if not exists q14                    s
 alter table mgi_v5_submissions add column if not exists q15                    smallint;
 alter table mgi_v5_submissions add column if not exists left_6m                text;
 alter table mgi_v5_submissions add column if not exists joined_6m              text;
+alter table mgi_v5_submissions add column if not exists currently_leading      text;
+
+-- Funnel telemetry. Deliberately a separate table with no key back to a
+-- submission: people abandon before the consent box, so nothing here may be
+-- personal or research data. A random per-visit id, how far they got, two
+-- flags, a coarse device word. No answers, no identity, no IP.
+create table if not exists mgi_funnel (
+  sid                   text primary key,
+  started_at            timestamptz not null default now(),
+  updated_at            timestamptz not null default now(),
+  furthest              smallint not null default 0,
+  reached_contact       boolean not null default false,
+  submitted             boolean not null default false,
+  device                text
+);
+
+create index if not exists mgi_funnel_started_idx on mgi_funnel (started_at desc);
+
+alter table mgi_funnel enable row level security;
 
 create index if not exists mgi_v5_submitted_at_idx on mgi_v5_submissions (submitted_at desc);
 create index if not exists mgi_v5_instrument_idx   on mgi_v5_submissions (instrument_version, instrument_fingerprint);
