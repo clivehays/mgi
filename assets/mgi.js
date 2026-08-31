@@ -19,11 +19,14 @@
     drift: { x: 200, y: 215, where: 'on the left' }
   };
 
-  /* the halo widens as confidence falls */
+  /* the halo IS line of sight: it widens as the manager sees less of
+     the team's week. Keyed on the line of sight score so the picture
+     and the words on the page cannot disagree. */
   var MARKER_STYLE = {
-    high: { dot: 7, halo: 0, haloOpacity: 0 },
-    moderate: { dot: 7, halo: 26, haloOpacity: 0.20 },
-    low: { dot: 5, halo: 52, haloOpacity: 0.14 }
+    3: { dot: 7, halo: 0, haloOpacity: 0 },
+    2: { dot: 7, halo: 20, haloOpacity: 0.20 },
+    1: { dot: 7, halo: 36, haloOpacity: 0.17 },
+    0: { dot: 5, halo: 52, haloOpacity: 0.14 }
   };
 
   var state = {
@@ -136,7 +139,8 @@
       'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
       'contact-form', 'form-error', 'f-industry', 'field-industry-other', 'f-industry-other',
       'f-consent',
-      'state-call', 'confidence-line', 'state-desc', 'state-caution', 'gap-body',
+      'state-call', 'state-desc', 'gap-body',
+      'los-value', 'los-copy', 'gap-width-value', 'gap-width-copy', 'gap-framing',
       'compass-desc', 'marker-halo', 'marker-dot',
       'signal-score', 'signal-framing', 'signal-copy', 'areas-list', 'areas-summary',
       'action-body', 'report-sent'
@@ -487,14 +491,16 @@
     call.appendChild(name);
     call.appendChild(document.createTextNode('.'));
 
-    el['confidence-line'].textContent = r.confidence.label + ' · based on how much of this team’s week you see';
     el['state-desc'].textContent = r.state.description;
-
-    /* the caution only appears when the manager sees the team less than weekly */
-    el['state-caution'].textContent = r.caution || '';
-    el['state-caution'].hidden = !r.caution;
-
     el['gap-body'].textContent = r.gap.copy;
+
+    /* line of sight and gap width. Evidence, not the decision: nothing
+       here tells the reader to trust the result less. */
+    el['los-value'].textContent = r.lineOfSight.label;
+    el['los-copy'].textContent = r.lineOfSight.copy;
+    el['gap-width-value'].textContent = r.gapWidth.label;
+    el['gap-width-copy'].textContent = r.gapWidth.copy;
+    el['gap-framing'].textContent = r.gapFraming;
 
     renderCompass(r);
 
@@ -508,7 +514,7 @@
 
   function renderCompass(r) {
     var pos = MARKER_POS[r.state.key];
-    var style = MARKER_STYLE[r.confidence.key];
+    var style = MARKER_STYLE[r.lineOfSight.score];
 
     var halo = el['marker-halo'];
     halo.setAttribute('cx', pos.x);
@@ -525,11 +531,13 @@
 
     var caption = document.querySelector('.compass-caption');
     if (caption) {
-      caption.textContent = 'The dot marks ' + r.state.name + '. The halo shows how much of this team’s week you see.';
+      caption.textContent = 'The dot marks ' + r.state.name +
+        '. The halo is your line of sight: ' + r.lineOfSight.label.toLowerCase() + '.';
     }
 
     el['compass-desc'].textContent =
-      'The evidence points to ' + r.state.name + ', with ' + r.confidence.label.toLowerCase() +
+      'The evidence points to ' + r.state.name + '. Line of sight is ' + r.lineOfSight.label.toLowerCase() +
+      ', gap width ' + r.gapWidth.label.toLowerCase() +
       '. The dot sits in the ' + r.state.name + ' quadrant, ' + pos.where +
       ' of the compass. Cruise is at the top, Headwinds on the right, Stall at the bottom, Drift on the left.';
   }

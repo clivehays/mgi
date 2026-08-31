@@ -49,7 +49,7 @@
 
     <div class="lede body-serif">
       <p>Every team is in one of four states. Stable. Quietly slipping while the numbers still look fine. Fighting conditions outside its control. Or already stalling. Most managers can name the last one, because by then it has already cost them. The other three are harder to tell apart from the inside.</p>
-      <p>This diagnostic works out the most likely state of your team from things you have directly observed, then tells you how much that reading can be trusted. Twenty questions. About five minutes.</p>
+      <p>This diagnostic works out the most likely state of your team from things you have directly observed, then tells you how far your picture and your team’s reality are likely to sit apart. Twenty questions. About five minutes.</p>
     </div>
 
     <p class="privacy-line">Your answers are private. Nothing individual is ever published. Anything this research reports is aggregated across everyone who takes part.</p>
@@ -235,18 +235,10 @@
     <section aria-labelledby="state-call">
       <span class="mono eyebrow">Your result</span>
       <p class="state-call" id="state-call"></p>
-      <p class="confidence-line" id="confidence-line"></p>
       <p class="state-desc" id="state-desc"></p>
-      <p class="state-caution" id="state-caution" hidden></p>
     </section>
 
     <!-- 4.2 the gap -->
-    <section aria-labelledby="gap-heading">
-      <span class="mono eyebrow" id="gap-heading">Your instinct vs the evidence</span>
-      <p class="gap-body" id="gap-body"></p>
-    </section>
-
-    <!-- 4.3 the compass -->
     <section aria-labelledby="compass-heading">
       <span class="mono eyebrow" id="compass-heading">Where that sits</span>
 
@@ -290,11 +282,35 @@
                 font-size="11" font-weight="600" letter-spacing="1.8" fill="#C2842F">DRIFT</text>
         </svg>
 
-        <figcaption class="compass-caption">Dot shows the most likely state. The halo shows how much of the team’s week you are positioned to see.</figcaption>
+        <figcaption class="compass-caption">Dot shows the most likely state. The halo is your line of sight: how much of the team’s week you are positioned to see.</figcaption>
       </figure>
     </section>
 
     <!-- 4.4 how much to trust this reading -->
+    <section aria-labelledby="gap-heading">
+      <span class="mono eyebrow" id="gap-heading">Your instinct vs the evidence</span>
+      <p class="gap-body" id="gap-body"></p>
+    </section>
+
+    <!-- 4.3 the compass -->
+    <!-- line of sight and gap width: evidence, never the decision -->
+    <section aria-labelledby="sight-heading">
+      <span class="mono eyebrow" id="sight-heading">Line of sight and gap width</span>
+      <div class="sight-pair">
+        <div class="sight-cell">
+          <span class="mono sight-label">Line of sight</span>
+          <p class="sight-value" id="los-value"></p>
+          <p class="sight-copy" id="los-copy"></p>
+        </div>
+        <div class="sight-cell">
+          <span class="mono sight-label">Gap width</span>
+          <p class="sight-value" id="gap-width-value"></p>
+          <p class="sight-copy" id="gap-width-copy"></p>
+        </div>
+      </div>
+      <p class="sight-framing" id="gap-framing"></p>
+    </section>
+
     <section aria-labelledby="signal-heading">
       <span class="mono eyebrow" id="signal-heading">Your signal score</span>
       <p class="signal-score" id="signal-score"></p>

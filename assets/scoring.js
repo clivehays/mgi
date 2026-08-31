@@ -9,20 +9,27 @@
      Q0        gut check, unscored, compared to the computed state
      Q1-Q15    evidence items, recency scale, 3/2/1/0, three per area
      Q16-Q18   trajectory items, output / external / energy
-     Q19       exposure, drives confidence and nothing else
+     Q19       exposure, which becomes line of sight
 
-   Three outputs from three distinct sources, deliberately kept
-   apart:
-     state       evidence items plus the trajectory items
-     confidence  exposure only. It never changes the state call,
-                 only how firmly the report stands behind it.
-     signal      sum of the fifteen evidence items. Reported as
-                 what it is, evidence freshness. Never confidence.
+   Outputs from distinct sources, deliberately kept apart:
+     state         evidence items plus the trajectory items
+     line of sight exposure only. How much of the team's week the
+                   manager is positioned to observe. It never
+                   changes the state call.
+     gap width     line of sight and observation recency together.
+                   How far the manager's picture and the team's
+                   reality are likely to sit apart.
+     signal        sum of the fifteen evidence items, reported as
+                   what it is: evidence freshness.
 
-   v6 changed the item set only. The state decision tree, its
+   v6.0 changed the item set only. The state decision tree, its
    thresholds and BEHAVIOUR_ITEMS are byte-for-byte what v5 used,
-   so every state finding carries over untouched. What changed is
-   the resolution of the area ranking, which decides the action.
+   so every state finding carries over untouched.
+
+   v6.1 changed no question and no scoring rule. It retires the
+   participant-facing confidence reading and replaces it with line
+   of sight and gap width. The fingerprint is therefore unchanged
+   and v6.0 and v6.1 submissions pool directly.
    ============================================================= */
 
 (function (root, factory) {
@@ -41,7 +48,7 @@
      change made without bumping VERSION still shows up in the data. Two
      rows are comparable only if both match. */
 
-  var VERSION = '6.0.0';
+  var VERSION = '6.1.0';
 
   /* ---------- Q0: the gut check ---------- */
 
@@ -129,10 +136,15 @@
     ]
   };
 
-  /* ---------- Q16: exposure. Confidence comes from here alone ----------
+  /* ---------- Q19: exposure, which becomes line of sight ----------
      A behaviour that has not reached a manager who is there most days
      is genuinely not happening. The same absence reported from a
-     distance might be distance, not decline. */
+     distance might be distance, not decline. That distance is the
+     finding, not a caveat on it.
+
+     The confidence property on each option is DEPRECATED and is kept
+     only because it is one of the inputs to the instrument fingerprint.
+     Removing it would change the fingerprint and split the cohort. */
 
   var EXPOSURE = {
     key: 'exposure',
@@ -270,7 +282,88 @@
     }
   };
 
-  /* ---------- confidence, from exposure only ---------- */
+  /* ---------- line of sight ----------
+     How much of the team's week the manager is positioned to observe
+     directly. Derived from the exposure answer, which is unchanged: this
+     promotes an existing input to a named, first-class output.
+
+     daily and most_days deliberately share a score. The difference between
+     them does not change what a manager can see in any way we can defend,
+     and separating them would be false precision. */
+
+  var LINE_OF_SIGHT = {
+    daily: {
+      key: 'full', score: 3, label: 'Full',
+      copy: 'You are inside your team’s week almost every day. Most of what happens reaches you directly, without anyone having to decide to tell you.'
+    },
+    most_days: {
+      key: 'full', score: 3, label: 'Full',
+      copy: 'You are inside your team’s week almost every day. Most of what happens reaches you directly, without anyone having to decide to tell you.'
+    },
+    few_times: {
+      key: 'partial', score: 2, label: 'Partial',
+      copy: 'You see the scheduled parts of your team’s week. What happens between those points reaches you only if somebody passes it on.'
+    },
+    weekly: {
+      key: 'narrow', score: 1, label: 'Narrow',
+      copy: 'You get one window a week. Everything either side of it is reconstructed from what people choose to bring you.'
+    },
+    less_weekly: {
+      key: 'minimal', score: 0, label: 'Minimal',
+      copy: 'Almost none of your team’s week reaches you directly. What you know about this team is what somebody decided to tell you. That is a fact about where you sit, not about how well you are managing.'
+    }
+  };
+
+  /* ---------- gap width ----------
+     How far apart the manager's picture and the team's reality are likely
+     to be. Position and freshness carry equally: a manager who sees the
+     team daily but has looked at nothing closely has a real gap, and so
+     does one who looks hard from a distance.
+
+     PROVISIONAL. These cut points were set by hand against a handful of
+     submissions. Revisit at roughly n=50. This is the only place in the
+     codebase they appear. */
+
+  var GAP_BANDS = [
+    {
+      max: 1.0, key: 'narrow', label: 'Narrow',
+      copy: 'You are close enough to your team’s week that your read and their reality should be within touching distance. Where they differ, the difference is real and worth chasing.'
+    },
+    {
+      max: 2.5, key: 'moderate', label: 'Moderate',
+      copy: 'Enough of the week reaches you for your read to be broadly sound, with specific conditions you have no way to confirm. The gap sits in whatever you have looked at least recently.'
+    },
+    {
+      max: 4.0, key: 'wide', label: 'Wide',
+      copy: 'Most of your team’s week never reaches you. What does reach you has been through somebody else’s judgement about what is worth passing on. The distance between your picture and your team’s is large, and closing it is a matter of position rather than attention.'
+    },
+    {
+      max: Infinity, key: 'very_wide', label: 'Very wide',
+      copy: 'You are positioned to see very little of this team directly, and you have little recent observation to work from. Almost everything you believe about this team is second-hand. That is the most useful thing this assessment can tell you.'
+    }
+  ];
+
+  var GAP_FRAMING = 'This is not a measure of how good your answers were. How much of your team’s week you can see is what creates the gap in the first place, so it is the first thing worth knowing.';
+
+  function lineOfSightFor(exposure) {
+    return LINE_OF_SIGHT[exposure] || LINE_OF_SIGHT.less_weekly;
+  }
+
+  function gapWidthFor(losScore, meanRecency) {
+    var index = (3 - losScore) + (3 - meanRecency);
+    var band = GAP_BANDS[GAP_BANDS.length - 1];
+    for (var i = 0; i < GAP_BANDS.length; i++) {
+      if (index <= GAP_BANDS[i].max) { band = GAP_BANDS[i]; break; }
+    }
+    return { index: Number(index.toFixed(2)), key: band.key, label: band.label, copy: band.copy };
+  }
+
+  /* ---------- confidence ----------
+     DEPRECATED. Retained for this release so nothing reading the export
+     breaks on deploy, and still written to the database. It must not reach
+     a participant, and nothing new may read it. Removal is a later release.
+     Superseded by line of sight and gap width above: exposure is not noise
+     in the measurement, it is the mechanism that produces the gap. */
 
   var CONFIDENCE = {
     high: { key: 'high', label: 'High confidence' },
@@ -278,9 +371,11 @@
     low: { key: 'low', label: 'Low confidence' }
   };
 
-  var LOW_CONFIDENCE_CAUTION = 'One caution before you take this reading at face value. You told us you have direct contact with this team less than weekly. At that distance, behaviours that haven’t reached you may still be happening out of your sight. The difference matters: it is the difference between a team going quiet and you no longer hearing them. Only fresher contact tells you which, and until then, treat this result as a question to investigate rather than an answer.';
-
-  var LOW_CONFIDENCE_ACTION = 'And given how little of this team’s week you currently see, the single highest-value move is more direct contact. Every other read improves from there.';
+  /* Where line of sight is Narrow or Minimal the first move is one that
+     increases observation, not one that changes the team. Go and look
+     before you go and fix. This is an instruction, never a caveat: it
+     says nothing about how far to trust the reading. */
+  var NARROW_SIGHT_ACTION = 'Given how little of this team’s week you are positioned to see, the single highest-value move is more direct contact. Every other read improves from there.';
 
   /* ---------- signal score: freshness of evidence, not confidence ---------- */
 
@@ -475,12 +570,20 @@
     var state = decision.state;
 
     var exposureOpt = optionFor(EXPOSURE, answers.exposure);
-    var confidence = CONFIDENCE[exposureOpt.confidence];
-    var isLow = confidence.key === 'low';
     var exposurePhrase = EXPOSURE_PHRASE[answers.exposure];
 
-    /* close enough to the team that a thin score reports absence, not distance */
-    var closeUp = confidence.key === 'high';
+    var los = lineOfSightFor(answers.exposure);
+    /* one window a week or less: the first move is to go and look */
+    var narrowSight = los.score <= 1;
+
+    /* close enough to the team that a thin score reports absence, not
+       distance. Reads line of sight rather than the deprecated confidence
+       key; the two select exactly the same set of exposure answers, so
+       the signal copy is unchanged by this release. */
+    var closeUp = los.score >= 2;
+
+    /* deprecated, still written to the database, never shown to anyone */
+    var confidence = CONFIDENCE[exposureOpt.confidence];
 
     var gap = decideGap(answers.gut, state);
 
@@ -581,12 +684,36 @@
       };
     });
 
+    /* the most recent observation in each area, averaged. This is the
+       freshness half of the gap; line of sight is the position half. */
+    var meanRecency = areas.reduce(function (t, a) { return t + a.best; }, 0) / areas.length;
+    var gapW = gapWidthFor(los.score, meanRecency);
+
     return {
       state: state,
       rule: decision.rule,
+
+      /* how much of the team's week this manager is positioned to see */
+      lineOfSight: {
+        key: los.key,
+        score: los.score,
+        label: los.label,
+        copy: los.copy
+      },
+      /* how far the manager's picture and the team's reality are likely
+         to sit apart, from position and freshness together */
+      meanRecency: Number(meanRecency.toFixed(2)),
+      gapIndex: gapW.index,
+      gapWidth: {
+        key: gapW.key,
+        label: gapW.label,
+        copy: gapW.copy
+      },
+      gapFraming: GAP_FRAMING,
+
+      /* deprecated, retained so the export contract does not break */
       confidence: confidence,
-      isLowConfidence: isLow,
-      caution: isLow ? LOW_CONFIDENCE_CAUTION : null,
+
       exposure: { value: answers.exposure, label: exposureOpt.label },
       gap: gap,
       signal: s,
@@ -601,7 +728,7 @@
       indistinguishable: indistinguishable,
       tiedWith: indistinguishable ? ranked[1].name : null,
       tiedCount: tiedCount,
-      action: buildAction(state, ranked, isLow, indistinguishable, tiedCount),
+      action: buildAction(state, ranked, narrowSight, indistinguishable, tiedCount),
       responses: responses,
       headline: 'Based on what you’ve observed, your team is most likely in ' + state.name + '.'
     };
@@ -656,14 +783,14 @@
       'of this team. For the first: ';
   }
 
-  function buildAction(state, ranked, isLow, indistinguishable, tiedCount) {
+  function buildAction(state, ranked, narrowSight, indistinguishable, tiedCount) {
     var action = actionFor(state, ranked[0]);
 
     if (indistinguishable) {
       action = tiedPreamble(ranked, tiedCount) + lowerFirst(action);
     }
 
-    return isLow ? action + ' ' + LOW_CONFIDENCE_ACTION : action;
+    return narrowSight ? action + ' ' + NARROW_SIGHT_ACTION : action;
   }
 
   function lowerFirst(sentence) {
@@ -700,8 +827,7 @@
     if (tiedCount === 5) {
       return 'Your five areas came back level, on exactly the same answers. ' +
         freshness + ' Nothing here points to one area over another, so the ' +
-        'place to start is whichever you have the least confidence in ' +
-        'independently of this.' +
+        'place to start is whichever you would least want to be wrong about.' +
         (area.best >= 3 ? COHORT_WATCH_PLURAL : COHORT_DRIFT_PLURAL);
     }
 
@@ -840,6 +966,11 @@
     ACTIONS: ACTIONS,
     CONFIDENCE: CONFIDENCE,
     SIGNAL_FRAMING: SIGNAL_FRAMING,
+    LINE_OF_SIGHT: LINE_OF_SIGHT,
+    GAP_BANDS: GAP_BANDS,
+    GAP_FRAMING: GAP_FRAMING,
+    lineOfSightFor: lineOfSightFor,
+    gapWidthFor: gapWidthFor,
     score: score,
     labelFor: labelFor,
     lower: lower,

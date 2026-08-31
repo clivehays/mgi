@@ -21,13 +21,28 @@ import psycopg2
 
 ENV = r"C:\Users\Administrator\clover-agents\.env"
 
-# the twelve evidence items, so the header says what each column means
-QUESTIONS = [
-    "blocker raised early", "peer help not routed through you", "looked at real work",
-    "outside comment unprompted", "unprompted idea", "unhurried one-to-one",
-    "priority in their words", "pushed back on work", "open disagreement",
-    "problem from the person", "least-sure person", "changed your mind",
-]
+# Short labels for the evidence columns, so the file reads without the codebook.
+# Read from scoring.js rather than hardcoded: a list of twelve silently broke
+# this export the moment the instrument went to fifteen items.
+SCORING = r"C:\Users\Administrator\mgi-site\assets\scoring.js"
+
+
+def questions():
+    src = io.open(SCORING, encoding="utf-8").read()
+    block = src[src.index("var EVIDENCE = ["):]
+    block = block[:block.index("];")]
+    items = re.findall(r"'((?:[^'\\]|\\.)*)'", block)
+    out = []
+    for t in items:
+        t = t.replace("\\'", "'").replace("\u2019", "'")
+        # keep the header short: the distinguishing clause, not the whole item
+        t = re.sub(r"^When did (you |a team member |someone |a piece )?", "", t)
+        t = re.sub(r"^(last |you last )", "", t)
+        out.append(t.rstrip("?")[:58])
+    return out
+
+
+QUESTIONS = questions()
 
 PII = ("first_name", "email", "company")
 
@@ -72,7 +87,10 @@ def main():
     header = []
     for c in cols:
         m = re.match(r"^q(\d+)$", c)
-        header.append("%s: %s" % (c, QUESTIONS[int(m.group(1)) - 1]) if m else c)
+        if m and int(m.group(1)) <= len(QUESTIONS):
+            header.append("%s: %s" % (c, QUESTIONS[int(m.group(1)) - 1]))
+        else:
+            header.append(c)
 
     with io.open(out, "w", encoding="utf-8-sig", newline="") as f:
         w = csv.writer(f)

@@ -3,8 +3,8 @@
 
    Stores the submission, emails Clive the raw answers as call
    prep, and emails the manager their report. The state, the
-   confidence and the gap are recomputed here from the raw
-   answers using the same module the browser uses, so the email
+   line of sight, gap width and the instinct gap are recomputed here
+   from the raw answers using the same module the browser uses, so the email
    can never disagree with the page the manager saw.
 
    Environment:
@@ -36,6 +36,10 @@ var NOTIFY_FROM = process.env.MGI_NOTIFY_FROM || FROM;
 var REPLY_TO = process.env.MGI_REPLY_TO || NOTIFY_TO;
 var FALLBACK_FROM = process.env.MGI_FALLBACK_FROM || '';
 var TABLE = process.env.MGI_TABLE || 'mgi_v5_submissions';
+
+/* the signal denominator comes from the instrument, so it can never
+   disagree with the page the way a hardcoded 36 did */
+var SIGNAL_MAX = MGI.EVIDENCE.length * 3;
 
 var GAP_SUMMARY = {
   behind: 'Instinct behind the evidence',
@@ -143,6 +147,12 @@ module.exports = async function handler(req, res) {
 
     state: result.state.name,
     decision_rule: result.rule,
+    line_of_sight_score: result.lineOfSight.score,
+    line_of_sight: result.lineOfSight.label,
+    mean_recency: result.meanRecency,
+    gap_index: result.gapIndex,
+    gap_width: result.gapWidth.label,
+    /* deprecated 6.1.0, written so the export contract holds */
     confidence: result.confidence.label,
     gap: GAP_SUMMARY[result.gap.key],
     signal: result.signal,
@@ -294,12 +304,15 @@ function notification(contact, result, submittedAt) {
   lines.push('Submitted: ' + submittedAt);
   lines.push('');
   lines.push('State: ' + result.state.name + ' (decision rule ' + result.rule + ')');
-  lines.push('Confidence: ' + result.confidence.label);
+  lines.push('Line of sight: ' + result.lineOfSight.label +
+             '   Gap width: ' + result.gapWidth.label +
+             ' (index ' + result.gapIndex.toFixed(2) + ')');
   lines.push('Exposure: ' + result.exposure.label);
   lines.push('Gap: ' + GAP_SUMMARY[result.gap.key]);
   lines.push('Gut read: ' + result.gap.gutLabel);
   lines.push('');
-  lines.push('Signal score: ' + result.signal + '/36   Behaviour score B: ' + result.behaviour.toFixed(2));
+  lines.push('Signal score: ' + result.signal + '/' + SIGNAL_MAX +
+             '   Behaviour score B: ' + result.behaviour.toFixed(2));
   lines.push('');
   lines.push('AREA RANKING (weakest first)');
   result.ranked.forEach(function (a, i) {
@@ -327,7 +340,7 @@ function notification(contact, result, submittedAt) {
     to: [NOTIFY_TO],
     reply_to: contact.email,
     subject: 'MGI: ' + contact.firstName + ', ' + contact.company + ' · ' + result.state.name.toUpperCase() +
-      ' (' + result.confidence.label.toLowerCase() + ', signal ' + result.signal + '/36)',
+      ' (gap ' + result.gapWidth.label.toLowerCase() + ', signal ' + result.signal + '/' + SIGNAL_MAX + ')',
     text: text,
     html: '<pre style="font:13px/1.55 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;color:#17161A">' + esc(text) + '</pre>'
   };
@@ -363,13 +376,10 @@ function managerReport(contact, result) {
   h.push('<p style="font-size:27px;line-height:1.2;margin:0 0 12px;">Based on what you have observed, your team is most likely in <em style="color:' +
     result.state.colour + ';font-weight:bold;">' + esc(result.state.name) + '</em>.</p>');
   h.push('<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:' +
-    mute + ';margin:0 0 20px;">' + esc(result.confidence.label) + ' \u00b7 based on how much of this team\u2019s week you see</p>');
+    mute + ';margin:0 0 20px;">Gap width: ' + esc(result.gapWidth.label) + '</p>');
   h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 20px;">' + esc(result.state.description) + '</p>');
 
-  if (result.caution) {
-    h.push('<p style="font-size:16px;line-height:1.6;border-left:2px solid #B03A2E;padding:2px 0 2px 18px;margin:0 0 28px;">' +
-      esc(result.caution) + '</p>');
-  }
+
 
   h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:0 0 26px;">');
 
@@ -392,19 +402,42 @@ function managerReport(contact, result) {
       '<td style="padding:9px 0;border-bottom:1px solid ' + rule + ';color:' + (here ? st.colour : mute) +
       ';font-weight:' + (here ? 'bold' : 'normal') + ';">' + esc(st.name) + '</td>' +
       '<td style="padding:9px 0;border-bottom:1px solid ' + rule + ';color:' + mute + ';text-align:right;">' +
-      (here ? esc(result.confidence.label) : '') + '</td>' +
+      '</td>' +
       '</tr>');
   });
   h.push('</table>');
   h.push('<p style="font-family:' + sans + ';font-size:13px;line-height:1.55;color:' + mute +
-    ';margin:0 0 28px;">The marked state is the most likely one, given what you reported. The confidence beside it reflects how much of this team\u2019s week you see.</p>');
+    ';margin:0 0 28px;">The marked state is the most likely one, given what you reported.</p>');
 
   h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:0 0 26px;">');
 
-  // 4. the signal score, kept separate from confidence
+  /* 4. line of sight and gap width. Evidence, never the decision: this
+     sits below the state and above the areas, and nothing here hedges
+     the result. The distance is the diagnosis. */
+  h.push(eyebrow('Line of sight and gap width'));
+  h.push('<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:0 0 4px;">');
+  h.push('<tr>' +
+    '<td style="padding:0 0 6px;font-family:' + mono + ';font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:' +
+    mute + ';">Line of sight</td>' +
+    '<td style="padding:0 0 6px;font-family:' + mono + ';font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:' +
+    mute + ';">Gap width</td></tr>');
+  h.push('<tr>' +
+    '<td style="padding:0 12px 14px 0;font-size:22px;font-weight:bold;vertical-align:top;">' +
+    esc(result.lineOfSight.label) + '</td>' +
+    '<td style="padding:0 0 14px;font-size:22px;font-weight:bold;vertical-align:top;">' +
+    esc(result.gapWidth.label) + '</td></tr>');
+  h.push('</table>');
+  h.push('<p style="font-size:16px;line-height:1.6;margin:0 0 14px;">' + esc(result.lineOfSight.copy) + '</p>');
+  h.push('<p style="font-size:16px;line-height:1.6;margin:0 0 14px;">' + esc(result.gapWidth.copy) + '</p>');
+  h.push('<p style="font-family:' + sans + ';font-size:13px;line-height:1.55;color:' + mute +
+    ';margin:0 0 28px;">' + esc(result.gapFraming) + '</p>');
+
+  h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:0 0 26px;">');
+
+  // 5. the signal score, which measures evidence freshness and nothing else
   h.push(eyebrow('Your signal score'));
   h.push('<p style="font-family:' + mono + ';font-size:24px;letter-spacing:0.06em;font-weight:bold;margin:0 0 14px;">' +
-    result.signal + ' / 36</p>');
+    result.signal + ' / ' + SIGNAL_MAX + '</p>');
   h.push('<p style="font-size:16px;line-height:1.6;margin:0 0 12px;">' + esc(MGI.SIGNAL_FRAMING) + '</p>');
   h.push('<p style="font-size:16px;line-height:1.6;margin:0 0 22px;">' + esc(result.signalCopy) + '</p>');
 
@@ -449,7 +482,7 @@ function managerReport(contact, result) {
     to: [contact.email],
     reply_to: REPLY_TO,
     subject: 'Your Manager Gap Index result: most likely ' + result.state.name +
-      ' (' + result.confidence.label.toLowerCase() + ')',
+      ' (gap ' + result.gapWidth.label.toLowerCase() + ')',
     /* Microsoft and Gmail both read this as a signal that the sender is
        legitimate, and the closing block does say we may reach out again,
        so the recipient should have a way to say no. */
@@ -475,13 +508,9 @@ function managerReportText(result) {
   L.push('');
   L.push('YOUR RESULT');
   L.push('Based on what you have observed, your team is most likely in ' + result.state.name + '.');
-  L.push(result.confidence.label + ', based on how much of this team’s week you see.');
+  L.push('Gap width: ' + result.gapWidth.label);
   L.push('');
   L.push(result.state.description);
-  if (result.caution) {
-    L.push('');
-    L.push(result.caution);
-  }
   L.push('');
   L.push('YOUR INSTINCT VS THE EVIDENCE');
   L.push(result.gap.copy);
@@ -490,11 +519,20 @@ function managerReportText(result) {
   ['cruise', 'drift', 'headwinds', 'stall'].forEach(function (key) {
     var st = MGI.STATES[key];
     var here = st.key === result.state.key;
-    L.push('  ' + (here ? '> ' : '  ') + st.name + (here ? '   ' + result.confidence.label : ''));
+    L.push('  ' + (here ? '> ' : '  ') + st.name);
   });
   L.push('');
+  L.push('LINE OF SIGHT AND GAP WIDTH');
+  L.push('Line of sight: ' + result.lineOfSight.label);
+  L.push(result.lineOfSight.copy);
+  L.push('');
+  L.push('Gap width: ' + result.gapWidth.label);
+  L.push(result.gapWidth.copy);
+  L.push('');
+  L.push(result.gapFraming);
+  L.push('');
   L.push('YOUR SIGNAL SCORE');
-  L.push(result.signal + ' / 36');
+  L.push(result.signal + ' / ' + SIGNAL_MAX);
   L.push(MGI.SIGNAL_FRAMING);
   L.push(result.signalCopy);
   L.push('');

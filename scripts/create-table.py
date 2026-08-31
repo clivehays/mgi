@@ -82,6 +82,20 @@ create table if not exists mgi_v5_submissions (
   -- what the instrument concluded
   state                 text not null,
   decision_rule         smallint,
+
+  -- how much of the team's week this manager is positioned to observe,
+  -- and how far their picture and the team's reality are likely to sit
+  -- apart. Exposure is not noise in the measurement, it is the mechanism
+  -- that produces the gap, so it is reported as the scale of that gap
+  line_of_sight_score   smallint,
+  line_of_sight         text,
+  mean_recency          numeric(3,2),
+  gap_index             numeric(3,2),
+  gap_width             text,
+
+  -- DEPRECATED as of 6.1.0. Superseded by line_of_sight and gap_width.
+  -- Still written so nothing reading the export breaks; must never reach
+  -- a participant. Drop in a later release once nothing reads it.
   confidence            text not null,
   gap                   text,
   signal                smallint,
@@ -111,6 +125,14 @@ alter table mgi_v5_submissions add column if not exists q15                    s
 alter table mgi_v5_submissions add column if not exists left_6m                text;
 alter table mgi_v5_submissions add column if not exists joined_6m              text;
 alter table mgi_v5_submissions add column if not exists currently_leading      text;
+alter table mgi_v5_submissions add column if not exists line_of_sight_score    smallint;
+alter table mgi_v5_submissions add column if not exists line_of_sight          text;
+alter table mgi_v5_submissions add column if not exists mean_recency           numeric(3,2);
+alter table mgi_v5_submissions add column if not exists gap_index              numeric(3,2);
+alter table mgi_v5_submissions add column if not exists gap_width              text;
+
+comment on column mgi_v5_submissions.confidence is
+  'DEPRECATED 6.1.0. Superseded by line_of_sight and gap_width. Still written so the export contract holds; never shown to a participant. Drop in a later release.';
 
 -- Funnel telemetry. Deliberately a separate table with no key back to a
 -- submission: people abandon before the consent box, so nothing here may be
