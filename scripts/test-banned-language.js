@@ -154,9 +154,10 @@ console.log('\n[2] Participant-facing templates');
    legitimately discusses what is stored, and the item text is fixed by the
    instrument, not by this amendment */
 var html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+/* comments are NOT stripped: they ship to the browser and show in
+   view-source, so they are participant-facing too */
 var body = html
-  .replace(/<section class="landing-note"[\s\S]*?<\/section>/g, '')
-  .replace(/<!--[\s\S]*?-->/g, '');
+  .replace(/<section class="landing-note"[\s\S]*?<\/section>/g, '');
 if (scan('index.html', body)) ok('index.html carries no banned language');
 
 /* the manager's report email: both the HTML and the plain text branches.
