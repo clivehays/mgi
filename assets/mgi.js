@@ -477,6 +477,17 @@
     });
   }
 
+  /* HTML and JS are separate files with independent caches, so there is
+     always a window in which a visitor holds one version of one and a
+     different version of the other. A missing element used to throw and
+     abandon the rest of the render, leaving a half-blank report. Writing
+     through this instead means an unknown element is skipped and
+     everything else still draws. */
+  function setText(id, value) {
+    var node = el[id] || document.getElementById(id);
+    if (node) node.textContent = value;
+  }
+
   /* ---------- report ---------- */
 
   function renderReport(r) {
@@ -491,30 +502,30 @@
     call.appendChild(name);
     call.appendChild(document.createTextNode('.'));
 
-    el['state-desc'].textContent = r.state.description;
-    el['gap-body'].textContent = r.gap.copy;
+    setText('state-desc', r.state.description);
+    setText('gap-body', r.gap.copy);
 
     /* line of sight and gap width. Evidence, not the decision: nothing
        here tells the reader to trust the result less. */
-    el['los-value'].textContent = r.lineOfSight.label;
-    el['los-copy'].textContent = r.lineOfSight.copy;
-    el['gap-width-value'].textContent = r.gapWidth.label;
-    el['gap-width-copy'].textContent = r.gapWidth.copy;
-    el['gap-framing'].textContent = r.gapFraming;
+    setText('los-value', r.lineOfSight.label);
+    setText('los-copy', r.lineOfSight.copy);
+    setText('gap-width-value', r.gapWidth.label);
+    setText('gap-width-copy', r.gapWidth.copy);
+    setText('gap-framing', r.gapFraming);
 
     renderCompass(r);
 
     /* the meaning first. The raw score is kept, small and last, because a
        number out of 45 tells a manager nothing they did not just type in. */
-    el['signal-headline'].textContent = r.signalHeadline;
-    el['signal-score'].textContent = 'Signal score ' + r.signal + ' / ' + (MGI.EVIDENCE.length * 3);
-    el['signal-copy'].textContent = r.signalMeaning;
+    setText('signal-headline', r.signalHeadline);
+    setText('signal-score', 'Signal score ' + r.signal + ' / ' + (MGI.EVIDENCE.length * 3));
+    setText('signal-copy', r.signalMeaning);
     renderAreas(r);
 
     /* name the area the action addresses, so a reader who skims still
        knows what this week is for */
-    if (el['action-area']) el['action-area'].textContent = r.ranked[0].name;
-    el['action-body'].textContent = r.action;
+    setText('action-area', r.ranked[0].name);
+    setText('action-body', r.action);
   }
 
   function renderCompass(r) {
@@ -540,11 +551,11 @@
         '. The halo is your line of sight: ' + r.lineOfSight.label.toLowerCase() + '.';
     }
 
-    el['compass-desc'].textContent =
+    setText('compass-desc',
       'The evidence points to ' + r.state.name + '. Line of sight is ' + r.lineOfSight.label.toLowerCase() +
       ', gap width ' + r.gapWidth.label.toLowerCase() +
       '. The dot sits in the ' + r.state.name + ' quadrant, ' + pos.where +
-      ' of the compass. Cruise is at the top, Headwinds on the right, Stall at the bottom, Drift on the left.';
+      ' of the compass. Cruise is at the top, Headwinds on the right, Stall at the bottom, Drift on the left.');
   }
 
   function renderAreas(r) {
@@ -599,7 +610,7 @@
     });
 
     /* either the summary block or the per-area callouts, never both */
-    el['areas-summary'].textContent = r.summary || '';
+    setText('areas-summary', r.summary || '');
     el['areas-summary'].hidden = !r.summary;
   }
 
