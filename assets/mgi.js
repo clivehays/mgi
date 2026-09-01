@@ -143,7 +143,7 @@
       'los-value', 'los-copy', 'gap-width-value', 'gap-width-copy', 'gap-framing',
       'compass-desc', 'marker-halo', 'marker-dot',
       'signal-score', 'signal-framing', 'signal-copy', 'areas-list', 'areas-summary',
-      'action-body', 'report-sent'
+      'action-area', 'action-body', 'report-sent'
     ].forEach(function (id) {
       el[id] = document.getElementById(id);
     });
@@ -509,6 +509,9 @@
     el['signal-copy'].textContent = r.signalCopy;
     renderAreas(r);
 
+    /* name the area the action addresses, so a reader who skims still
+       knows what this week is for */
+    if (el['action-area']) el['action-area'].textContent = r.ranked[0].name;
     el['action-body'].textContent = r.action;
   }
 
@@ -550,21 +553,36 @@
       var wrap = document.createElement('div');
       wrap.className = 'area';
 
+      /* Name and answer on one line, so five areas read as five answers
+         down the page and a reader can take them in at a glance. The
+         prose sits underneath for whoever wants it. Same words, same
+         voice; the reader chooses the depth rather than the page. */
+      var head = document.createElement('div');
+      head.className = 'area-head';
+
       var name = document.createElement('h3');
       name.className = 'area-name';
       name.textContent = a.name;
+
+      var answer = document.createElement('p');
+      answer.className = 'area-answer fact-' + a.best;
+      answer.textContent = a.freshest;
+
+      head.appendChild(name);
+      head.appendChild(answer);
 
       var desc = document.createElement('p');
       desc.className = 'area-desc';
       desc.textContent = a.desc;
 
       /* the honest summary of an area is its recency, stated plainly.
-         No label vocabulary sits on top of it. The tint fades with age. */
+         No label vocabulary sits on top of it. The answer line above
+         gives the freshest item; this names the rest of the area. */
       var fact = document.createElement('p');
-      fact.className = 'area-fact fact-' + a.best;
+      fact.className = 'area-fact';
       fact.textContent = a.recencyFact;
 
-      wrap.appendChild(name);
+      wrap.appendChild(head);
       wrap.appendChild(desc);
       wrap.appendChild(fact);
 

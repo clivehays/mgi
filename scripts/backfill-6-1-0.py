@@ -7,6 +7,10 @@ SDI and every cohort comparison depend on the whole set being populated.
 The formula is NOT reimplemented here. It is read out of scoring.js by
 running the instrument, so the backfill and the live scoring cannot drift.
 
+Moves instrument_version, which tracks the derived columns. Never touches
+collected_under, which records what the participant actually saw and is
+the one provenance field a backfill must leave alone.
+
 Verifies against the fixtures in the amendment before writing anything, and
 refuses to write if they do not reproduce exactly.
 

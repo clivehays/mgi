@@ -36,9 +36,17 @@ create table if not exists mgi_v5_submissions (
   created_at            timestamptz not null default now(),
 
   -- which instrument produced this row. Rows are only comparable to each
-  -- other when both of these match; see the provenance block in scoring.js
+  -- other when the fingerprints match; see the provenance block in scoring.js.
+  --
+  -- The two version columns mean different things and must not be conflated:
+  --   collected_under    the version live when the participant submitted.
+  --                      What they actually saw. Written once, never touched
+  --                      by a backfill.
+  --   instrument_version the version that produced the derived columns in
+  --                      this row as they stand now. A backfill moves it.
   instrument_version    text,
   instrument_fingerprint text,
+  collected_under       text,
 
   -- who answered
   first_name            text not null,
@@ -130,6 +138,10 @@ alter table mgi_v5_submissions add column if not exists line_of_sight          t
 alter table mgi_v5_submissions add column if not exists mean_recency           numeric(3,2);
 alter table mgi_v5_submissions add column if not exists gap_index              numeric(3,2);
 alter table mgi_v5_submissions add column if not exists gap_width              text;
+alter table mgi_v5_submissions add column if not exists collected_under        text;
+
+comment on column mgi_v5_submissions.collected_under is
+  'The instrument version live when this participant submitted, ie what they saw. Written once at submission and never changed by a backfill. instrument_version, by contrast, tracks the version that produced the derived columns as they now stand.';
 
 comment on column mgi_v5_submissions.confidence is
   'DEPRECATED 6.1.0. Superseded by line_of_sight and gap_width. Still written so the export contract holds; never shown to a participant. Drop in a later release.';

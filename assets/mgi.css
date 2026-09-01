@@ -623,12 +623,39 @@ fieldset.scale{
 
 .area:last-of-type{ border-bottom: 1px solid var(--rule-soft); }
 
+.area-head{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 8px;
+}
+
+@media (max-width: 560px){
+  .area-head{ display: block; }
+}
+
 .area-name{
   font-family: var(--serif);
   font-weight: 500;
   font-size: 19px;
   letter-spacing: -0.012em;
-  margin: 0 0 8px;
+  margin: 0;
+}
+
+/* the scannable answer: five of these down the page is the skim */
+.area-answer{
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-align: right;
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 560px){
+  .area-answer{ text-align: left; margin: 4px 0 0; white-space: normal; }
 }
 
 .area-desc{
@@ -643,12 +670,12 @@ fieldset.scale{
 /* the recency fact stands in for a label. It fades with age,
    which is the only encoding here: no label vocabulary. */
 .area-fact{
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-weight: 600;
+  font-family: var(--ui);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-mute);
   margin: 0;
+  max-width: 40em;
 }
 
 .fact-3{ color: #17161A; }
@@ -806,4 +833,26 @@ fieldset.scale{
   border-left: 2px solid var(--rule);
   padding-left: 16px;
   margin: 0;
+}
+
+/* the action names the area it addresses, so a skimming reader still
+   knows what this week is for */
+.action-area{
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  margin: 0 0 10px;
+}
+
+/* who this is for, answered before anyone starts */
+.audience-line{
+  font-family: var(--ui);
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-mute);
+  border-left: 2px solid var(--rule);
+  padding-left: 16px;
+  margin: 0 0 20px;
+  max-width: 42em;
 }

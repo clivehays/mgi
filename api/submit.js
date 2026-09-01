@@ -120,9 +120,13 @@ module.exports = async function handler(req, res) {
      plain SQL rather than json extraction. The blob is kept alongside for
      fidelity and for anything the columns do not anticipate. */
   var record = {
-    /* which instrument produced this row; see scoring.js */
+    /* which instrument produced this row; see scoring.js.
+       collected_under records what this participant actually saw and is
+       never rewritten. instrument_version tracks the derived columns and
+       a backfill may move it. */
     instrument_version: MGI.VERSION,
     instrument_fingerprint: MGI.FINGERPRINT,
+    collected_under: MGI.VERSION,
 
     submitted_at: submittedAt,
     first_name: contact.firstName,

@@ -431,6 +431,17 @@
     0: 'nothing you could recall'
   };
 
+  /* The same fact in a form that can be read at a glance. Five of these in a
+     column is what lets a reader take the areas in at a glance and then
+     choose what to read properly. It is the freshest item in the area, so it
+     never overstates: the fuller sentence underneath names the rest. */
+  var RECENCY_SHORT = {
+    3: 'Within the last week',
+    2: 'Within the last month',
+    1: 'Over a month ago',
+    0: 'Nothing recalled'
+  };
+
   /* Reporting only the most recent item hid the weaker part of every area:
      an area holding one answer from last month and one nobody could recall
      read identically to an area holding last month and last quarter. That
@@ -604,6 +615,7 @@
         /* the answers low-to-high, the finest comparison the area supports */
         profile: sorted,
         recencyFact: recencyFact(values),
+        freshest: RECENCY_SHORT[sorted[sorted.length - 1]],
         isWeak: total / values.length < 1.0
       };
     });
