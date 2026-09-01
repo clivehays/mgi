@@ -894,3 +894,107 @@ fieldset.scale{
   margin: 10px 0 0;
   max-width: 40em;
 }
+
+/* ---------- the people ----------
+   The warmest thing on the page and the reason anyone reads on, so it
+   is set in the report's reading face, not the muted UI one. */
+
+.cohort-figure{
+  font-family: var(--serif);
+  font-size: clamp(46px, 11vw, 64px);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin: 0 0 10px;
+}
+
+.cohort-caption{
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  line-height: 1.9;
+  color: var(--ink-mute);
+  margin: 0 0 26px;
+  max-width: 34em;
+}
+
+.people-intro{
+  font-family: var(--serif);
+  font-size: clamp(16px, 3.4vw, 17.5px);
+  line-height: 1.62;
+  color: var(--ink-2);
+  margin: 0 0 16px;
+  max-width: 36em;
+}
+
+/* each unit is one premise the manager typed, then what it usually
+   means. The rule on the left marks where measurement stops and
+   inference starts. */
+.people-unit{
+  border-left: 2px solid var(--ink);
+  padding: 2px 0 2px 20px;
+  margin: 0 0 20px;
+  max-width: 36em;
+}
+
+.people-premise{
+  font-family: var(--serif);
+  font-size: clamp(17px, 3.6vw, 18.5px);
+  line-height: 1.5;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 8px;
+}
+
+.people-inference{
+  font-family: var(--serif);
+  font-size: clamp(16px, 3.4vw, 17px);
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+.people-situational{
+  font-family: var(--serif);
+  font-size: clamp(16px, 3.4vw, 17px);
+  line-height: 1.6;
+  color: var(--ink-2);
+  background: var(--paper-2);
+  padding: 16px 18px;
+  margin: 0;
+  max-width: 36em;
+}
+
+.people-situational[hidden]{ display: none; }
+
+.discovery-lag{
+  font-family: var(--serif);
+  font-size: clamp(16px, 3.4vw, 17px);
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin: 18px 0 0;
+  max-width: 36em;
+}
+
+/* the close */
+.closing-body{
+  font-family: var(--serif);
+  font-size: clamp(16px, 3.4vw, 17.5px);
+  line-height: 1.62;
+  color: var(--ink-2);
+  margin: 0 0 16px;
+  max-width: 36em;
+}
+
+.closing-fork{
+  font-family: var(--serif);
+  font-size: clamp(17px, 3.6vw, 18.5px);
+  line-height: 1.55;
+  color: var(--ink);
+  border-top: 1px solid var(--rule);
+  padding-top: 18px;
+  margin: 22px 0 0;
+  max-width: 36em;
+}

@@ -794,6 +794,7 @@
         copy: gapW.copy
       },
       gapFraming: GAP_FRAMING,
+      discoveryLag: DISCOVERY_LAG[gapW.key],
 
       /* deprecated, retained so the export contract does not break */
       confidence: confidence,
@@ -969,6 +970,260 @@
     return name.charAt(0).toLowerCase() + name.slice(1);
   }
 
+
+
+  /* ---------- discovery lag ----------
+     Gap width has been an abstraction. This is what it costs: not how
+     much you can see, but how late you find out. A finding about the
+     manager's position, never a caveat on the reading. */
+
+  var DISCOVERY_LAG = {
+    narrow: 'One more thing that width decides. On your answers you would watch most of this team’s week happen: your line of sight is close and your signal is recent, so what changes reaches you at roughly the speed the team reaches it. Whatever this team does next, you are placed to meet it early, which keeps every option on this page cheap.',
+    moderate: 'One more thing that width decides. On your answers, part of this team’s week happens where you can see it and part arrives retold, after somebody decided it was worth passing on. A manager in your position usually meets a change a few weeks after the team does, and the list of cheap options gets shorter over those weeks.',
+    wide: 'One more thing that width decides. On your answers, most of this team’s week happens out of your sight and reaches you through the output, which is the last place it shows. A team can be a month into something before a manager in your position has met the first week of it. That lag is not a lapse in attention. It comes from where you sit, and it compounds quietly.',
+    very_wide: 'One more thing that width decides. Almost all of this team’s week happens where you cannot see it. For a manager in your position the usual first notice is the event itself, arriving without the weeks that produced it, which is how a quarter of movement gets experienced as a surprise. Nothing on this page is more worth changing than that.'
+  };
+
+  /* ---------- the close ----------
+     The report is deliberately half a measurement, and says so. The
+     cohort could price the gap only because both sides were in the
+     room; this had one side. The manager cannot take the second
+     measurement by asking, because the asking travels the channel the
+     gap is made of. That is the argument, and the conversation is the
+     only thing that answers it. */
+
+  var CLOSE_ONE = 'Every finding here came from one chair: yours. Nobody on this team was asked anything. The 70% above was not carelessness on those managers’ part. The things a team will not say in a one-to-one do not show up in anything a manager can see from the manager’s seat, and this report has spent its length listing them.';
+
+  var CLOSE_WIDE = ' Your gap width above says how much of this team’s week never reaches you at all. Distance like that is exactly what the 70% is made of.';
+
+  var CLOSE_TWO = 'You cannot ask your way across this gap, because the asking travels the same channel that produced it. A channel that filters bad news will filter the answer to a question about the filter. Closing it takes a measurement of the other side, taken by somebody the answers are not about.';
+
+  var CLOSE_THREE = 'That is a conversation with Clive Hays, Clover ERA’s co-founder, who ran the 11-company study. Thirty minutes with this report on the table, your pattern next to the cohort’s manager-and-team pairs: which of these inferences held at those companies, and what the managers who closed the gap did in the first two weeks. You leave with a written plan of three specific actions built from your answers.';
+
+  var CLOSE_FOUR = 'If the inferences here are wrong about your team, that is worth knowing. If they are right, it is worth knowing this month rather than the month it reaches the work.';
+
+  function closingBlocks(result) {
+    var wide = result.gapWidth.key === 'wide' || result.gapWidth.key === 'very_wide';
+    return [CLOSE_ONE + (wide ? CLOSE_WIDE : ''), CLOSE_TWO, CLOSE_THREE, CLOSE_FOUR];
+  }
+
+  /* =========================================================
+     THE PEOPLE IN THIS PICTURE
+
+     The report measured one manager's recall and told them about it,
+     which is accurate and cold. There were no humans in it.
+
+     This section adds them as disciplined inference, never as
+     measurement, under a contract every sentence has to satisfy:
+
+       premise   something the manager answered, restated as fact.
+                 True at any line of sight, because most of the fifteen
+                 behaviours happen TO the manager: a thing nobody told
+                 you is a thing nobody told you from any distance.
+       pattern   what is usually true of teams in that position,
+                 carrying its own quantifier. The quantifier is
+                 load-bearing and is asserted, never apologised for.
+       pointer   an invitation to work out who. The manager supplies
+                 the name. The report never does.
+
+     The test: every sentence must survive "how do you know?" with the
+     answer "your own answers, plus what is generally true of teams in
+     that position". Anything whose only answer is "we believe it" is cut.
+
+     Hard rule for anyone editing this: the subject "your team" never
+     takes a mental-state verb. "Your team has stopped telling you
+     things" is unsupportable and must never appear. "News that routes
+     around you was routed by somebody" states the manager's own answer
+     and then a near-tautology with a person inside it.
+
+     This lives outside score() because it needs the contact answers,
+     which are not inputs to the instrument. score() is untouched, so
+     the fingerprint cannot move.
+     ========================================================= */
+
+  var PEOPLE_INTRO = 'Everything above is about your picture. This is about the people it is a picture of. What follows is inference, not measurement: your own answers, put next to what is usually true of teams in the position they describe. The 70% above came from measuring both sides. This is the side you can see.';
+
+  var PEOPLE_FRAME = {
+    cruise: 'Cruise reads clean from your chair, and on your answers it is the right call. Hold one thing beside it: teams leave Cruise one person at a time, and the first person to leave it stays at their desk. The inferences below mark where, on your own evidence, that usually starts.',
+    drift: 'Drift is the state where the numbers and the humans part company. Output is holding, so the numbers are not asking anyone any questions, while the behaviours that produce that output have stopped reaching you in the specific ways this assessment asked about. Todd Katz of MetLife put it plainly: “Retention alone can give employers a false sense of stability, even as wellbeing, engagement, and productivity quietly erode.” He was describing companies. It scales down to one team without losing anything.',
+    headwinds: 'The evidence says the people on this team are still doing what healthy teams do, under an external force you named yourself. The human inference in Headwinds is about credit. Effort spent under weather that nobody names usually stops being spent before the weather clears. Teams in these conditions watch one thing most closely: whether their manager names the weather or names them. Read the inferences below in that light: where a channel has thinned here, the weather thinned it first.',
+    stall: 'Stall is visible from every chair, including theirs. The people on this team have been living inside this decline for longer than the five minutes you have been measuring it, and they hold most of the map back out of it. Nobody hands that map to a manager unasked. The inferences below say where it usually sits.'
+  };
+
+  var PEOPLE_TENURE = 'You have led this team for less than three months. Most of what this report describes was set before you arrived, and the prices in it were set by somebody else’s reactions, not yours. That is the one advantage of being new: for a short window you can ask how things got this way and be answered as an outsider.';
+
+  var WEAK_CHANNEL_WORD = { 3: 'Three', 4: 'Four', 5: 'All five' };
+  var WEAK_CHANNEL = ' of your five channels have thinned at once. Channels thin together when they share a cause, and the shared cause is usually a price: somewhere along the way, the cost of bringing you things got set too high. Nobody sets that price deliberately. It gets set by what happened the last few times, and it is learned by watching.';
+
+  var POSITION_CLOSE = 'You are with this team PHRASE, so these behaviours had room to happen where you could see them. What follows rests on things that stopped, not things you missed.';
+  var POSITION_FAR = 'Distance does not weaken what follows. Most of what this asked about happens to you directly, and a thing nobody told you is a thing nobody told you from any distance. What distance sets is how few chances a week anyone gets.';
+
+  /* one per evidence item, fired when that item scored 1 or 0 */
+  var PEOPLE_UNITS = [
+    { p1: 'More than a month has passed since anyone told you they were blocked before it cost them.',
+      p0: 'You could not recall the last time anyone told you they were blocked before it cost them.',
+      inf: 'Teams do not stop hitting blockers. They stop reporting them, usually after reporting one changed nothing, and they absorb them instead. Absorption looks exactly like capacity, right up until the month it stops.' },
+    { p1: 'More than a month has passed since you saw anyone on this team ask a teammate for help.',
+      p0: 'You could not recall the last time you saw anyone on this team ask a teammate for help.',
+      inf: 'People do not run out of questions. They run out of reasons to ask where asking can be seen, and a team that asks only in private has already worked out what visible uncertainty costs here. They worked it out from evidence.' },
+    { p1: 'More than a month has passed since you looked at a piece of this team’s actual work, past the summary.',
+      p0: 'You could not recall the last time you looked at a piece of this team’s actual work, past the summary.',
+      inf: 'The people making it can tell. Work that is never examined closely gets shaped to survive its summary, and the craft that does not summarise well is usually the first thing a person stops spending.' },
+    { p1: 'More than a month has passed since anyone outside the team commented on its work unprompted.',
+      p0: 'You could not recall unprompted comment on this team’s work from anyone outside it.',
+      inf: 'Unprompted comment is how a team learns its work lands somewhere. In its absence the audience shrinks to whoever runs the next review, and people quietly resize their effort to the smallest audience that notices.' },
+    { p1: 'More than a month has passed since anyone brought you an idea you did not ask for.',
+      p0: 'You could not recall the last idea anyone brought you unasked.',
+      inf: 'People rarely stop having ideas. They stop submitting them, at the point where what happened to the last one stops covering the cost of raising the next one. Somebody on this team probably still has the idea they never brought you.' },
+    { p1: 'There is a person on this team you have not had an unhurried conversation with in over a month. You thought of them when you answered.',
+      p0: 'There is a person on this team whose last unhurried conversation with you is beyond recall. You thought of them when you answered.',
+      inf: 'They keep a closer count of that interval than you do. People read meaning into that count that nobody intended, and the meaning they usually settle on is a ranking.' },
+    { p1: 'More than a month has passed since you heard anyone on this team put the current priority in their own words.',
+      p0: 'You could not recall hearing anyone on this team put the current priority in their own words.',
+      inf: 'A team that cannot say the priority still makes priority calls all day. They make them by guessing what you would want, and guesses of that kind run safe, which is how a capable team ends up doing its safest possible work.' },
+    { p1: 'More than a month has passed since anyone pushed back on a piece of work as not worth doing.',
+      p0: 'You could not recall the last time anyone pushed back on a piece of work as not worth doing.',
+      inf: 'Every team carries work that somebody privately doubts. Where the doubt never surfaces, the doubt did not die. On a team where nothing gets challenged, somebody has usually already decided the challenge costs more than it returns, and they are still doing the work they doubt.' },
+    { p1: 'More than a month has passed since anyone disagreed with you openly, in front of others.',
+      p0: 'You could not recall the last time anyone disagreed with you openly, in front of others.',
+      inf: 'On a team where open disagreement has stopped, somebody has usually already decided it is not worth it. They did not announce that decision, and what replaced the disagreement looks exactly like alignment.' },
+    { p1: 'More than a month has passed since a problem reached you from the person involved rather than some other way.',
+      p0: 'You could not recall a problem reaching you from the person involved rather than some other way.',
+      inf: 'News that routes around you was routed by somebody. Somewhere between them and you sits a calculation about what bad news costs here, and on your own answers, the route around you is currently winning.' },
+    { p1: 'The person on this team you are least sure about, the one the question made you picture, has not had a real conversation with you in over a month.',
+      p0: 'The person on this team you are least sure about, the one the question made you picture, has had no real conversation with you inside anything you could recall.',
+      inf: 'Whatever they have been concluding in that time, they concluded it without you in the room. A month is a long time inside a decision you are not part of.' },
+    { p1: 'More than a month has passed since anything a team member said changed your mind.',
+      p0: 'You could not recall the last time anything a team member said changed your mind.',
+      inf: 'People keep a private ledger on whether speaking up here ever moves anything. When that ledger settles at no, nobody files a complaint. The input just stops arriving, and the room gets quieter in a way that reads, from your chair, as consensus.' },
+    { p1: 'More than a month has passed since you cleared something out of the team’s way that somebody had raised.',
+      p0: 'You could not recall the last thing you cleared that somebody had raised.',
+      inf: 'Either nothing is being raised or what gets raised is not getting cleared, and from the team’s side those two teach the same lesson. What happened to the last raised thing sets the price of raising the next one, and teams reprice that faster than they reprice anything else.' },
+    { p1: 'More than a month has passed since anyone walked you through how a piece of work was actually done.',
+      p0: 'You could not recall anyone walking you through how a piece of work was actually done.',
+      inf: 'The distance between how work looks in an update and how it was done is where the real effort sits. Effort that is never witnessed is usually the first spend a person cuts, and output coasts on the old effort for a while afterwards, which is why nothing looks different yet.' },
+    { p1: 'More than a month has passed since you explained why the current priority is the priority, rather than what it is.',
+      p0: 'You could not recall the last time you explained why the current priority is the priority, rather than what it is.',
+      inf: 'Downstream of that silence, people do not stop working. They supply their own why or work without one, and work without a why gets done at the minimum the instructions will bear.' }
+  ];
+
+  var LEFT_OPENER = {
+    one: 'One person has left this team in the last six months.',
+    'two-three': 'Two or three people have left this team in the last six months.',
+    'four-plus': 'Four or more people have left this team in the last six months.'
+  };
+  var LEFT_BODY = ' The people still here watched each departure, and each one taught a lesson about what leaving looks like from the inside. The fullest account anyone gives of what a team is like to work on is usually given on the way out, to somebody who is not the manager. That account exists. You have not heard it.';
+  var LEFT_FOUR_PLUS = ' At this rate of departure, the ones who stayed have done their own arithmetic on staying, and MetLife’s 2026 study of 2,541 employees found 56% of the people staying in their jobs are staying out of necessity rather than choice.';
+
+  var FULL_ROSTER = 'Nobody has left this team in six months, which reads as health from a distance. MetLife’s 2026 study of 2,541 employees found 56% of the people staying in their jobs are staying out of necessity rather than choice, and Korn Ferry has watched job hugging, people holding on to the job they already have, climb from 45% to 57% in six months. A full roster is a fact about the job market before it is a fact about this team. Presence is the one thing this kind of decline never takes.';
+
+  var ENERGY_LOWER_HOLDING = 'You said the energy in the room is lower than three months ago, while output holds. Treat your own reading as data, since energy is the one thing on this list that cannot reach you second-hand. ActivTrak’s 2026 study of 163,638 employees found disengagement risk has overtaken burnout risk, and the two fail differently: burnout announces itself, detachment does not. Lower energy under steady output is what a team spending reserves looks like from the outside.';
+  var ENERGY_LOWER_SLIPPED = 'You said the energy in the room is lower than three months ago. Treat your own reading as data, since energy is the one thing on this list that cannot reach you second-hand. ActivTrak’s 2026 study of 163,638 employees found disengagement risk has overtaken burnout risk, and the two fail differently: burnout announces itself, detachment does not. On your answers the slide has already reached the work, which means the energy moved first, some time ago.';
+  var ENERGY_UNSURE = 'You answered honestly that you cannot say whether the energy has changed in three months. Anyone on this team can answer that in a sentence, without preparing. The answer exists and it is specific. It currently sits with people who have not been asked.';
+
+  var JOINED_OPENER = {
+    one: 'One person has joined this team in the last six months.',
+    'two-three': 'Two or three people have joined this team in the last six months.',
+    'four-plus': 'Four or more people have joined this team in the last six months.'
+  };
+  var JOINED_BODY = ' New arrivals work out what is sayable on a team inside their first weeks, by watching what happens to the people who say things, long before anyone explains anything. Whatever this report has inferred about the channels here, the newest person has already absorbed it as simply how things are.';
+
+  var ALL_FRESH_HOLDING = 'On your own evidence, the discretionary things a team owes nobody are still being spent on you: the unasked idea and the open disagreement, both inside the last month. That is worth having in writing, since people remake that choice every week based on what it earned last week. Teams rarely leave Cruise with an announcement; the behaviours on this list are what goes first, one person at a time. You now hold a dated record of all fifteen, and the next time this assessment reads differently, the difference is your earliest warning.';
+  var ALL_FRESH_SLIPPED = 'Everything on this list is still reaching you, inside a month, while the output falls. Take that seriously as a compliment paid under pressure: people who still bring you disagreement and early bad news while things slide have not written the situation off. Channels usually close from the outside in, and yours are open. What that buys you is time, and it is not a large amount.';
+
+  /* which two items get a unit. Value first, so a "can't recall" anywhere
+     beats an "over a month" anywhere and the sharpest premises surface.
+     One unit per area, so a single area cannot supply both. */
+  function selectUnits(result, evidence) {
+    var areaRank = {};
+    result.ranked.forEach(function (a, i) { areaRank[a.key] = i; });
+
+    var areaOf = {};
+    result.areas.forEach(function (a) {
+      a.items.forEach(function (n, pos) { areaOf[n] = { key: a.key, pos: pos }; });
+    });
+
+    var candidates = [];
+    for (var i = 0; i < evidence.length; i++) {
+      if (evidence[i] <= 1) {
+        var owner = areaOf[i + 1] || { key: '', pos: 0 };
+        candidates.push({ n: i + 1, value: evidence[i], area: owner.key, pos: owner.pos });
+      }
+    }
+    candidates.sort(function (x, y) {
+      if (x.value !== y.value) return x.value - y.value;
+      var rx = areaRank[x.area], ry = areaRank[y.area];
+      if (rx !== ry) return rx - ry;
+      return x.pos - y.pos;
+    });
+
+    var taken = {};
+    var out = [];
+    for (i = 0; i < candidates.length && out.length < 2; i++) {
+      var c = candidates[i];
+      if (taken[c.area]) continue;
+      taken[c.area] = true;
+      var unit = PEOPLE_UNITS[c.n - 1];
+      out.push({ n: c.n, premise: c.value === 0 ? unit.p0 : unit.p1, inference: unit.inf });
+    }
+    return out;
+  }
+
+  /* at most one, in priority order. Departures first: it is the only
+     situational fact with people already out of the door. */
+  function situational(result, contact, holding) {
+    var left = contact.left6m;
+    var joined = contact.joined6m;
+
+    if (left === 'one' || left === 'two-three' || left === 'four-plus') {
+      return LEFT_OPENER[left] + LEFT_BODY + (left === 'four-plus' ? LEFT_FOUR_PLUS : '');
+    }
+    if (contact.energy === 'lower') {
+      return holding ? ENERGY_LOWER_HOLDING : ENERGY_LOWER_SLIPPED;
+    }
+    if (contact.energy === 'unsure') return ENERGY_UNSURE;
+    /* aimed at the manager whose numbers look fine, so it is gated to the
+       two states where a full roster invites complacency */
+    if (left === 'none' && (result.state.key === 'cruise' || result.state.key === 'drift')) {
+      return FULL_ROSTER;
+    }
+    if (JOINED_OPENER[joined]) return JOINED_OPENER[joined] + JOINED_BODY;
+    return null;
+  }
+
+  /* result: the object score() returned. contact: { left6m, joined6m,
+     tenure, energy }. Returns the blocks to render, in order. */
+  function peopleSection(result, contact, answers) {
+    contact = contact || {};
+    var evidence = (answers && answers.evidence) || [];
+    var holding = result.state.key === 'cruise' || result.state.key === 'drift';
+
+    var blocks = [PEOPLE_INTRO];
+
+    if (result.staleCount === 0) {
+      blocks.push(holding ? ALL_FRESH_HOLDING : ALL_FRESH_SLIPPED);
+    } else {
+      var frame = PEOPLE_FRAME[result.state.key];
+      if (result.weakCount >= 3) {
+        frame += ' ' + (WEAK_CHANNEL_WORD[result.weakCount] || 'Several') + WEAK_CHANNEL;
+      }
+      blocks.push(frame);
+    }
+
+    if (contact.tenure === 'under-3m') blocks.push(PEOPLE_TENURE);
+
+    var units = result.staleCount === 0 ? [] : selectUnits(result, evidence);
+    if (units.length) {
+      blocks.push(result.closeUp
+        ? POSITION_CLOSE.replace('PHRASE', EXPOSURE_PHRASE[result.exposure.value] || 'often')
+        : POSITION_FAR);
+    }
+
+    var sit = situational(result, contact, holding);
+
+    return { intro: blocks, units: units, situational: sit };
+  }
+
   /* ---------- validation ---------- */
 
   function validAnswers(a) {
@@ -1062,6 +1317,8 @@
     lineOfSightFor: lineOfSightFor,
     gapWidthFor: gapWidthFor,
     score: score,
+    peopleSection: peopleSection,
+    closingBlocks: closingBlocks,
     labelFor: labelFor,
     lower: lower,
     validAnswers: validAnswers

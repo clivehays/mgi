@@ -27,7 +27,7 @@
 <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
 
 <link rel="stylesheet" href="/assets/fonts.css?v=18f53730">
-<link rel="stylesheet" href="/assets/mgi.css?v=c8269061">
+<link rel="stylesheet" href="/assets/mgi.css?v=eab1c31b">
 </head>
 <body>
 
@@ -270,6 +270,7 @@
           </g>
 
           <!-- the reading: the dot carries the state, the halo the line of sight -->
+          <g id="path-arrows"></g>
           <circle id="marker-halo" cx="280" cy="215" r="0" fill="none"/>
           <circle id="marker-dot" cx="280" cy="215" r="0" fill="none"/>
 
@@ -289,6 +290,17 @@
     </section>
 
     <!-- 4.4 how much to trust this reading -->
+    <!-- the people. Inference from the manager's own answers, never
+         measurement of the team. See the contract in scoring.js. -->
+    <section aria-labelledby="people-heading">
+      <span class="mono eyebrow" id="people-heading">The people in this picture</span>
+      <p class="cohort-figure" id="cohort-figure">70%</p>
+      <p class="cohort-caption" id="cohort-caption">Average distance between the manager&rsquo;s picture and the team&rsquo;s own report, measured across both sides in the 11-company study.<br>The cohort&rsquo;s number, not yours. Yours has one side measured: this one.</p>
+      <div id="people-intro"></div>
+      <div id="people-units"></div>
+      <p class="people-situational" id="people-situational" hidden></p>
+    </section>
+
     <section aria-labelledby="gap-heading">
       <span class="mono eyebrow" id="gap-heading">Your instinct vs the evidence</span>
       <p class="gap-body" id="gap-body"></p>
@@ -310,7 +322,7 @@
           <p class="sight-copy" id="gap-width-copy"></p>
         </div>
       </div>
-      <p class="sight-framing" id="gap-framing"></p>
+      <p class="discovery-lag" id="discovery-lag"></p>
     </section>
 
     <section aria-labelledby="action-heading">
@@ -342,8 +354,8 @@
 
     <!-- 4.5 one action -->
     <section class="closing" aria-labelledby="closing-heading">
-      <span class="mono eyebrow" id="closing-heading">The conversation</span>
-      <p class="closing-body"><strong>Talk your result through.</strong> The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA’s co-founder, walks a small number of participants through their result each week: thirty minutes on your answers, and you leave with a written plan of three specific actions built from them. If you would like one of those conversations, reply to the report email, or write to <a href="mailto:clive@managergap.com?subject=My%20Manager%20Gap%20Index%20result">clive@managergap.com</a>. We will also reach out to some participants directly.</p>
+      <span class="mono eyebrow" id="closing-heading">The half you cannot see from here</span>
+      <div id="closing-body"></div>
       <p class="report-sent" id="report-sent"></p>
     </section>
 
@@ -359,7 +371,7 @@
   </div>
 </footer>
 
-<script src="/assets/scoring.js?v=9bf7a01e"></script>
-<script src="/assets/mgi.js?v=2fe61343"></script>
+<script src="/assets/scoring.js?v=8222899a"></script>
+<script src="/assets/mgi.js?v=734913db"></script>
 </body>
 </html>

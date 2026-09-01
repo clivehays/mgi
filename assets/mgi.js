@@ -143,7 +143,9 @@
       'los-value', 'los-copy', 'gap-width-value', 'gap-width-copy', 'gap-framing',
       'compass-desc', 'marker-halo', 'marker-dot',
       'signal-headline', 'signal-score', 'signal-copy', 'areas-list', 'areas-summary',
-      'action-area', 'action-body', 'report-sent'
+      'action-area', 'action-body', 'report-sent',
+      'people-intro', 'people-units', 'people-situational', 'closing-body',
+      'discovery-lag'
     ].forEach(function (id) {
       el[id] = document.getElementById(id);
     });
@@ -511,15 +513,18 @@
     setText('los-copy', r.lineOfSight.copy);
     setText('gap-width-value', r.gapWidth.label);
     setText('gap-width-copy', r.gapWidth.copy);
-    setText('gap-framing', r.gapFraming);
+    setText('discovery-lag', r.discoveryLag);
 
     renderCompass(r);
+    renderArrows(r);
 
     /* the meaning first. The raw score is kept, small and last, because a
        number out of 45 tells a manager nothing they did not just type in. */
     setText('signal-headline', r.signalHeadline);
     setText('signal-score', 'Signal score ' + r.signal + ' / ' + (MGI.EVIDENCE.length * 3));
     setText('signal-copy', r.signalMeaning);
+    renderPeople(r);
+    renderClosing(r);
     renderRadar(r);
     renderAreas(r);
 
@@ -548,17 +553,138 @@
 
     var caption = document.querySelector('.compass-caption');
     if (caption) {
-      caption.textContent = 'The dot marks ' + r.state.name +
-        '. The halo is your line of sight: ' + r.lineOfSight.label.toLowerCase() + '.';
+      caption.textContent = COMPASS_CAPTION[r.state.key] +
+        ' The halo is your line of sight: ' + r.lineOfSight.label.toLowerCase() + '.';
     }
 
     setText('compass-desc',
       'The evidence points to ' + r.state.name + '. Line of sight is ' + r.lineOfSight.label.toLowerCase() +
       ', gap width ' + r.gapWidth.label.toLowerCase() +
       '. The dot sits in the ' + r.state.name + ' quadrant, ' + pos.where +
-      ' of the compass. Cruise is at the top, Headwinds on the right, Stall at the bottom, Drift on the left.');
+      ' of the compass. Cruise is at the top, Headwinds on the right, Stall at the bottom, Drift on the left.' +
+      COMPASS_ARROW_DESC[r.state.key]);
   }
 
+
+
+  /* ---------- direction of travel ----------
+     A dashed arc on the compass already there, no second figure. It
+     carries the whole thesis before a word is read: this state is not
+     a place, it is a position on a road. Stall gets no arrow, and its
+     caption says why, which is itself the finding. */
+
+  var PATH_ARROWS = {
+    cruise: [{ d: 'M 236.7 81.9 A 140 140 0 0 0 153.1 155.8', head: [153.1, 155.8, 115] }],
+    drift: [{ d: 'M 146.9 258.3 A 140 140 0 0 0 236.7 348.1', head: [236.7, 348.1, 18] }],
+    headwinds: [
+      { d: 'M 413.1 258.3 A 140 140 0 0 1 323.3 348.1', head: [323.3, 348.1, 162] },
+      { d: 'M 413.1 171.7 A 140 140 0 0 0 323.3 81.9', head: [323.3, 81.9, -162] }
+    ],
+    stall: []
+  };
+
+  var COMPASS_CAPTION = {
+    cruise: 'The dot marks Cruise. The dashed line is the way teams usually leave it, quietly toward Drift.',
+    drift: 'The dot marks Drift. The dashed line is where Drift usually goes when nothing interrupts it.',
+    headwinds: 'The dot marks Headwinds. The two dashed lines are the two ways it usually resolves. The weather does not choose between them, the response does.',
+    stall: 'The dot marks Stall. No line leads out, because the usual exits from Stall are not on the compass: the door, or the slow climb back through the behaviours.'
+  };
+
+  var COMPASS_ARROW_DESC = {
+    cruise: ' A dashed arrow curves from the Cruise quadrant toward Drift, the direction this state usually moves when it moves.',
+    drift: ' A dashed arrow curves from the Drift quadrant toward Stall, the direction this state usually moves when nothing interrupts it.',
+    headwinds: ' Two dashed arrows leave the Headwinds quadrant, one curving toward Cruise and one toward Stall, the two ways this state usually resolves.',
+    stall: ' No arrow leaves the Stall quadrant. The usual exits from Stall are not states on the compass.'
+  };
+
+  function renderArrows(r) {
+    var g = document.getElementById('path-arrows');
+    if (!g) return;
+    g.innerHTML = '';
+    (PATH_ARROWS[r.state.key] || []).forEach(function (a) {
+      g.appendChild(svgEl('path', {
+        d: a.d, fill: 'none', stroke: '#17161A', 'stroke-opacity': '0.45',
+        'stroke-width': 1.5, 'stroke-dasharray': '5 7', 'stroke-linecap': 'round'
+      }));
+      var x = a.head[0], y = a.head[1], rot = a.head[2];
+      g.appendChild(svgEl('polygon', {
+        points: '0,-4.5 9,0 0,4.5',
+        fill: '#17161A', 'fill-opacity': '0.45',
+        transform: 'translate(' + x + ' ' + y + ') rotate(' + rot + ')'
+      }));
+    });
+  }
+
+  /* ---------- the people ---------- */
+
+  function renderPeople(r) {
+    var intro = el['people-intro'];
+    var units = el['people-units'];
+    if (!intro || !units) return;
+
+    var people = MGI.peopleSection(r, {
+      left6m: (state.contact && state.contact.left6m) || 'none',
+      joined6m: (state.contact && state.contact.joined6m) || 'none',
+      tenure: (state.contact && state.contact.tenure) || '',
+      energy: state.values[18]
+    }, toAnswers());
+
+    intro.innerHTML = '';
+    people.intro.forEach(function (t) {
+      var p = document.createElement('p');
+      p.className = 'people-intro';
+      p.textContent = t;
+      intro.appendChild(p);
+    });
+
+    units.innerHTML = '';
+    people.units.forEach(function (u) {
+      var wrap = document.createElement('div');
+      wrap.className = 'people-unit';
+      var pre = document.createElement('p');
+      pre.className = 'people-premise';
+      pre.textContent = u.premise;
+      var inf = document.createElement('p');
+      inf.className = 'people-inference';
+      inf.textContent = u.inference;
+      wrap.appendChild(pre);
+      wrap.appendChild(inf);
+      units.appendChild(wrap);
+    });
+
+    var sit = el['people-situational'];
+    if (sit) {
+      sit.textContent = people.situational || '';
+      sit.hidden = !people.situational;
+    }
+  }
+
+  function renderClosing(r) {
+    var box = el['closing-body'];
+    if (!box) return;
+    box.innerHTML = '';
+    MGI.closingBlocks(r).forEach(function (t, i) {
+      var p = document.createElement('p');
+      p.className = i === 3 ? 'closing-fork' : 'closing-body';
+      p.textContent = t;
+      box.appendChild(p);
+
+      /* a live address after the offer. The report email can land in a
+         junk folder, so the page must not be the only route back. */
+      if (i === 2) {
+        var contact = document.createElement('p');
+        contact.className = 'closing-body';
+        contact.appendChild(document.createTextNode('Reply to the report email, or write to '));
+        var a = document.createElement('a');
+        a.href = 'mailto:clive@managergap.com?subject=' +
+          encodeURIComponent('My Manager Gap Index result: ' + r.state.name);
+        a.textContent = 'clive@managergap.com';
+        contact.appendChild(a);
+        contact.appendChild(document.createTextNode('.'));
+        box.appendChild(contact);
+      }
+    });
+  }
 
   /* ---------- the radar ----------
      Five areas, one shape. The five area means sit on the same 0-3 recency
@@ -722,9 +848,14 @@
       head.appendChild(name);
       head.appendChild(answer);
 
-      var desc = document.createElement('p');
-      desc.className = 'area-desc';
-      desc.textContent = a.desc;
+      /* the description earns its words only where the reader is being
+         asked to do something about that area */
+      var desc = null;
+      if (a.callout) {
+        desc = document.createElement('p');
+        desc.className = 'area-desc';
+        desc.textContent = a.desc;
+      }
 
       /* the honest summary of an area is its recency, stated plainly.
          No label vocabulary sits on top of it. The answer line above
@@ -734,7 +865,7 @@
       fact.textContent = a.recencyFact;
 
       wrap.appendChild(head);
-      wrap.appendChild(desc);
+      if (desc) wrap.appendChild(desc);
       wrap.appendChild(fact);
 
       if (a.callout) {
