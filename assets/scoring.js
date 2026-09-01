@@ -379,6 +379,55 @@
 
   /* ---------- signal score: freshness of evidence, not confidence ---------- */
 
+  /* ---------- what the picture is built on ----------
+     A score out of 45 tells a manager nothing they did not just type in.
+     The number that means something is how many of the fifteen things have
+     NOT reached them inside a month, because each of those is a thing they
+     are running on memory rather than observation.
+
+     Where line of sight is Full or Partial that count resolves further:
+     a manager who is there most of the week has been positioned to see
+     these things, so an item that has not reached them has stopped
+     happening rather than happened out of view. That is the sharpest
+     reading this instrument produces and it belongs here. */
+
+  var NUMBER_WORD = ['none', 'One', 'Two', 'Three', 'Four', 'Five', 'Six',
+    'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen',
+    'Fourteen', 'Fifteen'];
+
+  function signalHeadline(stale, total) {
+    /* words throughout: "Seven of the 15" mixes registers and reads badly */
+    var whole = (NUMBER_WORD[total] || String(total)).toLowerCase();
+    if (stale === 0) {
+      return 'All ' + whole + ' of the things this asked about have reached you inside the last month.';
+    }
+    if (stale === total) {
+      return 'None of the ' + whole + ' things this asked about has reached you inside a month.';
+    }
+    return NUMBER_WORD[stale] + ' of the ' + whole + ' things this asked about ' +
+      (stale === 1 ? 'has' : 'have') + ' not reached you inside a month.';
+  }
+
+  var STALE_MEANING = [
+    { max: 0, copy: 'Nothing you believe about this team is running on memory. When something here changes, you are positioned to watch it happen rather than hear about it afterwards.' },
+    { max: 3, copy: 'Almost all of what you believe about this team you have seen for yourself this month. The few things you have not are where a change would reach you late, if it reached you at all.' },
+    { max: 8, copy: 'About half of what you believe about this team is memory rather than observation. Those parts could have moved without anything telling you, and the first sign would be something going wrong rather than something looking different.' },
+    { max: 15, copy: 'Most of what you believe about this team is memory. A team can travel a long way behind a picture this old, and you would not expect to notice until it reached the work.' }
+  ];
+
+  /* the either/or, and the case where position resolves it */
+  var STALE_UNRESOLVED = 'Each of those has either stopped happening or is happening somewhere you cannot see it. From where you sit the two look identical, and that is the finding rather than a gap in it.';
+  var STALE_RESOLVED = 'You are with this team often enough to have seen these things happen. They have not reached you anyway, which settles what it is: not things you are missing from a distance, things that have stopped.';
+
+  function staleMeaning(stale, closeUp) {
+    var band = STALE_MEANING[STALE_MEANING.length - 1];
+    for (var i = 0; i < STALE_MEANING.length; i++) {
+      if (stale <= STALE_MEANING[i].max) { band = STALE_MEANING[i]; break; }
+    }
+    if (stale === 0) return band.copy;
+    return band.copy + ' ' + (closeUp ? STALE_RESOLVED : STALE_UNRESOLVED);
+  }
+
   var SIGNAL_FRAMING = 'Fifteen of the twenty questions measured how recently real, first-hand signal from this team has reached you. This score is what your current picture of the team is built on.';
 
   /* Fifteen items at 0-3 puts the maximum at 45. The band edges are the v5
@@ -585,7 +634,12 @@
     var i;
 
     var s = 0;
-    for (i = 0; i < EVIDENCE.length; i++) s += evidence[i];
+    var stale = 0;
+    for (i = 0; i < EVIDENCE.length; i++) {
+      s += evidence[i];
+      /* over a month ago, or nothing recalled: memory rather than observation */
+      if (evidence[i] <= 1) stale++;
+    }
 
     var b = mean(evidence, BEHAVIOUR_ITEMS);
 
@@ -741,6 +795,12 @@
       exposure: { value: answers.exposure, label: exposureOpt.label },
       gap: gap,
       signal: s,
+      /* the interpretive reading: how much of the picture is memory, and
+         what that means. The raw score stays for the cohort, not the page. */
+      staleCount: stale,
+      liveCount: EVIDENCE.length - stale,
+      signalHeadline: signalHeadline(stale, EVIDENCE.length),
+      signalMeaning: staleMeaning(stale, closeUp),
       signalFraming: SIGNAL_FRAMING,
       signalCopy: (closeUp && s <= SIGNAL_MID) ? closeUpSignalCopy(s, exposurePhrase) : signalBandFor(s).copy,
       closeUp: closeUp,

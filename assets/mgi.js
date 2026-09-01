@@ -142,7 +142,7 @@
       'state-call', 'state-desc', 'gap-body',
       'los-value', 'los-copy', 'gap-width-value', 'gap-width-copy', 'gap-framing',
       'compass-desc', 'marker-halo', 'marker-dot',
-      'signal-score', 'signal-framing', 'signal-copy', 'areas-list', 'areas-summary',
+      'signal-headline', 'signal-score', 'signal-copy', 'areas-list', 'areas-summary',
       'action-area', 'action-body', 'report-sent'
     ].forEach(function (id) {
       el[id] = document.getElementById(id);
@@ -504,9 +504,11 @@
 
     renderCompass(r);
 
-    el['signal-score'].textContent = r.signal + ' / ' + (MGI.EVIDENCE.length * 3);
-    el['signal-framing'].textContent = MGI.SIGNAL_FRAMING;
-    el['signal-copy'].textContent = r.signalCopy;
+    /* the meaning first. The raw score is kept, small and last, because a
+       number out of 45 tells a manager nothing they did not just type in. */
+    el['signal-headline'].textContent = r.signalHeadline;
+    el['signal-score'].textContent = 'Signal score ' + r.signal + ' / ' + (MGI.EVIDENCE.length * 3);
+    el['signal-copy'].textContent = r.signalMeaning;
     renderAreas(r);
 
     /* name the area the action addresses, so a reader who skims still

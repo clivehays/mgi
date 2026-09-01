@@ -438,12 +438,18 @@ function managerReport(contact, result) {
 
   h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:0 0 26px;">');
 
-  // 5. the signal score, which measures evidence freshness and nothing else
-  h.push(eyebrow('Your signal score'));
-  h.push('<p style="font-family:' + mono + ';font-size:24px;letter-spacing:0.06em;font-weight:bold;margin:0 0 14px;">' +
-    result.signal + ' / ' + SIGNAL_MAX + '</p>');
-  h.push('<p style="font-size:16px;line-height:1.6;margin:0 0 12px;">' + esc(MGI.SIGNAL_FRAMING) + '</p>');
-  h.push('<p style="font-size:16px;line-height:1.6;margin:0 0 22px;">' + esc(result.signalCopy) + '</p>');
+  // 5. what to try, before the evidence behind it
+  h.push(eyebrow('To try this week'));
+  h.push('<p style="font-size:20px;line-height:1.35;margin:0 0 10px;">' + esc(result.ranked[0].name) + '</p>');
+  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 28px;">' + esc(result.action) + '</p>');
+
+  h.push('<hr style="border:0;border-top:1px solid ' + ink + ';margin:0 0 26px;">');
+
+  // 6. what the picture is built on. The raw score sits last: a number
+  //    out of 45 tells a manager nothing they did not just type in.
+  h.push(eyebrow('What your picture is built on'));
+  h.push('<p style="font-size:20px;line-height:1.4;margin:0 0 14px;">' + esc(result.signalHeadline) + '</p>');
+  h.push('<p style="font-size:16px;line-height:1.6;margin:0 0 20px;">' + esc(result.signalMeaning) + '</p>');
 
   result.areas.forEach(function (a) {
     h.push('<div style="border-top:1px solid ' + rule + ';padding:15px 0;">');
@@ -463,13 +469,10 @@ function managerReport(contact, result) {
       ';padding:15px 17px;margin:20px 0 0;">' + esc(result.summary) + '</p>');
   }
 
+  h.push('<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:' + mute +
+    ';margin:18px 0 0;">Signal score ' + result.signal + ' / ' + SIGNAL_MAX + '</p>');
+
   h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:26px 0;">');
-
-  // 5. one action
-  h.push(eyebrow('This week'));
-  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 28px;">' + esc(result.action) + '</p>');
-
-  h.push('<hr style="border:0;border-top:1px solid ' + ink + ';margin:0 0 26px;">');
 
   // 6. closing
   h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 26px;"><strong>Talk your result through.</strong> The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA\u2019s co-founder, walks a small number of participants through their result each week: thirty minutes on your answers, and you leave with a written plan of three specific actions built from them. If you would like one of those conversations, reply to this email and say so. We will also reach out to some participants directly.</p>');
@@ -535,13 +538,16 @@ function managerReportText(result) {
   L.push('');
   L.push(result.gapFraming);
   L.push('');
-  L.push('YOUR SIGNAL SCORE');
-  L.push(result.signal + ' / ' + SIGNAL_MAX);
-  L.push(MGI.SIGNAL_FRAMING);
-  L.push(result.signalCopy);
+  L.push('TO TRY THIS WEEK');
+  L.push(result.ranked[0].name);
+  L.push(result.action);
+  L.push('');
+  L.push('WHAT YOUR PICTURE IS BUILT ON');
+  L.push(result.signalHeadline);
+  L.push(result.signalMeaning);
   L.push('');
   result.areas.forEach(function (a) {
-    L.push(a.name);
+    L.push(a.name + '   ' + a.freshest);
     L.push('  ' + a.desc);
     L.push('  ' + a.recencyFact);
     if (a.callout) L.push('  ' + a.callout);
@@ -551,8 +557,7 @@ function managerReportText(result) {
     L.push(result.summary);
     L.push('');
   }
-  L.push('THIS WEEK');
-  L.push(result.action);
+  L.push('Signal score ' + result.signal + ' / ' + SIGNAL_MAX);
   L.push('');
   L.push('TALK YOUR RESULT THROUGH');
   L.push('The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA\u2019s co-founder, walks a small number of participants through their result each week: thirty minutes on your answers, and you leave with a written plan of three specific actions built from them. If you would like one of those conversations, reply to this email and say so. We will also reach out to some participants directly.');

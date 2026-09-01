@@ -587,22 +587,23 @@ fieldset.scale{
 
 /* signal score */
 
-.signal-score{
-  font-family: var(--mono);
-  font-size: 26px;
-  letter-spacing: 0.06em;
-  font-weight: 600;
-  color: var(--ink);
-  margin: 0 0 18px;
+.signal-headline{
+  font-family: var(--serif);
+  font-size: clamp(19px, 4vw, 23px);
+  line-height: 1.38;
+  letter-spacing: -0.012em;
+  margin: 0 0 14px;
+  max-width: 30em;
 }
 
-.signal-framing{
-  font-family: var(--serif);
-  font-size: clamp(16px, 3.4vw, 18px);
-  line-height: 1.6;
-  color: var(--ink-2);
-  margin: 0 0 14px;
-  max-width: 36em;
+/* the raw score, kept for continuity but no longer the point */
+.signal-score{
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin: 18px 0 0;
 }
 
 .signal-copy{
