@@ -449,24 +449,36 @@
      signal-score copy, which counts every item. So the freshest is named,
      and the rest of the area is named with it.
 
-     With three items the same principle holds, stated in the shape the
-     numbers take: all three the same, or the freshest plus the others. */
+     With three items the same principle holds, but the sentence has to
+     follow the shape the numbers actually take. Naming them in rank order
+     regardless produced "within the last week. Then within the last week,
+     then nothing you could recall", which repeats itself and reads badly.
+     So each of the four arrangements gets its own wording. */
   function recencyFact(values) {
     var sorted = values.slice().sort(function (a, b) { return b - a; });
-    var best = sorted[0];
-    var rest = sorted.slice(1);
+    var a = sorted[0], b = sorted[1], c = sorted[2];
 
-    var allSame = rest.every(function (v) { return v === best; });
-    if (allSame) return 'Most recent signal: ' + RECENCY_PHRASE[best];
-
-    var restSame = rest.every(function (v) { return v === rest[0]; });
-    if (restSame) {
-      return 'Most recent signal: ' + RECENCY_PHRASE[best] +
-             '. The other two: ' + RECENCY_PHRASE[rest[0]];
+    /* all three alike */
+    if (a === b && b === c) {
+      return 'Most recent signal: ' + RECENCY_PHRASE[a] + '.';
     }
-    return 'Most recent signal: ' + RECENCY_PHRASE[best] +
-           '. Then ' + RECENCY_PHRASE[rest[0]] +
-           ', then ' + RECENCY_PHRASE[rest[1]] + '.';
+
+    /* the two freshest alike, the third behind them */
+    if (a === b) {
+      return 'Two of the three: ' + RECENCY_PHRASE[a] +
+             '. The third: ' + RECENCY_PHRASE[c] + '.';
+    }
+
+    /* one out in front, the other two alike */
+    if (b === c) {
+      return 'Most recent signal: ' + RECENCY_PHRASE[a] +
+             '. The other two: ' + RECENCY_PHRASE[b] + '.';
+    }
+
+    /* three different answers */
+    return 'Most recent signal: ' + RECENCY_PHRASE[a] +
+           '. Then ' + RECENCY_PHRASE[b] +
+           ', then ' + RECENCY_PHRASE[c] + '.';
   }
 
   /* "All five of your five areas" reads redundantly, so the
