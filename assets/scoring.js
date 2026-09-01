@@ -172,6 +172,7 @@
     {
       key: 'equipped',
       name: 'How equipped the team is',
+      short: 'Equipped',
       items: [1, 2, 13],
       tie: 2,
       desc: 'Whether blockers reach you before they bite, whether the team helps each other without routing through you, and whether anything actually gets cleared once it is raised.'
@@ -179,6 +180,7 @@
     {
       key: 'work',
       name: 'The work itself',
+      short: 'The work',
       items: [3, 4, 14],
       tie: 3,
       desc: 'Your direct contact with the output, unprompted comment on it from outside the team, and the team walking you through how the work was really done.'
@@ -186,6 +188,7 @@
     {
       key: 'invested',
       name: 'How invested people are',
+      short: 'Invested',
       items: [5, 6, 11],
       tie: 1,
       desc: 'Contribution nobody asked for, unhurried time with every person on the team, and real contact with the person you are least sure about.'
@@ -193,6 +196,7 @@
     {
       key: 'why',
       name: 'Whether everyone knows why',
+      short: 'The why',
       items: [7, 8, 15],
       tie: 4,
       desc: 'Whether the priority is understood in the team’s own words, whether work gets challenged as worth doing, and whether you have said why it is the priority rather than only what it is.'
@@ -200,6 +204,7 @@
     {
       key: 'truth',
       name: 'Whether truth travels upward',
+      short: 'Truth',
       items: [9, 10, 12],
       tie: 0,
       desc: 'Open disagreement in the room, problems reaching you from the person involved rather than second hand, and whether what you hear ever changes your mind.'
@@ -671,6 +676,7 @@
       return {
         key: a.key,
         name: a.name,
+        short: a.short,
         items: a.items,
         desc: a.desc,
         tie: a.tie,

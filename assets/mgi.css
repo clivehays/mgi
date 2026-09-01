@@ -857,3 +857,40 @@ fieldset.scale{
   margin: 0 0 20px;
   max-width: 42em;
 }
+
+/* ---------- the radar ----------
+   Unfilled pentagon in ink on paper, deliberately unlike the compass
+   above it: that one is a filled coloured circle carrying the state,
+   this is evidence. A reader should never have to relate the two. */
+
+.radar-figure{
+  margin: 26px 0 26px;
+  padding: 0;
+}
+
+.radar-svg{
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.radar-label{
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  fill: var(--ink-mute);
+  font-weight: 600;
+}
+
+.radar-caption{
+  font-family: var(--ui);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-mute);
+  margin: 10px 0 0;
+  max-width: 40em;
+}

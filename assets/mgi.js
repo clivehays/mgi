@@ -520,6 +520,7 @@
     setText('signal-headline', r.signalHeadline);
     setText('signal-score', 'Signal score ' + r.signal + ' / ' + (MGI.EVIDENCE.length * 3));
     setText('signal-copy', r.signalMeaning);
+    renderRadar(r);
     renderAreas(r);
 
     /* name the area the action addresses, so a reader who skims still
@@ -556,6 +557,143 @@
       ', gap width ' + r.gapWidth.label.toLowerCase() +
       '. The dot sits in the ' + r.state.name + ' quadrant, ' + pos.where +
       ' of the compass. Cruise is at the top, Headwinds on the right, Stall at the bottom, Drift on the left.');
+  }
+
+
+  /* ---------- the radar ----------
+     Five areas, one shape. The five area means sit on the same 0-3 recency
+     scale, which is the case a radar actually suits: the axes are
+     commensurable, so the polygon means something rather than merely
+     looking like it does.
+
+     Deliberately not a second compass. The compass above is a filled,
+     coloured circle carrying the state; this is an unfilled pentagon in
+     ink on paper, sitting well below it in the evidence layer. A reader
+     should never have to work out how the two relate.
+
+     Read it as: the further a corner is pulled in, the longer since
+     anything in that area reached you. A corner at the centre means
+     nothing in it could be recalled at all. */
+
+  var RADAR = {
+    cx: 210, cy: 176, r: 108,
+    rings: [1, 2, 3],
+    labelPad: 34
+  };
+
+  function radarPoint(i, value, n) {
+    /* first axis at the top, then clockwise */
+    var angle = (-Math.PI / 2) + (i * 2 * Math.PI / n);
+    var rad = RADAR.r * (value / 3);
+    return {
+      x: RADAR.cx + rad * Math.cos(angle),
+      y: RADAR.cy + rad * Math.sin(angle),
+      angle: angle
+    };
+  }
+
+  function svgEl(name, attrs) {
+    var node = document.createElementNS('http://www.w3.org/2000/svg', name);
+    Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
+    return node;
+  }
+
+  function renderRadar(r) {
+    var svg = document.getElementById('radar');
+    if (!svg) return;
+
+    /* keep the title and desc, drop any previous drawing */
+    var keep = {};
+    ['radar-title', 'radar-desc'].forEach(function (id) {
+      var n = document.getElementById(id);
+      if (n) keep[id] = n;
+    });
+    svg.innerHTML = '';
+    Object.keys(keep).forEach(function (id) { svg.appendChild(keep[id]); });
+
+    var areas = r.areas;
+    var n = areas.length;
+
+    /* the rings, faintest first, so the outer edge reads as the ceiling */
+    RADAR.rings.forEach(function (ring) {
+      var pts = [];
+      for (var i = 0; i < n; i++) {
+        var p = radarPoint(i, ring, n);
+        pts.push(p.x.toFixed(1) + ',' + p.y.toFixed(1));
+      }
+      svg.appendChild(svgEl('polygon', {
+        points: pts.join(' '),
+        fill: 'none',
+        stroke: ring === 3 ? '#C9C2B4' : '#D9D3C5',
+        'stroke-width': ring === 3 ? 1 : 1,
+        'stroke-dasharray': ring === 3 ? '' : '2 4'
+      }));
+    });
+
+    /* spokes */
+    for (var i = 0; i < n; i++) {
+      var edge = radarPoint(i, 3, n);
+      svg.appendChild(svgEl('line', {
+        x1: RADAR.cx, y1: RADAR.cy, x2: edge.x.toFixed(1), y2: edge.y.toFixed(1),
+        stroke: '#D9D3C5', 'stroke-width': 1
+      }));
+    }
+
+    /* the shape itself */
+    var shape = [];
+    for (i = 0; i < n; i++) {
+      var pt = radarPoint(i, areas[i].mean, n);
+      shape.push(pt.x.toFixed(1) + ',' + pt.y.toFixed(1));
+    }
+    svg.appendChild(svgEl('polygon', {
+      points: shape.join(' '),
+      fill: '#1A3565',
+      'fill-opacity': '0.10',
+      stroke: '#1A3565',
+      'stroke-width': 2,
+      'stroke-linejoin': 'round'
+    }));
+
+    /* a dot per corner, tinted the way the area answers are tinted, so the
+       chart and the list below use one colour language */
+    var TINT = { 3: '#17161A', 2: '#3D3A34', 1: '#6F6A60', 0: '#918B7E' };
+    for (i = 0; i < n; i++) {
+      var d = radarPoint(i, areas[i].mean, n);
+      svg.appendChild(svgEl('circle', {
+        cx: d.x.toFixed(1), cy: d.y.toFixed(1), r: 4,
+        fill: TINT[areas[i].best] || '#6F6A60'
+      }));
+    }
+
+    /* axis labels, nudged out past the outer ring */
+    for (i = 0; i < n; i++) {
+      var lp = radarPoint(i, 3, n);
+      var out = {
+        x: RADAR.cx + (RADAR.r + RADAR.labelPad) * Math.cos(lp.angle),
+        y: RADAR.cy + (RADAR.r + RADAR.labelPad) * Math.sin(lp.angle)
+      };
+      var anchor = 'middle';
+      if (out.x > RADAR.cx + 8) anchor = 'start';
+      if (out.x < RADAR.cx - 8) anchor = 'end';
+      var t = svgEl('text', {
+        x: out.x.toFixed(1), y: (out.y + 4).toFixed(1),
+        'text-anchor': anchor, class: 'radar-label'
+      });
+      t.textContent = areas[i].short;
+      svg.appendChild(t);
+    }
+
+    /* the text alternative carries the same reading, not a description of
+       a picture somebody using a screen reader cannot see */
+    var desc = document.getElementById('radar-desc');
+    if (desc) {
+      desc.textContent = r.ranked.map(function (a) {
+        return a.name + ', ' + a.freshest.toLowerCase();
+      }).join('. ') + '.';
+    }
+
+    setText('radar-caption', 'Each corner is one area, pulled in the longer it has been since anything in it reached you. ' +
+      r.ranked[0].short + ' is furthest in.');
   }
 
   function renderAreas(r) {
