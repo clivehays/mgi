@@ -1,6 +1,16 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "functions": {
+    "api/submit.js": {
+      "maxDuration": 300,
+      "memory": 1024
+    },
+    "api/reading.js": {
+      "maxDuration": 300,
+      "memory": 1024
+    }
+  },
   "headers": [
     {
       "source": "/r/(.*)",

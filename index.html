@@ -229,136 +229,13 @@
 </section>
 
 <!-- ============ 4. REPORT ============ -->
-<section class="view report" id="view-report" aria-labelledby="state-call">
+<section class="view sent-view" id="view-sent" aria-labelledby="sent-title">
 
   <div class="wrap">
-
-    <!-- 4.1 the state call -->
-    <section aria-labelledby="state-call">
-      <span class="mono eyebrow">Your result</span>
-      <p class="state-call" id="state-call"></p>
-      <p class="state-desc" id="state-desc"></p>
-    </section>
-
-    <!-- 4.2 the gap -->
-    <section aria-labelledby="compass-heading">
-      <span class="mono eyebrow" id="compass-heading">Where that sits</span>
-
-      <figure class="compass-figure">
-        <svg class="compass-svg" viewBox="0 0 560 460" role="img" aria-labelledby="compass-title" aria-describedby="compass-desc">
-          <title id="compass-title">The four-state compass</title>
-          <desc id="compass-desc"></desc>
-
-          <!-- quadrant fills -->
-          <path d="M 280 215 L 166.86 101.86 A 160 160 0 0 1 393.14 101.86 Z" fill="#1B7A4A" fill-opacity="0.07"/>
-          <path d="M 280 215 L 393.14 101.86 A 160 160 0 0 1 393.14 328.14 Z" fill="#6B5BD2" fill-opacity="0.07"/>
-          <path d="M 280 215 L 393.14 328.14 A 160 160 0 0 1 166.86 328.14 Z" fill="#B03A2E" fill-opacity="0.07"/>
-          <path d="M 280 215 L 166.86 328.14 A 160 160 0 0 1 166.86 101.86 Z" fill="#C2842F" fill-opacity="0.07"/>
-
-          <!-- concentric rings -->
-          <g fill="none" stroke="#C9C2B4" stroke-width="1">
-            <circle cx="280" cy="215" r="40"/>
-            <circle cx="280" cy="215" r="80"/>
-            <circle cx="280" cy="215" r="120"/>
-          </g>
-          <circle cx="280" cy="215" r="160" fill="none" stroke="#17161A" stroke-width="1"/>
-
-          <!-- quadrant dividers -->
-          <g stroke="#C9C2B4" stroke-width="1">
-            <line x1="166.86" y1="101.86" x2="393.14" y2="328.14"/>
-            <line x1="393.14" y1="101.86" x2="166.86" y2="328.14"/>
-          </g>
-
-          <!-- the reading: the dot carries the state, the halo the line of sight -->
-          <g id="path-arrows"></g>
-          <circle id="marker-halo" cx="280" cy="215" r="0" fill="none"/>
-          <circle id="marker-dot" cx="280" cy="215" r="0" fill="none"/>
-
-          <!-- quadrant names, outside the ring so the marker owns the inside -->
-          <text x="280" y="38" text-anchor="middle" font-family="JetBrains Mono, monospace"
-                font-size="11" font-weight="600" letter-spacing="1.8" fill="#1B7A4A">CRUISE</text>
-          <text x="486" y="219" text-anchor="middle" font-family="JetBrains Mono, monospace"
-                font-size="11" font-weight="600" letter-spacing="1.8" fill="#6B5BD2">HEADWINDS</text>
-          <text x="280" y="400" text-anchor="middle" font-family="JetBrains Mono, monospace"
-                font-size="11" font-weight="600" letter-spacing="1.8" fill="#B03A2E">STALL</text>
-          <text x="74" y="219" text-anchor="middle" font-family="JetBrains Mono, monospace"
-                font-size="11" font-weight="600" letter-spacing="1.8" fill="#C2842F">DRIFT</text>
-        </svg>
-
-        <figcaption class="compass-caption">Dot shows the most likely state. The halo is your line of sight: how much of the team’s week you are positioned to see.</figcaption>
-      </figure>
-    </section>
-
-    <!-- 4.4 how much to trust this reading -->
-    <!-- the people. Inference from the manager's own answers, never
-         measurement of the team. See the contract in scoring.js. -->
-    <section aria-labelledby="people-heading">
-      <span class="mono eyebrow" id="people-heading">The people in this picture</span>
-      <p class="cohort-figure" id="cohort-figure">70%</p>
-      <p class="cohort-caption" id="cohort-caption">Average distance between the manager&rsquo;s picture and the team&rsquo;s own report, measured across both sides in the 11-company study.<br>The cohort&rsquo;s number, not yours. Yours has one side measured: this one.</p>
-      <div id="people-intro"></div>
-      <div id="people-units"></div>
-      <p class="people-situational" id="people-situational" hidden></p>
-    </section>
-
-    <section aria-labelledby="gap-heading">
-      <span class="mono eyebrow" id="gap-heading">Your instinct vs the evidence</span>
-      <p class="gap-body" id="gap-body"></p>
-    </section>
-
-    <!-- 4.3 the compass -->
-    <!-- line of sight and gap width: evidence, never the decision -->
-    <section aria-labelledby="sight-heading">
-      <span class="mono eyebrow" id="sight-heading">Line of sight and gap width</span>
-      <div class="sight-pair">
-        <div class="sight-cell">
-          <span class="mono sight-label">Line of sight</span>
-          <p class="sight-value" id="los-value"></p>
-          <p class="sight-copy" id="los-copy"></p>
-        </div>
-        <div class="sight-cell">
-          <span class="mono sight-label">Gap width</span>
-          <p class="sight-value" id="gap-width-value"></p>
-          <p class="sight-copy" id="gap-width-copy"></p>
-        </div>
-      </div>
-      <p class="discovery-lag" id="discovery-lag"></p>
-    </section>
-
-    <section aria-labelledby="action-heading">
-      <span class="mono eyebrow" id="action-heading">To try this week</span>
-      <p class="action-area" id="action-area"></p>
-      <p class="action-body" id="action-body"></p>
-    </section>
-
-    <!-- 4.6 closing -->
-    <section aria-labelledby="signal-heading">
-      <span class="mono eyebrow" id="signal-heading">What your picture is built on</span>
-      <p class="signal-headline" id="signal-headline"></p>
-      <figure class="radar-figure">
-        <svg class="radar-svg" id="radar" viewBox="0 16 420 296" role="img"
-             aria-labelledby="radar-title" aria-describedby="radar-desc">
-          <title id="radar-title">How recent your evidence is, across the five areas</title>
-          <desc id="radar-desc"></desc>
-        </svg>
-        <figcaption class="radar-caption" id="radar-caption"></figcaption>
-      </figure>
-
-      <p class="signal-copy" id="signal-copy"></p>
-
-
-      <p class="signal-score" id="signal-score"></p>
-      <div id="areas-list"></div>
-      <p class="areas-summary" id="areas-summary" hidden></p>
-    </section>
-
-    <!-- 4.5 one action -->
-    <section class="closing" aria-labelledby="closing-heading">
-      <span class="mono eyebrow" id="closing-heading">The half you cannot see from here</span>
-      <div id="closing-body"></div>
-      <p class="report-sent" id="report-sent"></p>
-    </section>
-
+    <span class="mono eyebrow">Your reading</span>
+    <h2 id="sent-title">Your reading is being put together.</h2>
+    <p class="lede body-serif">It goes to <strong id="sent-email"></strong> in a minute or two, with a link that opens it. The link does not expire.</p>
+    <p class="privacy-line" id="sent-note">Nothing else is needed from you.</p>
   </div>
 </section>
 
@@ -372,6 +249,6 @@
 </footer>
 
 <script src="/assets/scoring.js?v=8222899a"></script>
-<script src="/assets/mgi.js?v=d787ae33"></script>
+<script src="/assets/mgi.js?v=91d7e1c3"></script>
 </body>
 </html>

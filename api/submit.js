@@ -181,9 +181,10 @@ module.exports = async function handler(req, res) {
   // always leave a durable trace in the platform log, whatever else fails
   console.log('MGI_SUBMISSION ' + JSON.stringify(record));
 
-  /* ---------- the submit sequence, Addendum B section 2 ----------
-     Strictly this order, and only step 1 may fail the request. A
-     submission is a lead, and no rendering bug is permitted to lose one. */
+  /* ---------- the submit sequence, spec section 6 ----------
+     Strictly this order, and only step 1 may fail the request. Steps 3
+     to 5 are best effort. A submission is a lead, and nothing here may
+     lose one. */
 
   /* 1. Persist the raw submission. The only step allowed to fail. */
   var stored = await store(record);
@@ -193,41 +194,84 @@ module.exports = async function handler(req, res) {
   var haveReading = await createReading(token, contact, submittedAt);
   if (!haveReading) token = null;
 
-  /* 3. Derive the payload, in a try/catch. On failure the row keeps its
-        null payload and the route derives it on view instead, which is
-        why a derive bug cannot cost a lead. */
+  /* 3. Compute the numbers and store them. Fast, deterministic, and in
+        the request, so the row is never without them for long. On
+        failure the row keeps its null payload and the route computes on
+        view instead, which is why a compute bug cannot cost a lead. */
   var payload = null;
   if (token) {
     try {
-      payload = derive.derive(answers, contact, {
+      payload = numbersOf.compute(answers, contact, {
         copy_to: contact.email,
         generated_at: submittedAt.slice(0, 10)
       });
       await updateReading(token, payload);
     } catch (e) {
-      console.error('MGI derive failed at submit, payload left null for ' +
-        token + ': ' + e.message);
+      console.error('MGI compute failed at submit for ' + token + ': ' + e.message);
+      payload = null;
     }
   }
 
-  /* 4. Send the email. Always, whether or not step 3 succeeded. */
+  /* Clive's copy of the raw answers goes now, in the request. It is call
+     prep and it does not depend on anything below. */
   var notified = await sendEmail(notification(contact, result, submittedAt));
-  var copied = token
-    ? await sendEmail(readingEmail(contact, payload, result.state.name, token))
-    : await sendEmail(managerReport(contact, result));
+
+  /* 4 and 5. Eran, then the manager's email, after the response has gone.
+     Eran takes the better part of a minute, and nobody should watch a
+     spinner for it. Sending the email only once Eran has returned makes
+     the email's arrival the signal that the page is ready, which is what
+     the order in section 6 is for.
+
+     If the platform kills the background work, the reading page builds
+     it on first open instead, and Clive still holds the lead from the
+     notification above. */
+  var finish = (async function () {
+    if (!token || !payload) {
+      return sendEmail(mail.pending(contact));
+    }
+    try {
+      payload.eran = await eran.write(payload, answers);
+      if (payload.eran) await updateReading(token, payload);
+    } catch (e) {
+      console.error('MGI Eran failed at submit for ' + token + ': ' + e.message);
+    }
+    return sendEmail(mail.reading(contact, payload, token));
+  })();
+
+  background(finish);
 
   /* The submission is processed regardless. A failed notification is ours to
      chase, not the manager's: it is logged above and the raw answers are in the
-     MGI_SUBMISSION line, so nothing is lost. Telling the manager their own copy
-     failed when it did not would be a lie, so the client keys its message off
-     copySent alone. */
+     MGI_SUBMISSION line, so nothing is lost. */
   if (!notified) {
     console.error('MGI notification failed for ' + contact.email + ', submission still recorded');
   }
 
-  return res.status(200).json({ ok: true, stored: stored, notified: notified,
-    copySent: copied, reading: token ? '/r/' + token : null });
+  /* sending is what the client tells them about, not sent: the message
+     goes out behind this response and cannot be reported on here. */
+  return res.status(200).json({
+    ok: true,
+    stored: stored,
+    notified: notified,
+    sending: !!(token && payload),
+    email: contact.email
+  });
 };
+
+/* Work that outlives the response. On the platform this runs on, the
+   request would otherwise be frozen the moment the response goes; the
+   local fallback just lets the promise run and swallows its rejection,
+   so nothing here throws into an already-answered request. */
+function background(promise) {
+  var quiet = Promise.resolve(promise).catch(function (e) {
+    console.error('MGI background work failed: ' + e.message);
+  });
+  try {
+    require('@vercel/functions').waitUntil(quiet);
+  } catch (e) {
+    /* not on the platform, or the helper is unavailable */
+  }
+}
 
 /* ---------- helpers ---------- */
 
@@ -386,8 +430,9 @@ function notification(contact, result, submittedAt) {
 /* ---------- readings ---------- */
 
 var crypto = require('crypto');
-var derive = require('../results/derive.js');
-var renderer = require('../results/render.js');
+var numbersOf = require('../report/numbers.js');
+var eran = require('../report/eran.js');
+var mail = require('../report/email.js');
 
 var READINGS = process.env.MGI_READINGS_TABLE || 'mgi_readings';
 
@@ -448,262 +493,10 @@ async function updateReading(token, payload) {
     await readingsRest(READINGS + '?token=eq.' + encodeURIComponent(token), {
       method: 'PATCH',
       headers: { Prefer: 'return=minimal' },
-      body: JSON.stringify({ payload: payload, copy_bank_ver: renderer.BANK.version })
+      body: JSON.stringify({ payload: payload })
     });
   } catch (e) {
     console.error('MGI reading update threw: ' + e.message);
   }
 }
 
-/* Three things and nothing else: the state word, the headline variant and
-   the link. The headline comes from the same copy-bank key the page uses,
-   so there is one definition and no second copy to drift. The wording
-   lives in the bank rather than here because it changes when the
-   generated layer lands. */
-function readingEmail(contact, payload, stateName, token) {
-  var bank = renderer.BANK;
-  var variant = payload ? String(payload.quiet_count) : '0';
-  var headline = (bank.headline[variant] || bank.headline['0']).head;
-  var link = (process.env.MGI_SITE_ORIGIN || 'https://managergap.com') + '/r/' + token;
-
-  var text = bank.email.body
-    .split('{first_name}').join(contact.firstName)
-    .split('{state}').join(stateName)
-    .split('{headline}').join(headline)
-    .split('{link}').join(link);
-
-  var paras = text.split(String.fromCharCode(10, 10));
-  var html = '<div style="font:16px/1.6 -apple-system,Segoe UI,Helvetica,sans-serif;color:#17161A">' +
-    paras.map(function (para) {
-      if (para.indexOf(link) !== -1) {
-        return '<p><a href="' + link + '" style="color:#1A3565">See your result</a></p>';
-      }
-      return '<p>' + esc(para).split(String.fromCharCode(10)).join('<br>') + '</p>';
-    }).join('') + '</div>';
-
-  return {
-    from: FROM,
-    to: [contact.email],
-    reply_to: 'clive@managergap.com',
-    subject: bank.email.subject.split('{state}').join(stateName),
-    text: text,
-    html: html
-  };
-}
-
-/* ---------- report copy to the manager ---------- */
-
-function managerReport(contact, result) {
-  var ink = '#17161A';
-  var mute = '#6F6A60';
-  var rule = '#C9C2B4';
-  var paper = '#F1ECE3';
-  /* single quotes: this goes inside a double-quoted style attribute, and
-     double quotes here terminate the attribute and mangle the markup */
-  var serif = "Georgia,'Times New Roman',serif";
-  var mono = 'ui-monospace,Menlo,Consolas,monospace';
-  var sans = 'Arial,Helvetica,sans-serif';
-
-  function eyebrow(t) {
-    return '<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:' +
-      mute + ';margin:0 0 12px;">' + esc(t) + '</p>';
-  }
-
-  var h = [];
-
-  h.push('<div style="background:' + paper + ';padding:28px 0;">');
-  h.push('<div style="max-width:600px;margin:0 auto;padding:0 22px;font-family:' + serif + ';color:' + ink + ';">');
-
-  h.push(eyebrow('The Manager Gap Index'));
-
-  // 1. the state call, always hedged
-  h.push(eyebrow('Your result'));
-  h.push('<p style="font-size:27px;line-height:1.2;margin:0 0 12px;">Based on what you have observed, your team is most likely in <em style="color:' +
-    result.state.colour + ';font-weight:bold;">' + esc(result.state.name) + '</em>.</p>');
-  h.push('<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:' +
-    mute + ';margin:0 0 20px;">Gap width: ' + esc(result.gapWidth.label) + '</p>');
-  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 20px;">' + esc(result.state.description) + '</p>');
-
-
-
-  h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:0 0 26px;">');
-
-  // 2. the gap
-  h.push(eyebrow('Your instinct vs the evidence'));
-  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 28px;">' + esc(result.gap.copy) + '</p>');
-
-  h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:0 0 26px;">');
-
-  // 3. the four states, with this reading marked
-  h.push(eyebrow('Where that sits'));
-  h.push('<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;font-family:' + mono +
-    ';font-size:11px;letter-spacing:0.1em;text-transform:uppercase;margin:0 0 12px;">');
-  ['cruise', 'drift', 'headwinds', 'stall'].forEach(function (key) {
-    var st = MGI.STATES[key];
-    var here = st.key === result.state.key;
-    h.push('<tr>' +
-      '<td style="padding:9px 0;border-bottom:1px solid ' + rule + ';width:22px;color:' + st.colour + ';">' +
-      (here ? '&#9679;' : '') + '</td>' +
-      '<td style="padding:9px 0;border-bottom:1px solid ' + rule + ';color:' + (here ? st.colour : mute) +
-      ';font-weight:' + (here ? 'bold' : 'normal') + ';">' + esc(st.name) + '</td>' +
-      '<td style="padding:9px 0;border-bottom:1px solid ' + rule + ';color:' + mute + ';text-align:right;">' +
-      '</td>' +
-      '</tr>');
-  });
-  h.push('</table>');
-  h.push('<p style="font-family:' + sans + ';font-size:13px;line-height:1.55;color:' + mute +
-    ';margin:0 0 28px;">The marked state is the most likely one, given what you reported.</p>');
-
-  h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:0 0 26px;">');
-
-  /* 4. line of sight and gap width. Evidence, never the decision: this
-     sits below the state and above the areas, and nothing here hedges
-     the result. The distance is the diagnosis. */
-  h.push(eyebrow('Line of sight and gap width'));
-  h.push('<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:0 0 4px;">');
-  h.push('<tr>' +
-    '<td style="padding:0 0 6px;font-family:' + mono + ';font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:' +
-    mute + ';">Line of sight</td>' +
-    '<td style="padding:0 0 6px;font-family:' + mono + ';font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:' +
-    mute + ';">Gap width</td></tr>');
-  h.push('<tr>' +
-    '<td style="padding:0 12px 14px 0;font-size:22px;font-weight:bold;vertical-align:top;">' +
-    esc(result.lineOfSight.label) + '</td>' +
-    '<td style="padding:0 0 14px;font-size:22px;font-weight:bold;vertical-align:top;">' +
-    esc(result.gapWidth.label) + '</td></tr>');
-  h.push('</table>');
-  h.push('<p style="font-size:16px;line-height:1.6;margin:0 0 14px;">' + esc(result.lineOfSight.copy) + '</p>');
-  h.push('<p style="font-size:16px;line-height:1.6;margin:0 0 14px;">' + esc(result.gapWidth.copy) + '</p>');
-  h.push('<p style="font-family:' + sans + ';font-size:13px;line-height:1.55;color:' + mute +
-    ';margin:0 0 28px;">' + esc(result.gapFraming) + '</p>');
-
-  h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:0 0 26px;">');
-
-  // 5. what to try, before the evidence behind it
-  h.push(eyebrow('To try this week'));
-  h.push('<p style="font-size:20px;line-height:1.35;margin:0 0 10px;">' + esc(result.ranked[0].name) + '</p>');
-  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 28px;">' + esc(result.action) + '</p>');
-
-  h.push('<hr style="border:0;border-top:1px solid ' + ink + ';margin:0 0 26px;">');
-
-  // 6. what the picture is built on. The raw score sits last: a number
-  //    out of 45 tells a manager nothing they did not just type in.
-  h.push(eyebrow('What your picture is built on'));
-  h.push('<p style="font-size:20px;line-height:1.4;margin:0 0 14px;">' + esc(result.signalHeadline) + '</p>');
-  h.push('<p style="font-size:16px;line-height:1.6;margin:0 0 20px;">' + esc(result.signalMeaning) + '</p>');
-
-  result.areas.forEach(function (a) {
-    h.push('<div style="border-top:1px solid ' + rule + ';padding:15px 0;">');
-    h.push('<p style="font-size:18px;margin:0 0 6px;">' + esc(a.name) + '</p>');
-    h.push('<p style="font-family:' + sans + ';font-size:14px;line-height:1.55;color:' + mute + ';margin:0 0 8px;">' + esc(a.desc) + '</p>');
-    h.push('<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:' +
-      factColour(a.best) + ';margin:0;">' + esc(a.recencyFact) + '</p>');
-    if (a.callout) {
-      h.push('<p style="font-size:15px;line-height:1.55;background:#E8E2D6;border-left:2px solid ' + ink +
-        ';padding:13px 15px;margin:12px 0 0;">' + esc(a.callout) + '</p>');
-    }
-    h.push('</div>');
-  });
-
-  if (result.summary) {
-    h.push('<p style="font-size:16px;line-height:1.6;background:#E8E2D6;border-left:2px solid ' + ink +
-      ';padding:15px 17px;margin:20px 0 0;">' + esc(result.summary) + '</p>');
-  }
-
-  h.push('<p style="font-family:' + mono + ';font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:' + mute +
-    ';margin:18px 0 0;">Signal score ' + result.signal + ' / ' + SIGNAL_MAX + '</p>');
-
-  h.push('<hr style="border:0;border-top:1px solid ' + rule + ';margin:26px 0;">');
-
-  // 6. closing
-  h.push('<p style="font-size:17px;line-height:1.6;margin:0 0 26px;"><strong>Talk your result through.</strong> The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA\u2019s co-founder, walks a small number of participants through their result each week: thirty minutes on your answers, and you leave with a written plan of three specific actions built from them. If you would like one of those conversations, reply to this email and say so. We will also reach out to some participants directly.</p>');
-
-  h.push('<hr style="border:0;border-top:1px solid ' + ink + ';margin:0 0 16px;">');
-  h.push('<p style="font-family:' + mono + ';font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:' + mute +
-    ';line-height:1.8;margin:0;">The Manager Gap Index is a <a href="https://cloverera.com" style="color:' + mute +
-    ';">Clover ERA</a> research instrument.<br>contact@cloverera.com</p>');
-
-  h.push('</div></div>');
-
-  return {
-    from: FROM,
-    to: [contact.email],
-    reply_to: REPLY_TO,
-    subject: 'Your Manager Gap Index result: most likely ' + result.state.name +
-      ' (gap ' + result.gapWidth.label.toLowerCase() + ')',
-    /* Microsoft and Gmail both read this as a signal that the sender is
-       legitimate, and the closing block does say we may reach out again,
-       so the recipient should have a way to say no. */
-    headers: {
-      'List-Unsubscribe': '<mailto:' + NOTIFY_TO + '?subject=Unsubscribe>'
-    },
-    html: h.join(''),
-    text: managerReportText(result)
-  };
-}
-
-/* the recency fact fades with age. No label vocabulary. */
-function factColour(best) {
-  if (best === 3) return '#17161A';
-  if (best === 2) return '#3D3A34';
-  if (best === 1) return '#6F6A60';
-  return '#918B7E';
-}
-
-function managerReportText(result) {
-  var L = [];
-  L.push('THE MANAGER GAP INDEX');
-  L.push('');
-  L.push('YOUR RESULT');
-  L.push('Based on what you have observed, your team is most likely in ' + result.state.name + '.');
-  L.push('Gap width: ' + result.gapWidth.label);
-  L.push('');
-  L.push(result.state.description);
-  L.push('');
-  L.push('YOUR INSTINCT VS THE EVIDENCE');
-  L.push(result.gap.copy);
-  L.push('');
-  L.push('WHERE THAT SITS');
-  ['cruise', 'drift', 'headwinds', 'stall'].forEach(function (key) {
-    var st = MGI.STATES[key];
-    var here = st.key === result.state.key;
-    L.push('  ' + (here ? '> ' : '  ') + st.name);
-  });
-  L.push('');
-  L.push('LINE OF SIGHT AND GAP WIDTH');
-  L.push('Line of sight: ' + result.lineOfSight.label);
-  L.push(result.lineOfSight.copy);
-  L.push('');
-  L.push('Gap width: ' + result.gapWidth.label);
-  L.push(result.gapWidth.copy);
-  L.push('');
-  L.push(result.gapFraming);
-  L.push('');
-  L.push('TO TRY THIS WEEK');
-  L.push(result.ranked[0].name);
-  L.push(result.action);
-  L.push('');
-  L.push('WHAT YOUR PICTURE IS BUILT ON');
-  L.push(result.signalHeadline);
-  L.push(result.signalMeaning);
-  L.push('');
-  result.areas.forEach(function (a) {
-    L.push(a.name + '   ' + a.freshest);
-    L.push('  ' + a.desc);
-    L.push('  ' + a.recencyFact);
-    if (a.callout) L.push('  ' + a.callout);
-    L.push('');
-  });
-  if (result.summary) {
-    L.push(result.summary);
-    L.push('');
-  }
-  L.push('Signal score ' + result.signal + ' / ' + SIGNAL_MAX);
-  L.push('');
-  L.push('TALK YOUR RESULT THROUGH');
-  L.push('The Manager Gap Index is part of an ongoing research cohort. Clive Hays, Clover ERA\u2019s co-founder, walks a small number of participants through their result each week: thirty minutes on your answers, and you leave with a written plan of three specific actions built from them. If you would like one of those conversations, reply to this email and say so. We will also reach out to some participants directly.');
-  L.push('');
-  L.push('The Manager Gap Index is a Clover ERA research instrument. cloverera.com');
-  L.push('contact@cloverera.com');
-  return L.join('\n');
-}

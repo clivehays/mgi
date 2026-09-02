@@ -1,0 +1,14 @@
+{
+  "name": "manager-gap-index",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Manager Gap Index. The instrument, the report and its delivery.",
+  "scripts": {
+    "test": "node scripts/test-banned-language.js && node scripts/test-report.js",
+    "stamp": "node scripts/stamp-assets.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.72.0",
+    "@vercel/functions": "^3.9.5"
+  }
+}
