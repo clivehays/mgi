@@ -101,11 +101,11 @@ var CALCULATORS = {
 
 /* section 6 of addendum A, as one lookup */
 var GATING = {
-  direction:   { cheap: 'free',      cell4: 'default' },
-  alignment:   { cheap: 'free',      cell4: 'default' },
-  readiness:   { cheap: 'readiness', cell4: 'readiness' },
-  involvement: { cheap: 'free',      cell4: 'involvement' },
-  results:     { cheap: 'free',      cell4: 'results' }
+  direction:   { cheap: 'direction',   cell4: 'default' },
+  alignment:   { cheap: 'alignment',   cell4: 'default' },
+  readiness:   { cheap: 'readiness',   cell4: 'readiness' },
+  involvement: { cheap: 'involvement', cell4: 'involvement' },
+  results:     { cheap: 'results',     cell4: 'results' }
 };
 
 /* ---------- derive ---------- */

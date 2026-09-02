@@ -259,6 +259,29 @@ check(!/stale_majority|stale-majority/i.test(ALL),
 check(/Line of sight/.test(ALL) && /Gap width/.test(ALL),
   'line of sight and gap width are still named');
 
+console.log('');
+console.log('[33] The cheap-part claim is specific to its dimension');
+/* one string claiming to be the cheapest fix cannot be true on four of
+   five pages, and the copy bank is the permanent fallback under the
+   generated layer, so a flaw left here outlives phase 3. */
+var cheapHeads = {};
+Object.keys(rendered).forEach(function (n) {
+  var h = rendered[n].html;
+  var seg = h.slice(h.indexOf('class="cheap"'));
+  var m = seg.match(/<h2 class="sw-head">([^<]*)/);
+  if (m) cheapHeads[rendered[n].payload.focus] = m[1];
+});
+var heads = Object.keys(cheapHeads).map(function (k) { return cheapHeads[k]; });
+var uniqHeads = {}; heads.forEach(function (x) { uniqHeads[x] = 1; });
+check(heads.length === Object.keys(uniqHeads).length,
+  'every focus dimension has its own cheap-part headline, ' + heads.length + ' distinct');
+check(Object.keys(cheapHeads).length >= 5, 'all five dimensions covered by a fixture');
+/* the free-fix promise still holds everywhere except Readiness */
+['direction', 'alignment', 'involvement', 'results'].forEach(function (d) {
+  var f = Object.keys(rendered).filter(function (n) { return rendered[n].payload.focus === d; })[0];
+  check(/no tool, no process/i.test(rendered[f].html), d + ' keeps the free-fix promise');
+});
+
 
 console.log('\n[15] Weight and geometry');
 Object.keys(rendered).forEach(function (n) {

@@ -1,5 +1,5 @@
 {
-  "_note": "Every participant-facing string. Deterministic lookup only, no interpolation beyond computed numbers. Lines marked approved are verbatim from the reference or from addendum A and must not be reworded without Clive. sub_stale_majority exists on variants 0, 1 and 2 only: at quiet_count 3 or above the flag is arithmetically certain, so a variant there would delete the brief's own sub rather than qualify it. No string may describe the reading as thin, uncertain or limited. Old evidence widens the gap, it never discounts the finding.",
+  "_note": "Every participant-facing string. Deterministic lookup only, no interpolation beyond computed numbers. Lines marked approved are verbatim from the reference or from addendum A and must not be reworded without Clive. sub_stale_majority exists on variants 0, 1 and 2 only: at quiet_count 3 or above the flag is arithmetically certain, so a variant there would delete the brief's own sub rather than qualify it. No string may describe the reading as thin, uncertain or limited. Old evidence widens the gap, it never discounts the finding. cheap is keyed per dimension, not shared: one string claiming to be the cheapest fix cannot be true on four of five pages.",
   "dimension": {
     "readiness": {
       "asks": "Does this team have what it needs? The skills, the tools, the information, the decisions unblocked.",
@@ -169,9 +169,21 @@
   },
   "cheap": {
     "eyebrow": "The good news, and it is real",
-    "free": {
+    "direction": {
       "head": "Of everything that can go wrong with a team, this is the cheapest to put right.",
-      "body": "No tool, no process, no meeting added to anyone's week. Most conditions that break a team take months and money to correct. This one takes about a fortnight to show up in the work."
+      "body": "No tool, no process, no meeting added to anyone's week. Direction is one sentence, said out loud, more often than feels necessary. Most conditions that break a team take months and money to correct. This one takes about a fortnight to show up in the work."
+    },
+    "alignment": {
+      "head": "This one costs you the first awkward thirty seconds and nothing after that.",
+      "body": "No tool, no process, no meeting added to anyone's week. Alignment turns on asking for the disagreement and then waiting long enough to get it. The waiting is the difficult part, and it is also the whole method."
+    },
+    "involvement": {
+      "head": "You cannot ask for this one, which is exactly what makes it cheap.",
+      "body": "No tool, no process, no meeting added to anyone's week. Discretionary effort comes back when it is noticed, and noticing costs you one sentence at the moment it happens. What it never survives is being requested."
+    },
+    "results": {
+      "head": "The fix here is a question, not a project.",
+      "body": "No tool, no process, no meeting added to anyone's week. What is missing is not whether the work landed. It is what the landing cost, and that comes from asking one person about one thing that shipped."
     },
     "readiness": {
       "head": "This one may cost you something, and that is the good news.",
