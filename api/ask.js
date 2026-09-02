@@ -86,13 +86,16 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  res.end();
-
   /* The stop rule is a property of the conversation, not of one turn:
      once it has engaged it stays engaged for everything after it. */
   var stop = stopped || out.meta.stop;
 
-  send.background((async function () {
+  /* Stored before the response closes, not after it. The manager has
+     already read the reply, so the wait costs them nothing, and putting
+     this in the background loses the turn to anyone who types the next
+     message quickly: Eran would answer their second question having
+     forgotten the first. */
+  try {
     await store.addTurns(token, [
       { turn: turn, role: 'manager', text: message, state: out.meta.state,
         shape: out.meta.shape, stop: stop },
@@ -100,15 +103,21 @@ module.exports = async function handler(req, res) {
         exit: out.meta.exit, stop: stop, refusal: out.meta.refusal,
         faults: out.faults.length ? out.faults.join(' | ') : null }
     ]);
+  } catch (e) {
+    console.error('MGI turn store failed for ' + token + ': ' + e.message);
+  }
 
-    if (out.faults.length) {
-      console.error('MGI conversation faults on ' + token + ': ' + out.faults.join(' | '));
-    }
+  res.end();
 
-    /* Clive receives the transcript on every exit. */
-    if (out.meta.exit) {
+  if (out.faults.length) {
+    console.error('MGI conversation faults on ' + token + ': ' + out.faults.join(' | '));
+  }
+
+  /* Clive receives the transcript on every exit. That one can wait. */
+  if (out.meta.exit) {
+    send.background((async function () {
       var full = await store.history(token);
       await mail.transcript(row.payload, token, full, out.meta);
-    }
-  })());
+    })());
+  }
 };

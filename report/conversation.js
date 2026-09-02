@@ -466,6 +466,12 @@ function teamFaults(text) {
   if (!SEES.test(text)) {
     out.push('does not answer the who-can-see-it question inside the message.');
   }
+  /* Left to itself it describes the worksheet the reading suggested,
+     which is a workshop the team has not been asked to attend. The
+     team is being asked one question a day and nothing else. */
+  if (!/\b(one|a|1) question (a|each|per) day\b|\bdaily question\b/i.test(text)) {
+    out.push('does not say the team is being asked one question a day.');
+  }
   CONVERSATION_RULES.forEach(function (r) {
     if (r[0].test(text)) out.push('contains ' + r[1]);
   });
@@ -494,7 +500,21 @@ var TEAM_SYSTEM = [
 'You write one short message for a manager to send their own team.',
 '',
 'It is from them, not from a product. No product is named and none is',
-'described. Under eighty words.',
+'described. No sign-off and no name at the end: it goes out from their',
+'own account and it is already from them.',
+'',
+'EIGHTY WORDS IS A CEILING, NOT A TARGET. Count them before you answer.',
+'Aim for sixty-five, so that four sentences carry it: what they are',
+'admitting, what the team is being asked, who sees the answers, and what',
+'the manager will do with them. If it runs long, the sentence to cut is',
+'the one explaining why this matters.',
+'',
+'WHAT THE TEAM IS ACTUALLY BEING ASKED TO DO, and the only thing this',
+'message may describe. One question a day. About thirty seconds. On',
+'their phone. That is all of it. Do not invent a workshop, a card',
+'exercise, a meeting, a deadline or a form. The reading this manager',
+'just read suggested a worksheet to them, and that is for them to run',
+'later, not something the team is being told about here.',
 '',
 'It must do three things, and each one is load-bearing.',
 '',

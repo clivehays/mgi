@@ -51,14 +51,41 @@ async function history(token) {
     '&select=turn,role,text,state,stop&order=turn.asc');
 }
 
+/* Checks what came back. Written without this it swallowed every
+   failure, and a conversation that is not being stored looks exactly
+   like one that is until Eran forgets the previous turn. */
 async function addTurns(token, turns) {
-  await rest(CONVERSATIONS, {
+  var r = await rest(CONVERSATIONS, {
     method: 'POST',
     headers: { Prefer: 'return=minimal' },
+    /* Every object in a bulk insert must carry the same keys or
+       PostgREST rejects the lot with "All object keys must match". The
+       manager's turn has a shape and no exit, the reply has an exit and
+       no shape, so both are filled out to the same shape here. */
     body: JSON.stringify(turns.map(function (t) {
-      return Object.assign({ token: token }, t);
+      return {
+        token: token,
+        turn: t.turn,
+        role: t.role,
+        text: t.text,
+        state: t.state === undefined ? null : t.state,
+        shape: t.shape === undefined ? null : t.shape,
+        exit: t.exit === undefined ? null : t.exit,
+        stop: t.stop === true,
+        refusal: t.refusal === undefined ? null : t.refusal,
+        faults: t.faults === undefined ? null : t.faults
+      };
     }))
   });
+  if (!r) {
+    console.error('MGI turns not stored: no store configured');
+    return false;
+  }
+  if (!r.ok) {
+    console.error('MGI turns not stored: ' + r.status + ' ' + (await r.text()));
+    return false;
+  }
+  return true;
 }
 
 /* Twelve exchanges a day, forty in all. Counted from the manager's own
