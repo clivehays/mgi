@@ -188,17 +188,17 @@ check(/no tool, no process/i.test(rendered['involvement-focus'].html), 'involvem
 
 /* ---------- page weight ---------- */
 console.log('');
-console.log('[16] The thin case, which the brief flagged');
+console.log('[16] The stale-majority case, which the brief flagged');
 var hz = rendered['headwinds-all-thin'];
 check(hz.payload.quiet_count === 0, 'every ring reads, so quiet_count is 0');
-check(hz.payload.thin === true, 'and it is flagged thin: most items are older than a month');
+check(hz.payload.stale_majority === true, 'and stale_majority is set: most items are older than a month');
 check(hz.payload.signal.score === 23, 'signal is 23 of 45, the brief figure');
 check(!/Rarer than it sounds/.test(hz.html),
   'the congratulatory variant-0 sub does not run on a thin reading');
-check(/Thinly/.test(hz.html), 'the thin sub runs instead');
+check(/sits behind them is memory/.test(hz.html), 'the stale-majority sub runs instead');
 check(/Rarer than it sounds/.test(rendered['cruise-all-fresh'].html),
   'a genuinely healthy variant-0 keeps the original sub');
-check(!rendered['cruise-all-fresh'].payload.thin, 'all-fresh is not flagged thin');
+check(!rendered['cruise-all-fresh'].payload.stale_majority, 'all-fresh has no stale majority');
 
 check(!/0<\/span><span class="cell-l">conditions confirmed healthy/.test(rendered['stall-all-dark'].html),
   'a zero never sits under "confirmed healthy"');
@@ -208,22 +208,56 @@ check(/conditions confirmed healthy/.test(rendered['cruise-all-fresh'].html),
   'a healthy reading keeps the original cell 1 label');
 
 console.log('');
-console.log('[17] thin qualifies the sub wherever it discriminates');
+console.log('[17] stale_majority qualifies the sub wherever it discriminates');
 var tq = rendered['thin-two-quiet'], sq = rendered['solid-two-quiet'];
-check(tq.payload.quiet_count === 2 && tq.payload.thin === true, 'thin-two-quiet is two quiet and thin');
-check(sq.payload.quiet_count === 2 && sq.payload.thin === false, 'solid-two-quiet is two quiet and not thin');
-check(/thin behind them/.test(tq.html), 'the thin pair gets the thin sub');
+check(tq.payload.quiet_count === 2 && tq.payload.stale_majority === true, 'thin-two-quiet is two quiet with a stale majority');
+check(sq.payload.quiet_count === 2 && sq.payload.stale_majority === false, 'solid-two-quiet is two quiet without one');
+check(/behind the other three is memory/.test(tq.html), 'the stale pair gets its own sub');
 check(/a pattern, not a coincidence/.test(sq.html), 'the solid pair keeps the original sub');
 check(!/a pattern, not a coincidence/.test(tq.html), 'the two do not render the same sub');
-check(/managing this team from memory/.test(tq.html), 'thin leads the So What headline');
+check(/managing this team from memory/.test(tq.html), 'a stale majority leads the So What headline');
 check(!/managing this team from memory/.test(sq.html), 'a solid page keeps the dimension headline');
-check(/class="step"/.test(tq.html), 'the calculator survives the thin headline');
+check(/class="step"/.test(tq.html), 'the calculator survives the swapped headline');
 // at quiet_count 3 and above thin is arithmetically certain, so a thin
 // sub there would replace the brief's sub rather than qualify it
 check(/its own finding, and it is the useful kind/.test(rendered['stall-all-dark'].html),
-  'variant 5 keeps its own sub despite being thin');
+  'variant 5 keeps its own sub despite the flag being set');
 check(/running on one instrument|Most of this team/.test(rendered['stall-all-dark'].html) === false,
   'variant 5 does not borrow another variant sub');
+
+console.log('');
+console.log('[32] The reading is never described as discounted');
+/* Low exposure and old evidence widen the gap. They never make the
+   finding less true, and no string may suggest they do. This is the
+   6.1.0 retirement of confidence, extended to every word that does the
+   same job. Word boundaries matter: "nothing" contains thin, "within"
+   contains thin, and variant 5 opens with Nothing. */
+var DISCOUNT = [
+  /\bthin(ly|ner|ness)?\b/i, /\buncertain(ty)?\b/i,
+  /\btentative(ly)?\b/i, /\bapproximate(ly)?\b/i,
+  /\bconfidence\b/i, /\blimited\b/i,
+  /roughly accurate/i, /best guess/i
+];
+var discountHits = [];
+Object.keys(rendered).forEach(function (n) {
+  /* the rendered page only. Source comments are not participant strings. */
+  var text = rendered[n].html
+    .replace(/<style>[\s\S]*?<\/style>/g, ' ')
+    .replace(/<script>[\s\S]*?<\/script>/g, ' ');
+  DISCOUNT.forEach(function (re) {
+    var m = text.match(re);
+    if (m) discountHits.push(n + ': "' + m[0] + '"');
+  });
+});
+check(!discountHits.length, discountHits.length
+  ? 'discount language rendered: ' + discountHits.join(', ')
+  : 'no fixture describes the reading as thin, uncertain or limited');
+/* and the internal flag never reaches the page as a term */
+check(!/stale_majority|stale-majority/i.test(ALL),
+  'the internal flag name never renders');
+/* line of sight and gap width stay the only two named measures */
+check(/Line of sight/.test(ALL) && /Gap width/.test(ALL),
+  'line of sight and gap width are still named');
 
 
 console.log('\n[15] Weight and geometry');

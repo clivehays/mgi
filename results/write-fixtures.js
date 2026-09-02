@@ -15,7 +15,7 @@ Object.keys(FIXTURES).forEach(function (name) {
   var p = derive.derive(f.answers, f.contact, { reading_no: 1, generated_at: '2 Sep 2026' });
   fs.writeFileSync(path.join(dir, name + '.html'), renderer.render(p));
   console.log('  ' + name.padEnd(26) + p.state.padEnd(10) +
-    'quiet ' + p.quiet_count + (p.thin ? ' thin' : '     ') +
+    'quiet ' + p.quiet_count + (p.stale_majority ? ' stale-maj' : '          ') +
     '  focus ' + p.focus.padEnd(12) + p.calculator.pattern);
 });
 console.log('\n  ' + Object.keys(FIXTURES).length + ' pages written to results/out/');

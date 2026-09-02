@@ -149,11 +149,12 @@ function derive(answers, contact, meta) {
   /* quiet_count measures breadth: how many rings have nothing current in
      them. It says nothing about depth, so a team where every ring holds
      one fresh item and two stale ones scores quiet_count 0 and would get
-     the congratulatory headline. `thin` catches that: most of the
+     the congratulatory headline. `stale_majority` catches that: most of the
      evidence behind the rings is older than a month, whatever the ring
-     count says. */
+     count says. The name is deliberately ugly: it is an internal flag
+     and nothing that ugly gets rendered by accident. */
   var older = areas.reduce(function (t, a) { return t + a.stale + a.dark; }, 0);
-  var thin = older > (areas.length * 3) / 2;
+  var staleMajority = older > (areas.length * 3) / 2;
 
   return {
     meta: {
@@ -172,7 +173,7 @@ function derive(answers, contact, meta) {
     focus: focus.key,
     focus_dimension: focus.dimension,
     quiet_count: quiet,
-    thin: thin,
+    stale_majority: staleMajority,
     older_count: older,
     healthy_count: healthy,
     ties: tiesWith(sorted),
