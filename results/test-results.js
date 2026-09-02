@@ -297,6 +297,25 @@ check(!/<path[^>]*transform="/.test(ALL), 'no SVG transform attribute to lose ag
 check(/stroke-dasharray:3 7/.test(ALL), 'dark segments carry the 3 7 dash');
 check(/animation-delay:/.test(ALL), 'ring draw is staggered');
 
+/* ---------- 33. no address is left for the proxy to eat ---------- */
+
+/* The CDN in front of this domain rewrites any address it finds into a
+   placeholder only a script can decode. It ate the single CTA on the page
+   and replaced the manager's own address with a generic label. The opt-out
+   lives in the markup, so this checks the markup. */
+console.log(String.fromCharCode(10) + '[33] Every address is opted out of the email rewriter');
+var E_OFF = '<!--email_off-->', E_ON = '<!--/email_off-->';
+var ADDR = new RegExp('[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}');
+var STRIP = new RegExp(E_OFF + '[\\s\\S]*?' + E_ON, 'g');
+Object.keys(rendered).forEach(function (name) {
+  var html = rendered[name].html;
+  var opens = html.split(E_OFF).length - 1, closes = html.split(E_ON).length - 1;
+  var bare = html.replace(STRIP, '');
+  check(opens > 0 && opens === closes, name + ': opt-out regions are balanced');
+  check(bare.indexOf('mailto:') === -1, name + ': no mailto outside an opted-out region');
+  check(!ADDR.test(bare), name + ': no bare address outside an opted-out region');
+});
+
 console.log('\n=====================================');
 console.log(pass + ' passed, ' + fail + ' failed');
 console.log('=====================================');

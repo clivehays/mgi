@@ -196,8 +196,8 @@ function receipt(payload) {
     '</div>' +
     '<p class="r-body">' + esc(BANK.receipt.body) + '</p>' +
     '<p class="r-pivot">' + esc(BANK.receipt.pivot) + '</p>' +
-    '<a class="cta" href="mailto:clive@managergap.com?subject=' + encodeURIComponent(subject) + '">' +
-      esc(BANK.receipt.cta) + '</a>' +
+    '<!--email_off--><a class="cta" href="mailto:clive@managergap.com?subject=' + encodeURIComponent(subject) + '">' +
+      esc(BANK.receipt.cta) + '</a><!--/email_off-->' +
     '<p class="r-sig">' + esc(BANK.receipt.sig) + '</p>' +
     '</div>';
 }
@@ -231,6 +231,13 @@ function rows(payload) {
 
 /* ---------- the page ---------- */
 
+/* The proxy in front of this domain rewrites any address it finds into
+   a placeholder that only a script can decode. It turned the one CTA on
+   the page into a dead link for anyone without that script, and told the
+   manager their copy was on its way to "[email protected]" rather than
+   to their own address. Cloudflare's documented opt-out is this comment
+   pair, which travels with the markup instead of depending on a
+   dashboard setting or on whether the proxy is on at all. */
 function render(payload) {
   var h = BANK.headline[String(payload.quiet_count)];
   /* stale_majority qualifies the sub wherever it discriminates. Two quiet rings
@@ -271,7 +278,7 @@ function render(payload) {
   '</section>\n' +
   soWhat(payload) + '\n' + cheap(payload) + '\n' + receipt(payload) + '\n' + rows(payload) + '\n' +
   '<footer class="foot"><span class="eyebrow">' +
-    esc(BANK.ui.copy_to.replace('{email}', payload.meta.copy_to)) + '</span>' +
+    '<!--email_off-->' + esc(BANK.ui.copy_to.replace('{email}', payload.meta.copy_to)) + '<!--/email_off--></span>' +
   '<span class="eyebrow">MGI v' + esc(payload.meta.instrument) + '</span></footer>\n' +
 '</div>\n<script>' + JS + '</script>\n</body></html>\n';
 }

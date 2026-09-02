@@ -61,7 +61,7 @@ function holding(res, code) {
     '<p>Something went wrong building this page and Clive has been told. ' +
     'Your answers are safe and nothing needs doing again.</p>' +
     '<p>If you would rather not wait, write to ' +
-    '<a href="mailto:clive@managergap.com">clive@managergap.com</a> and he will send it over.</p>' +
+    '<!--email_off--><a href="mailto:clive@managergap.com">clive@managergap.com</a><!--/email_off--> and he will send it over.</p>' +
     '</div></body></html>');
 }
 
