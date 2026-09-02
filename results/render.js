@@ -72,6 +72,21 @@ function statusLine(area) {
   return parts.join(' &middot; ');
 }
 
+/* The one conditional that makes phase 3 a copy change rather than a
+   render change. A generated string wins where one exists; the bank is
+   the fallback for every slot, permanently. */
+function gen(payload, path, fallback) {
+  var g = payload.generated;
+  if (!g) return fallback;
+  var node = g;
+  var parts = path.split('.');
+  for (var i = 0; i < parts.length; i++) {
+    if (node === null || typeof node !== 'object') return fallback;
+    node = node[parts[i]];
+  }
+  return (typeof node === 'string' && node.length) ? node : fallback;
+}
+
 function tabs(payload) {
   return payload.areas.map(function (a, i) {
     var d = BANK.dimension[a.key];
@@ -86,7 +101,7 @@ function tabs(payload) {
       ' data-quiet="' + (quiet ? '1' : '0') + '"' +
       ' data-asks="' + esc(d.asks) + '"' +
       ' data-status="' + statusLine(a).replace(/"/g, '&quot;') + '"' +
-      ' data-means="' + copy(d.means[a.pattern]).replace(/"/g, '&quot;') + '">' +
+      ' data-means="' + copy(gen(payload, 'means.' + a.key, d.means[a.pattern])).replace(/"/g, '&quot;') + '">' +
       ring(a, i) +
       '<span class="inst-label">' + esc(a.plain) + '</span>' +
       '<span class="inst-count">' + a.fresh + '/3</span>' +
@@ -107,7 +122,7 @@ function soWhat(payload) {
       '<h2 class="sw-head">' + esc(payload.stale_majority ? BANK.sowhat_headline_stale_majority : d.sowhat.split('.')[0] + '.') + '</h2>' +
       '<p class="sw-slot sw-phrase">' + slot + '</p>' +
       '<p class="sw-cap">' + esc(d.ledger.caption) + '</p>' +
-      '<p class="sw-body">' + copy(d.sowhat) + '</p>' +
+      '<p class="sw-body">' + copy(gen(payload, 'sowhat', d.sowhat)) + '</p>' +
       '</section>';
   }
 
@@ -130,11 +145,20 @@ function soWhat(payload) {
       (calc.a.def * calc.b.def * 5) + '</p>' +
     '<p class="sw-cap">' + esc(d.calc.caption) + '</p>' +
     '<p class="print-note">' + esc(BANK.ui.print_note) + '</p>' +
-    '<p class="sw-body">' + copy(d.sowhat) + '</p>' +
+    '<p class="sw-body">' + copy(gen(payload, 'sowhat', d.sowhat)) + '</p>' +
     '</section>';
 }
 
 /* ---------- the cheap part ---------- */
+
+/* A generated list wins over the bank's. Kept as a statement rather than
+   an expression inside the concatenation: + binds tighter than ?:, so an
+   inline ternary here silently swallowed the whole section once. */
+function changeLines(payload, d) {
+  var g = payload.generated && payload.generated.changes;
+  var lines = (Array.isArray(g) && g.length) ? g : d.changes;
+  return lines.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('');
+}
 
 function cheap(payload) {
   var d = BANK.dimension[payload.focus];
@@ -143,9 +167,7 @@ function cheap(payload) {
     '<span class="eyebrow">' + esc(BANK.cheap.eyebrow) + '</span>' +
     '<h2 class="sw-head">' + esc(c.head) + '</h2>' +
     '<p class="sw-body">' + esc(c.body) + '</p>' +
-    '<ul class="changes">' +
-    d.changes.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') +
-    '</ul></section>';
+    '<ul class="changes">' + changeLines(payload, d) + '</ul></section>';
 }
 
 /* ---------- the receipt ---------- */
@@ -189,7 +211,7 @@ function rows(payload) {
   var gw = { narrow: 'Narrow', moderate: 'Moderate', wide: 'Wide', very_wide: 'Very wide' }[payload.gap_width];
 
   var items = [
-    { t: BANK.disclosure.thursday.title, b: '<p class="ask">' + esc(d.thursday) + '</p>' },
+    { t: BANK.disclosure.thursday.title, b: '<p class="ask">' + esc(gen(payload, 'thursday', d.thursday)) + '</p>' },
     { t: BANK.disclosure.rings.title, b: '<p>' + esc(BANK.disclosure.rings.body) + '</p>' },
     { t: BANK.disclosure.state.title.replace('{state}', payload.state_name), b: '<p>' + esc(st.means) + '</p>' },
     { t: BANK.disclosure.chair.title,

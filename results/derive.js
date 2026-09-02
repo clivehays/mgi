@@ -177,6 +177,10 @@ function derive(answers, contact, meta) {
     older_count: older,
     healthy_count: healthy,
     ties: tiesWith(sorted),
+    /* Phase 3 writes generated strings in here. Empty now, and the
+       renderer already prefers it over the bank, so phase 3 touches no
+       rendering code at all. Keep the payload loosely typed. */
+    generated: {},
     calculator: CALCULATORS[focus.key],
     gating: GATING[focus.key]
   };

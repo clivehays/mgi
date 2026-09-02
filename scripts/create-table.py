@@ -146,6 +146,43 @@ comment on column mgi_v5_submissions.collected_under is
 comment on column mgi_v5_submissions.confidence is
   'DEPRECATED 6.1.0. Superseded by line_of_sight and gap_width. Still written so the export contract holds; never shown to a participant. Drop in a later release.';
 
+-- One reading per submission. The PAYLOAD is stored, never rendered HTML:
+-- the page renders on request from the payload plus the CURRENT copy bank,
+-- so a wording fix reaches every reading anyone opens, including ones sent
+-- weeks earlier. With HTML stored, old links keep their bugs permanently.
+--
+-- copy_bank_ver answers "what did they actually see". It is never used to
+-- pin rendering to an old bank.
+--
+-- payload is deliberately loosely typed. Generated strings land in
+-- payload.generated later and the jsonb schema must not preclude them.
+create table if not exists mgi_readings (
+  token           text primary key,          -- 22-char base64url, 128 bits
+  submission_id   bigint references mgi_v5_submissions(id),
+  payload         jsonb,                     -- null until derived; derived on view if so
+  copy_bank_ver   text,
+  created_at      timestamptz not null default now(),
+  revoked_at      timestamptz                -- no expiry; this is the kill switch
+);
+
+create index if not exists mgi_readings_submission_idx on mgi_readings (submission_id);
+
+alter table mgi_readings enable row level security;
+
+-- Created now, unused. Phase 3 writes the Eran exchange here, and a
+-- migration during that build is one more thing to get wrong.
+create table if not exists mgi_transcripts (
+  id              bigint generated always as identity primary key,
+  token           text references mgi_readings(token),
+  role            text not null,
+  text            text not null,
+  created_at      timestamptz not null default now()
+);
+
+create index if not exists mgi_transcripts_token_idx on mgi_transcripts (token, created_at);
+
+alter table mgi_transcripts enable row level security;
+
 -- Funnel telemetry. Deliberately a separate table with no key back to a
 -- submission: people abandon before the consent box, so nothing here may be
 -- personal or research data. A random per-visit id, how far they got, two

@@ -181,9 +181,40 @@ module.exports = async function handler(req, res) {
   // always leave a durable trace in the platform log, whatever else fails
   console.log('MGI_SUBMISSION ' + JSON.stringify(record));
 
+  /* ---------- the submit sequence, Addendum B section 2 ----------
+     Strictly this order, and only step 1 may fail the request. A
+     submission is a lead, and no rendering bug is permitted to lose one. */
+
+  /* 1. Persist the raw submission. The only step allowed to fail. */
   var stored = await store(record);
+
+  /* 2. Mint the token and insert the reading with a null payload. */
+  var token = mintToken();
+  var haveReading = await createReading(token, contact, submittedAt);
+  if (!haveReading) token = null;
+
+  /* 3. Derive the payload, in a try/catch. On failure the row keeps its
+        null payload and the route derives it on view instead, which is
+        why a derive bug cannot cost a lead. */
+  var payload = null;
+  if (token) {
+    try {
+      payload = derive.derive(answers, contact, {
+        copy_to: contact.email,
+        generated_at: submittedAt.slice(0, 10)
+      });
+      await updateReading(token, payload);
+    } catch (e) {
+      console.error('MGI derive failed at submit, payload left null for ' +
+        token + ': ' + e.message);
+    }
+  }
+
+  /* 4. Send the email. Always, whether or not step 3 succeeded. */
   var notified = await sendEmail(notification(contact, result, submittedAt));
-  var copied = await sendEmail(managerReport(contact, result));
+  var copied = token
+    ? await sendEmail(readingEmail(contact, payload, result.state.name, token))
+    : await sendEmail(managerReport(contact, result));
 
   /* The submission is processed regardless. A failed notification is ours to
      chase, not the manager's: it is logged above and the raw answers are in the
@@ -194,7 +225,8 @@ module.exports = async function handler(req, res) {
     console.error('MGI notification failed for ' + contact.email + ', submission still recorded');
   }
 
-  return res.status(200).json({ ok: true, stored: stored, notified: notified, copySent: copied });
+  return res.status(200).json({ ok: true, stored: stored, notified: notified,
+    copySent: copied, reading: token ? '/r/' + token : null });
 };
 
 /* ---------- helpers ---------- */
@@ -347,6 +379,115 @@ function notification(contact, result, submittedAt) {
       ' (gap ' + result.gapWidth.label.toLowerCase() + ', signal ' + result.signal + '/' + SIGNAL_MAX + ')',
     text: text,
     html: '<pre style="font:13px/1.55 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;color:#17161A">' + esc(text) + '</pre>'
+  };
+}
+
+
+/* ---------- readings ---------- */
+
+var crypto = require('crypto');
+var derive = require('../results/derive.js');
+var renderer = require('../results/render.js');
+
+var READINGS = process.env.MGI_READINGS_TABLE || 'mgi_readings';
+
+/* 128 bits from a CSPRNG, base64url, 22 chars. Not sequential, not
+   derived from the submission id or the email. No expiry: managers come
+   back to their reading and Clive opens it during calls weeks later, and
+   a link that dies quietly is worse than one that lives. revoked_at is
+   the kill switch for the rare case where someone asks. */
+function mintToken() {
+  return crypto.randomBytes(16).toString('base64')
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function readingsRest(path, opts) {
+  var url = process.env.SUPABASE_URL;
+  var key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  opts = opts || {};
+  opts.headers = Object.assign({
+    'Content-Type': 'application/json',
+    apikey: key,
+    Authorization: 'Bearer ' + key
+  }, opts.headers || {});
+  return fetch(url.replace(/\/$/, '') + '/rest/v1/' + path, opts);
+}
+
+/* The submission id is read back from the row just written rather than
+   guessed, because the route needs it to derive on view. */
+async function createReading(token, contact, submittedAt) {
+  try {
+    var find = await readingsRest(TABLE + '?email=eq.' +
+      encodeURIComponent(contact.email) + '&submitted_at=eq.' +
+      encodeURIComponent(submittedAt) + '&select=id&limit=1');
+    var id = null;
+    if (find && find.ok) {
+      var rows = await find.json();
+      id = rows && rows[0] && rows[0].id;
+    }
+    var r = await readingsRest(READINGS, {
+      method: 'POST',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({ token: token, submission_id: id, payload: null })
+    });
+    if (!r || !r.ok) {
+      console.error('MGI reading insert failed: ' +
+        (r ? r.status + ' ' + (await r.text()) : 'no store configured'));
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('MGI reading insert threw: ' + e.message);
+    return false;
+  }
+}
+
+async function updateReading(token, payload) {
+  try {
+    await readingsRest(READINGS + '?token=eq.' + encodeURIComponent(token), {
+      method: 'PATCH',
+      headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify({ payload: payload, copy_bank_ver: renderer.BANK.version })
+    });
+  } catch (e) {
+    console.error('MGI reading update threw: ' + e.message);
+  }
+}
+
+/* Three things and nothing else: the state word, the headline variant and
+   the link. The headline comes from the same copy-bank key the page uses,
+   so there is one definition and no second copy to drift. The wording
+   lives in the bank rather than here because it changes when the
+   generated layer lands. */
+function readingEmail(contact, payload, stateName, token) {
+  var bank = renderer.BANK;
+  var variant = payload ? String(payload.quiet_count) : '0';
+  var headline = (bank.headline[variant] || bank.headline['0']).head;
+  var link = (process.env.MGI_SITE_ORIGIN || 'https://managergap.com') + '/r/' + token;
+
+  var text = bank.email.body
+    .split('{first_name}').join(contact.firstName)
+    .split('{state}').join(stateName)
+    .split('{headline}').join(headline)
+    .split('{link}').join(link);
+
+  var paras = text.split(String.fromCharCode(10, 10));
+  var html = '<div style="font:16px/1.6 -apple-system,Segoe UI,Helvetica,sans-serif;color:#17161A">' +
+    paras.map(function (para) {
+      if (para.indexOf(link) !== -1) {
+        return '<p><a href="' + link + '" style="color:#1A3565">See your result</a></p>';
+      }
+      return '<p>' + esc(para).split(String.fromCharCode(10)).join('<br>') + '</p>';
+    }).join('') + '</div>';
+
+  return {
+    from: FROM,
+    to: [contact.email],
+    reply_to: 'clive@managergap.com',
+    subject: bank.email.subject.split('{state}').join(stateName),
+    text: text,
+    html: html
   };
 }
 

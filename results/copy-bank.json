@@ -244,5 +244,10 @@
     "copy_to": "A copy is on its way to {email}",
     "print_note": "The figures below are your own estimate, set on the page."
   },
-  "sowhat_headline_stale_majority": "You are managing this team from memory."
+  "sowhat_headline_stale_majority": "You are managing this team from memory.",
+  "version": "2026-09-02.1",
+  "email": {
+    "subject": "Your Manager Gap Index result: {state}",
+    "body": "Hi {first_name},\n\nYour reading is ready. Your team came out in {state}.\n\n{headline}\n\n  {link}   See your result\n\nIt reads in about a minute. Everything underneath it is folded\naway unless you want it.\n\nClive Hays\n\nIf the quiet one looks wrong to you, that is worth knowing.\nReply and tell me."
+  }
 }

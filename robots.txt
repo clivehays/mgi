@@ -1,4 +1,3 @@
 User-agent: *
-Allow: /
-
-Sitemap: https://managergap.com/sitemap.xml
+Disallow: /r/
+Disallow: /api/
