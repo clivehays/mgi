@@ -214,10 +214,25 @@ var sample = MGI.score({
   else bad(p[0] + ' missing from the score output');
 });
 
-if (/Line of sight/.test(html)) ok('the results page names line of sight');
-else bad('the results page never names line of sight');
-if (/line of sight/i.test(html) && /halo/i.test(html)) ok('the halo is labelled');
-else bad('the halo is not labelled line of sight');
+/* The replacement now lives on the reading, not on the assessment page:
+   line of sight and gap width sit in the folded detail, under a summary
+   that asks how much of this the manager can see. */
+var numbersOf = require(path.join(ROOT, 'report', 'numbers.js'));
+var reportPage = require(path.join(ROOT, 'report', 'page.js'));
+var reading = reportPage.render(numbersOf.compute(
+  { gut: 'fine', evidence: new Array(MGI.EVIDENCE.length).fill(1),
+    output: 'held', external: 'no', energy: 'same', exposure: 'less_weekly' },
+  { email: 'test@example.com', firstName: 'Test' }, { generated_at: '2026-09-02' }
+));
+
+if (/Line of sight/.test(reading)) ok('the reading names line of sight');
+else bad('the reading never names line of sight');
+if (/Gap width/.test(reading)) ok('the reading names gap width');
+else bad('the reading never names gap width');
+if (/How much of this you can see/.test(reading)) ok('the folded row asks what it is for');
+else bad('the folded row does not ask how much of this they can see');
+
+scan('the reading, with Eran absent', reading.replace(/<style>[\s\S]*?<\/style>/, ''));
 
 /* ---------- 5. thresholds live in exactly one place ---------- */
 

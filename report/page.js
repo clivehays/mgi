@@ -358,7 +358,8 @@ var CSS = [
 '.sight dt{font-family:var(--ui);font-size:.82rem;color:var(--ink-mute)}',
 '.sight dd{margin:0;text-transform:none;color:var(--ink)}',
 
-'.foot{margin:34px 0 0;padding:18px 0 42px;border-top:1px solid var(--hair);',
+/* no rule of its own: the last folded row already closes with one */
+'.foot{margin:0;padding:18px 0 42px;',
 '  font-family:var(--ui);font-size:.76rem;line-height:1.6;color:var(--ink-mute)}',
 
 /* print */
