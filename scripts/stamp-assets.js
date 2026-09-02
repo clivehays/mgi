@@ -35,11 +35,18 @@ var ROOT = path.join(__dirname, '..');
 var HTML = path.join(ROOT, 'index.html');
 var check = process.argv.indexOf('--check') !== -1;
 
+/* Line endings are normalised before hashing. Git rewrites them on
+   checkout, so the same commit hashes differently on a Windows working
+   copy and on the Linux box that builds the deploy. Hashing the raw
+   bytes made the stamp depend on who checked the file out, which is the
+   one thing a content hash must not do. */
 function hashOf(rel) {
   var file = path.join(ROOT, rel.replace(/^\//, ''));
   if (!fs.existsSync(file)) return null;
+  var CR = String.fromCharCode(13), LF = String.fromCharCode(10);
+  var text = fs.readFileSync(file, 'utf8').split(CR + LF).join(LF);
   return crypto.createHash('sha256')
-    .update(fs.readFileSync(file))
+    .update(text, 'utf8')
     .digest('hex')
     .slice(0, 8);
 }
