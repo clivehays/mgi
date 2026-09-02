@@ -471,8 +471,20 @@
       if (!res.ok) throw new Error('bad status');
       return res.json();
     }).then(function (data) {
-      /* only the manager's own copy decides this message. A failed
-         notification is ours to chase and says nothing to them. */
+      /* The reading is the destination now. A link rather than a
+         redirect loses people at the click, so go straight there.
+         This is the route flip: delete the redirect and the old
+         in-page report renders again, with no deploy. */
+      if (data && data.reading) {
+        window.location.href = data.reading;
+        return;
+      }
+
+      /* No token means the reading could not be minted. The old
+         in-page report is already rendered behind this, so the manager
+         still gets a result, and only their own copy decides
+         this message. A failed notification is ours to chase and says
+         nothing to them. */
       if (data && data.copySent === false) throw new Error('copy not sent');
     }).catch(function () {
       el['report-sent'].textContent = 'We could not send the email copy just now. This report is complete as it stands, and you can reach us at contact@cloverera.com.';
