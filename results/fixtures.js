@@ -80,6 +80,16 @@ module.exports = {
     'readiness-focus': sub(build({ readiness: [0, 1, 1] }),
       { gut: 'fine', exposure: 'most_days' }),
 
+    /* Nothing quiet, evidence current enough that stale_majority stays
+       false, and the manager's own account of the week is adverse. Four
+       of the first five real submissions landed in variant 0 and three of
+       them were in Drift or Headwinds, so the page congratulated them.
+       This is that cell. */
+    'adverse-nothing-quiet': sub(build({
+      readiness: [3, 1, 1], results: [3, 1, 1], involvement: [3, 3, 1],
+      direction: [3, 3, 1], alignment: [3, 3, 3]
+    }), { gut: 'off', output: 'slipped_slightly', external: 'yes', exposure: 'weekly' }),
+
     'involvement-focus': sub(build({ involvement: [0, 1, 1] }),
       { gut: 'fine', exposure: 'most_days' })
   }

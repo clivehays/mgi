@@ -316,6 +316,31 @@ Object.keys(rendered).forEach(function (name) {
   check(!ADDR.test(bare), name + ': no bare address outside an opted-out region');
 });
 
+/* ---------- 34. the congratulation has to be earned ---------- */
+
+/* Variant 0's default sub is the only congratulatory line on the page.
+   Every ring holding something current does not earn it on its own: three
+   of the first four real submissions to reach variant 0 were in Drift or
+   Headwinds and were congratulated anyway. Only Cruise earns it. */
+console.log(String.fromCharCode(10) + '[34] Nothing congratulates a manager whose own account of the week is adverse');
+var BANK34 = JSON.parse(fs.readFileSync(path.join(__dirname, 'copy-bank.json'), 'utf8'));
+var PRAISE = BANK34.headline['0'].sub;
+Object.keys(rendered).forEach(function (name) {
+  var p = rendered[name].payload, html = rendered[name].html;
+  if (html.indexOf(PRAISE) === -1) return;
+  check(p.state === 'cruise', name + ': the congratulatory sub appears only in Cruise (state ' + p.state + ')');
+});
+var adv = rendered['adverse-nothing-quiet'];
+check(!!adv, 'the adverse-nothing-quiet fixture exists');
+check(adv && adv.payload.quiet_count === 0 && adv.payload.stale_majority === false &&
+  adv.payload.state !== 'cruise', 'and it is genuinely that cell: nothing quiet, evidence current, state adverse');
+check(adv && adv.html.indexOf(PRAISE) === -1, 'and it is not congratulated');
+check(adv && adv.html.indexOf(BANK34.headline['0'].sub_adverse.split('{state}')[0]) !== -1,
+  'it gets the contradiction instead');
+/* the Cruise case must keep it, or the fix has just deleted the line */
+check(rendered['cruise-all-fresh'].html.indexOf(PRAISE) !== -1,
+  'a Cruise team with nothing quiet still gets it');
+
 console.log('\n=====================================');
 console.log(pass + ' passed, ' + fail + ' failed');
 console.log('=====================================');

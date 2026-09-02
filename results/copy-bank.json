@@ -142,6 +142,7 @@
     "0": {
       "head": "All five are reading.",
       "sub": "Rarer than it sounds. Here is the one worth watching anyway.",
+      "sub_adverse": "Nothing has gone quiet, and the week still reads as {state}. That contradiction is the finding.",
       "sub_stale_majority": "Most of what sits behind them is memory."
     },
     "1": {
@@ -245,7 +246,7 @@
     "print_note": "The figures below are your own estimate, set on the page."
   },
   "sowhat_headline_stale_majority": "You are managing this team from memory.",
-  "version": "2026-09-02.1",
+  "version": "2026-09-02.2",
   "email": {
     "subject": "Your Manager Gap Index result: {state}",
     "body": "Hi {first_name},\n\nYour reading is ready. Your team came out in {state}.\n\n{headline}\n\n  {link}   See your result\n\nIt reads in about a minute. Everything underneath it is folded\naway unless you want it.\n\nClive Hays\n\nIf the quiet one looks wrong to you, that is worth knowing.\nReply and tell me."

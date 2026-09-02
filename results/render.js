@@ -246,7 +246,19 @@ function render(payload) {
      Variants 3 and above carry no variant: at that quiet count the flag is
      arithmetically certain, so a variant would replace the brief's
      sub outright rather than qualify it. */
-  var subText = (payload.stale_majority && h.sub_stale_majority) ? h.sub_stale_majority : h.sub;
+  /* Variant 0 is the one congratulatory line in the bank, and quiet_count
+     alone does not earn it. A manager who reported slipping work and an
+     external squeeze can still have something current in all five rings,
+     and the page would open by congratulating them on a team the
+     instrument had just put in Headwinds. stale_majority does not catch
+     it: that measures the age of the evidence, and this manager's
+     evidence is current. What disqualifies the congratulation is the
+     state, which is the manager's own account of the week. Only Cruise
+     earns it. */
+  var adverse = payload.state !== 'cruise';
+  var subText = h.sub;
+  if (payload.stale_majority && h.sub_stale_majority) subText = h.sub_stale_majority;
+  else if (adverse && h.sub_adverse) subText = h.sub_adverse;
   var sub = subText.replace('{state}', payload.state_name);
   var st = BANK.state[payload.state];
 
