@@ -79,4 +79,109 @@ function pending(contact) {
   };
 }
 
-module.exports = { reading: reading, pending: pending };
+/* ---------- what Clive gets ----------
+   He receives the transcript on every exit, and he is alerted whenever
+   provisioning fails. These are plain text on purpose: they are read on
+   a phone between calls, not admired.
+
+   The disclosure under the input says he reads these. It is true, and
+   this is the mechanism that makes it true. */
+
+var send = require('./send.js');
+
+var NOTIFY_TO = process.env.MGI_NOTIFY_EMAIL || 'contact@cloverera.com';
+var NOTIFY_FROM = process.env.MGI_NOTIFY_FROM || FROM;
+
+function who(payload) {
+  return (payload.meta && payload.meta.first_name || 'Someone') +
+    ' (' + (payload.meta && payload.meta.copy_to || 'no address') + ')';
+}
+
+var EXIT_WORD = {
+  trial: 'started a trial',
+  clive: 'is for you',
+  not_now: 'is a not now'
+};
+
+function transcript(payload, token, turns, meta) {
+  var L = [];
+  L.push(who(payload) + ' ' + (EXIT_WORD[meta.exit] || 'reached an exit') + '.');
+  L.push('');
+  L.push('Reading: ' + (process.env.MGI_SITE_ORIGIN || 'https://managergap.com') +
+    '/r/' + token);
+  L.push('State: ' + payload.state_name + ', focus ' + payload.focus_dimension +
+    ', ' + payload.reading_count + ' reading and ' + payload.quiet_count + ' quiet');
+  L.push('Exit: ' + meta.exit);
+  if (meta.shape && meta.shape !== 'none') L.push('Objection: ' + meta.shape);
+  if (meta.refusal) L.push('Refusal that applied: ' + meta.refusal);
+  if (meta.stop) L.push('The stop rule engaged. Eran stopped selling.');
+  if (meta.team_size) L.push('Team size: ' + meta.team_size);
+  L.push('');
+  L.push('THE CONVERSATION');
+  L.push('');
+  (turns || []).forEach(function (t) {
+    L.push((t.role === 'eran' ? 'ERAN' : 'THEM') + ': ' + t.text);
+    L.push('');
+  });
+
+  return send.email({
+    from: NOTIFY_FROM,
+    to: [NOTIFY_TO],
+    reply_to: (payload.meta && payload.meta.copy_to) || REPLY_TO,
+    subject: 'MGI conversation: ' + (meta.exit || 'exit') + ', ' +
+      (payload.meta && payload.meta.first_name || 'unknown'),
+    text: L.join(NL)
+  });
+}
+
+function trialStarted(payload, token, t) {
+  var L = [];
+  L.push(who(payload) + ' started a trial for ' + t.team_size + ' people.');
+  L.push('');
+  L.push('Join link: ' + t.join_url);
+  L.push('First report: ' + t.first_report);
+  L.push('Ends: ' + t.ends_at);
+  L.push('Reading: ' + (process.env.MGI_SITE_ORIGIN || 'https://managergap.com') +
+    '/r/' + token);
+  L.push('');
+  L.push('NOTHING IS PROVISIONED IN THE PRODUCT. There is no trial API to');
+  L.push('call yet, so this is a join code and a promise. Set the team up by');
+  L.push('hand before ' + t.first_report + ' or the first report does not exist.');
+  L.push('');
+  L.push('THE MESSAGE THEY ARE SENDING THEIR TEAM');
+  L.push('');
+  L.push(t.message || '(the message could not be written, so they have none)');
+
+  return send.email({
+    from: NOTIFY_FROM,
+    to: [NOTIFY_TO],
+    reply_to: (payload.meta && payload.meta.copy_to) || REPLY_TO,
+    subject: 'MGI trial: ' + (payload.meta && payload.meta.first_name || 'unknown') +
+      ', ' + t.team_size + ' people',
+    text: L.join(NL)
+  });
+}
+
+function trialFailed(payload, token, size) {
+  return send.email({
+    from: NOTIFY_FROM,
+    to: [NOTIFY_TO],
+    reply_to: (payload.meta && payload.meta.copy_to) || REPLY_TO,
+    subject: 'MGI trial FAILED to provision',
+    text: [
+      who(payload) + ' asked for a trial for ' + size + ' people and it did not save.',
+      '',
+      'They have been told it is on our side and that you will get it running today.',
+      'Reading: ' + (process.env.MGI_SITE_ORIGIN || 'https://managergap.com') +
+        '/r/' + token
+    ].join(NL)
+  });
+}
+
+module.exports = {
+  reading: reading,
+  pending: pending,
+  transcript: transcript,
+  trialStarted: trialStarted,
+  trialFailed: trialFailed
+};

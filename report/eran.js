@@ -173,7 +173,13 @@ var RULES = [
   [/\b(AI[- ]powered|data[- ]driven|the future of work)\b/i, 'a banned phrase from rule 7.'],
   [/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/i, 'a day of the week. No day of the week appears anywhere on the page.'],
   [/(^|[.!?]\s+|\n)\s*(And|Because)\b/, 'a sentence opening with And or Because. Rule 7.'],
-  [/\bwill (leave|quit|resign|go|fall|drop|decline|worsen|get worse|slip|stop)\b/i, 'a prediction. Rule 2: state consequence in the present tense, as something already happening.'],
+  /* Rule 2 is about predicting that a person leaves or that output falls.
+     Unqualified, it also fires on "I will leave it there" and "I will
+     stop there", which are how a reply ends when it has decided not to
+     push. So the speaker cannot be the writer, and the verb cannot be
+     taking an object. */
+  [/(?<!\bI )\bwill (leave|quit|resign|go|fall|drop|decline|worsen|get worse|slip|stop)\b(?!\s+(it|that|this|there|here))/i,
+    'a prediction. Rule 2: state consequence in the present tense, as something already happening.'],
   [/\b(is|are) (going to|likely to)\b/i, 'a prediction. Rule 2.'],
   [/^\s*[-*•]\s/m, 'a bullet. Rule 7.']
 ];

@@ -14,11 +14,40 @@
       "maxDuration": 30,
       "memory": 1024,
       "includeFiles": "worksheets/**"
+    },
+    "api/ask.js": {
+      "maxDuration": 120,
+      "memory": 1024
+    },
+    "api/trial.js": {
+      "maxDuration": 120,
+      "memory": 1024
+    },
+    "api/join.js": {
+      "maxDuration": 30,
+      "memory": 1024
     }
   },
   "headers": [
     {
       "source": "/r/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
+        }
+      ]
+    },
+    {
+      "source": "/j/(.*)",
       "headers": [
         {
           "key": "X-Robots-Tag",
@@ -106,12 +135,24 @@
   ],
   "rewrites": [
     {
+      "source": "/r/:token/ask",
+      "destination": "/api/ask?token=:token"
+    },
+    {
+      "source": "/r/:token/trial",
+      "destination": "/api/trial?token=:token"
+    },
+    {
       "source": "/r/:token/worksheet.pdf",
       "destination": "/api/worksheet?token=:token"
     },
     {
       "source": "/r/:token",
       "destination": "/api/reading?token=:token"
+    },
+    {
+      "source": "/j/:code",
+      "destination": "/api/join?code=:code"
     }
   ]
 }

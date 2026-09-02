@@ -167,6 +167,27 @@ function receipt(numbers, eran) {
   return '<section class="receipt">' + counters + body + cta + '</section>';
 }
 
+/* ---------- the conversation ----------
+   Below the receipt, in the voice that wrote the report. It renders
+   only when there is a model to answer with: a chat box that cannot
+   answer is worse than no chat box, and the receipt's own CTA is still
+   there either way. */
+
+function talk(token) {
+  if (!token || !process.env.ANTHROPIC_API_KEY) return '';
+  return '<section class="talk" id="talk" data-token="' + encodeURIComponent(token) + '">' +
+    '<h2 class="section-head mono">Ask about this</h2>' +
+    '<div class="thread" id="thread" role="log" aria-live="polite" aria-label="The conversation"></div>' +
+    '<form class="ask" id="ask-form">' +
+    '<label class="visually-hidden" for="ask">Your message</label>' +
+    '<textarea id="ask" name="ask" rows="1" placeholder="What does this actually mean for me?" ' +
+    'maxlength="2000" autocomplete="off"></textarea>' +
+    '<button type="submit" class="ask-send" id="ask-send">Send</button>' +
+    '</form>' +
+    '<p class="disclosure">Clive reads these. That is rather the point.</p>' +
+    '</section>';
+}
+
 /* The worksheet sits after the question, behind a hairline. The question
    is the beat the section ends on, and a download link in front of it
    would take that away. The link is token-scoped: the library is the
@@ -356,6 +377,41 @@ var CSS = [
 '  border-bottom:1px solid rgba(237,231,219,.45);padding-bottom:2px}',
 '.cta a:hover{border-bottom-color:var(--on-navy)}',
 
+/* the conversation */
+'.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;',
+'  clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}',
+'.talk{padding:34px 0 0}',
+'.thread{display:flex;flex-direction:column;gap:14px;margin:0 0 16px}',
+'.thread:empty{margin:0}',
+'.turn{max-width:92%;font-size:.98rem;line-height:1.5}',
+'.turn-them{align-self:flex-end;background:var(--card);',
+'  border:1px solid var(--hair);border-radius:12px 12px 3px 12px;padding:11px 14px}',
+'.turn-eran{align-self:flex-start;white-space:pre-wrap}',
+'.turn-eran::before{content:"";display:block;width:22px;height:2px;',
+'  background:var(--amber);margin:0 0 9px}',
+'.turn-wait{color:var(--ink-mute)}',
+'.ask{display:flex;gap:9px;align-items:flex-end}',
+'.ask textarea{flex:1 1 auto;min-width:0;resize:none;font:400 1rem/1.45 var(--serif);',
+'  color:var(--ink);background:var(--card);border:1px solid var(--rule);',
+'  border-radius:10px;padding:11px 13px;max-height:9rem}',
+'.ask textarea:focus-visible{outline:2px solid var(--blue);outline-offset:-1px}',
+'.ask-send{flex:0 0 auto;appearance:none;border:0;border-radius:10px;',
+'  background:var(--navy);color:var(--on-navy);cursor:pointer;',
+'  font:500 .92rem/1 var(--ui);padding:14px 17px}',
+'.ask-send:disabled{opacity:.45;cursor:default}',
+'.ask-send:focus-visible{outline:2px solid var(--blue);outline-offset:2px}',
+'.disclosure{margin:11px 0 0;font-family:var(--ui);font-size:.76rem;',
+'  color:var(--ink-mute)}',
+'.join{margin:14px 0 0;padding:14px;border:1px solid var(--rule);',
+'  border-radius:10px;background:var(--card)}',
+'.join-label{font-family:var(--ui);font-size:.74rem;color:var(--ink-mute);',
+'  margin:0 0 7px;text-transform:uppercase;letter-spacing:.06em}',
+'.join a{font-family:var(--mono);font-size:.82rem;text-transform:none;',
+'  color:var(--blue);word-break:break-all}',
+'.team-msg{width:100%;margin:12px 0 0;resize:vertical;min-height:8rem;',
+'  font:400 .95rem/1.5 var(--serif);color:var(--ink);background:var(--paper);',
+'  border:1px solid var(--rule);border-radius:10px;padding:12px 13px}',
+
 '.next-action{margin:0 0 14px}',
 '.next-question{font-style:italic;font-size:1.1rem;line-height:1.4;margin:0;',
 '  padding-left:16px;border-left:2px solid var(--amber)}',
@@ -479,6 +535,137 @@ var JS = [
 '  window.addEventListener("beforeprint",function(){',
 '    [].slice.call(document.querySelectorAll("details")).forEach(function(d){d.open=true;});',
 '  });',
+'',
+'  /* ---------- the conversation ---------- */',
+'  var talk=document.getElementById("talk");',
+'  if(talk){',
+'    var token=talk.getAttribute("data-token");',
+'    var thread=document.getElementById("thread");',
+'    var form=document.getElementById("ask-form");',
+'    var input=document.getElementById("ask");',
+'    var sendBtn=document.getElementById("ask-send");',
+'    var busy=false;',
+'    var spoken=false;',
+'',
+'    function bubble(cls,text){',
+'      var p=document.createElement("p");',
+'      p.className="turn "+cls;',
+'      p.textContent=text||"";',
+'      thread.appendChild(p);',
+'      return p;',
+'    }',
+'',
+'    function grow(){',
+'      input.style.height="auto";',
+'      input.style.height=Math.min(input.scrollHeight,144)+"px";',
+'    }',
+'    input.addEventListener("input",grow);',
+'    input.addEventListener("keydown",function(e){',
+'      if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();form.requestSubmit();}',
+'    });',
+'',
+'    form.addEventListener("submit",function(e){',
+'      e.preventDefault();',
+'      var msg=input.value.trim();',
+'      if(!msg||busy)return;',
+'      busy=true;sendBtn.disabled=true;',
+'      bubble("turn-them",msg);',
+'      input.value="";grow();',
+'      var out=bubble("turn-eran turn-wait","...");',
+'      out.scrollIntoView({block:"nearest"});',
+'',
+'      fetch("/r/"+token+"/ask",{',
+'        method:"POST",',
+'        headers:{"Content-Type":"application/json"},',
+'        body:JSON.stringify({message:msg})',
+'      }).then(function(r){',
+'        if(!r.ok||!r.body)throw new Error("no");',
+'        var ct=r.headers.get("content-type")||"";',
+'        if(ct.indexOf("application/json")===0){',
+'          return r.json().then(function(j){',
+'            out.className="turn turn-eran";',
+'            out.textContent=j.reply||"";',
+'            spoken=true;',
+'          });',
+'        }',
+'        var reader=r.body.getReader();',
+'        var dec=new TextDecoder();',
+'        var acc="";',
+'        return (function pump(){',
+'          return reader.read().then(function(res){',
+'            if(res.done)return;',
+'            acc+=dec.decode(res.value,{stream:true});',
+'            out.className="turn turn-eran";',
+'            out.textContent=acc;',
+'            spoken=true;',
+'            out.scrollIntoView({block:"nearest"});',
+'            return pump();',
+'          });',
+'        })();',
+'      }).then(function(){',
+'        if(!out.textContent.trim())throw new Error("empty");',
+'        offerClose(out.textContent);',
+'      }).catch(function(){',
+'        /* A model that cannot answer hides the block rather than',
+'           showing an error. Once it has said something real that',
+'           would take the conversation away, so it just stops. */',
+'        if(spoken){',
+'          out.className="turn turn-eran";',
+'          if(!out.textContent.trim())out.parentNode.removeChild(out);',
+'          form.hidden=true;',
+'        }else{',
+'          talk.parentNode.removeChild(talk);',
+'        }',
+'      }).then(function(){',
+'        busy=false;sendBtn.disabled=false;',
+'      });',
+'    });',
+'',
+'    /* The close runs inside the conversation. When Eran has asked for',
+'       the team size, the answer provisions rather than sending anyone',
+'       to a form. */',
+'    function offerClose(text){',
+'      if(document.getElementById("join-block"))return;',
+'      if(!/how many|team size|people (are )?(on|in)/i.test(text))return;',
+'      var once=function(e){',
+'        var n=parseInt((input.value.match(/\\d+/)||[])[0],10);',
+'        if(!isFinite(n))return;',
+'        form.removeEventListener("submit",once,true);',
+'        e.preventDefault();e.stopPropagation();',
+'        bubble("turn-them",input.value.trim());',
+'        input.value="";grow();',
+'        var out=bubble("turn-eran turn-wait","...");',
+'        fetch("/r/"+token+"/trial",{',
+'          method:"POST",headers:{"Content-Type":"application/json"},',
+'          body:JSON.stringify({team_size:n})',
+'        }).then(function(r){return r.json();}).then(function(j){',
+'          out.className="turn turn-eran";',
+'          if(j.reply){out.textContent=j.reply;return;}',
+'          out.textContent="That is set up. First report "+j.first_report+',
+'            ", and it stops on its own on "+j.ends_at+".";',
+'          var box=document.createElement("div");',
+'          box.className="join";box.id="join-block";',
+'          box.innerHTML=\'<p class="join-label">Send this to your team</p>\';',
+'          var a=document.createElement("a");',
+'          a.href=j.join_url;a.textContent=j.join_url;',
+'          box.appendChild(a);',
+'          if(j.message){',
+'            var ta=document.createElement("textarea");',
+'            ta.className="team-msg";ta.value=j.message;',
+'            ta.setAttribute("aria-label","The message to your team, edit it");',
+'            box.appendChild(ta);',
+'          }',
+'          thread.appendChild(box);',
+'          box.scrollIntoView({block:"nearest"});',
+'        }).catch(function(){',
+'          out.className="turn turn-eran";',
+'          out.textContent="Something went wrong setting that up and Clive "+',
+'            "has been told. Nothing needs doing again.";',
+'        });',
+'      };',
+'      form.addEventListener("submit",once,true);',
+'    }',
+'  }',
 '})();'
 ].join('\n');
 
@@ -519,6 +706,7 @@ function render(numbers, token) {
     cost(eran) + '\n' +
     changes(eran) + '\n' +
     receipt(numbers, eran) + '\n' +
+    talk(token) + '\n' +
     nextMove(eran, token) + '\n' +
     folded(numbers, eran) + '\n' +
 
