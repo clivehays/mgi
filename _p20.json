@@ -1,0 +1,205 @@
+{
+  "meta": {
+    "copy_to": "clivehays@gmail.com",
+    "instrument": "6.1.0",
+    "reading_no": 1,
+    "fingerprint": "ece7447b",
+    "generated_at": "2026-09-02"
+  },
+  "ties": [
+    "alignment",
+    "readiness",
+    "direction"
+  ],
+  "areas": [
+    {
+      "key": "readiness",
+      "dark": 0,
+      "rank": 1,
+      "fresh": 1,
+      "items": [
+        {
+          "id": "r1",
+          "tier": "fresh",
+          "label": "inside the month",
+          "value": 2
+        },
+        {
+          "id": "r2",
+          "tier": "stale",
+          "label": "over a month ago",
+          "value": 1
+        },
+        {
+          "id": "r3",
+          "tier": "stale",
+          "label": "over a month ago",
+          "value": 1
+        }
+      ],
+      "plain": "How equipped the team is",
+      "score": 1.3333333333333333,
+      "stale": 2,
+      "pattern": "mostly_stale",
+      "dimension": "Readiness"
+    },
+    {
+      "key": "results",
+      "dark": 0,
+      "rank": 4,
+      "fresh": 3,
+      "items": [
+        {
+          "id": "w1",
+          "tier": "fresh",
+          "label": "inside the month",
+          "value": 2
+        },
+        {
+          "id": "w2",
+          "tier": "fresh",
+          "label": "inside the month",
+          "value": 2
+        },
+        {
+          "id": "w3",
+          "tier": "fresh",
+          "label": "inside the month",
+          "value": 2
+        }
+      ],
+      "plain": "The work itself",
+      "score": 2,
+      "stale": 0,
+      "pattern": "all_fresh",
+      "dimension": "Results"
+    },
+    {
+      "key": "involvement",
+      "dark": 0,
+      "rank": 3,
+      "fresh": 2,
+      "items": [
+        {
+          "id": "i1",
+          "tier": "stale",
+          "label": "over a month ago",
+          "value": 1
+        },
+        {
+          "id": "i2",
+          "tier": "fresh",
+          "label": "inside the month",
+          "value": 2
+        },
+        {
+          "id": "i3",
+          "tier": "fresh",
+          "label": "inside the month",
+          "value": 2
+        }
+      ],
+      "plain": "How invested people are",
+      "score": 1.6666666666666667,
+      "stale": 1,
+      "pattern": "mostly_fresh",
+      "dimension": "Involvement"
+    },
+    {
+      "key": "direction",
+      "dark": 0,
+      "rank": 2,
+      "fresh": 1,
+      "items": [
+        {
+          "id": "d1",
+          "tier": "stale",
+          "label": "over a month ago",
+          "value": 1
+        },
+        {
+          "id": "d2",
+          "tier": "stale",
+          "label": "over a month ago",
+          "value": 1
+        },
+        {
+          "id": "d3",
+          "tier": "fresh",
+          "label": "inside the month",
+          "value": 2
+        }
+      ],
+      "plain": "Whether everyone knows why",
+      "score": 1.3333333333333333,
+      "stale": 2,
+      "pattern": "mostly_stale",
+      "dimension": "Direction"
+    },
+    {
+      "key": "alignment",
+      "dark": 0,
+      "rank": 0,
+      "fresh": 1,
+      "items": [
+        {
+          "id": "a1",
+          "tier": "stale",
+          "label": "over a month ago",
+          "value": 1
+        },
+        {
+          "id": "a2",
+          "tier": "fresh",
+          "label": "inside the month",
+          "value": 2
+        },
+        {
+          "id": "a3",
+          "tier": "stale",
+          "label": "over a month ago",
+          "value": 1
+        }
+      ],
+      "plain": "Whether truth travels up",
+      "score": 1.3333333333333333,
+      "stale": 2,
+      "pattern": "mostly_stale",
+      "dimension": "Alignment"
+    }
+  ],
+  "focus": "alignment",
+  "state": "headwinds",
+  "gating": {
+    "cell4": "default",
+    "cheap": "alignment"
+  },
+  "signal": {
+    "max": 45,
+    "score": 23
+  },
+  "gap_width": "wide",
+  "generated": {},
+  "calculator": {
+    "a": {
+      "def": 6,
+      "max": 40,
+      "min": 2,
+      "step": 1
+    },
+    "b": {
+      "def": 2,
+      "max": 10,
+      "min": 1,
+      "step": 1
+    },
+    "pattern": "A"
+  },
+  "state_name": "Headwinds",
+  "older_count": 7,
+  "quiet_count": 0,
+  "healthy_count": 2,
+  "line_of_sight": "narrow",
+  "stale_majority": false,
+  "focus_dimension": "Alignment"
+}

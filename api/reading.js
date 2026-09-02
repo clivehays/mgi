@@ -44,8 +44,26 @@ function rest(path, opts) {
 }
 
 /* Never a stack trace and never a blank page. A reading that cannot be
-   built is a lead we still hold, so it says so and gives them Clive. */
+   built is a lead we still hold, so it says so and gives them Clive.
+
+   404 and 500 say different things, because they are different events and
+   the manager can tell them apart. A dead link is not a failure to build
+   the page: a test reading was once revoked while its email still sat in
+   an inbox, this page announced that something had gone wrong, and the
+   person who clicked it reasonably concluded the product was broken. A
+   prospect clicking an old link would conclude the same. */
 function holding(res, code) {
+  var lost = code === 404;
+  var head = lost ? 'This link is no longer live.'
+                  : 'Your reading is being prepared.';
+  var body = lost
+    ? 'It has either been replaced by a newer one or withdrawn. Nothing is ' +
+      'wrong with your answers and there is nothing to do again.'
+    : 'Something went wrong building this page and Clive has been told. ' +
+      'Your answers are safe and nothing needs doing again.';
+  var close = lost ? ' and he will send you the current one.'
+                   : ' and he will send it over.';
+
   headers(res);
   res.status(code);
   res.send('<!doctype html><html lang="en-GB"><head><meta charset="utf-8">' +
@@ -57,11 +75,11 @@ function holding(res, code) {
     '.b{max-width:30em}h1{font-size:23px;font-weight:400;margin:0 0 14px}' +
     'a{color:#1A3565}@media(prefers-color-scheme:dark){body{background:#0F1214;color:#EBE6DC}a{color:#4FA6F5}}' +
     '</style></head><body><div class="b">' +
-    '<h1>Your reading is being prepared.</h1>' +
-    '<p>Something went wrong building this page and Clive has been told. ' +
-    'Your answers are safe and nothing needs doing again.</p>' +
-    '<p>If you would rather not wait, write to ' +
-    '<!--email_off--><a href="mailto:clive@managergap.com">clive@managergap.com</a><!--/email_off--> and he will send it over.</p>' +
+    '<h1>' + head + '</h1>' +
+    '<p>' + body + '</p>' +
+    '<p>Write to ' +
+    '<!--email_off--><a href="mailto:clive@managergap.com">clive@managergap.com</a><!--/email_off-->' +
+    close + '</p>' +
     '</div></body></html>');
 }
 

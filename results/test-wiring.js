@@ -162,6 +162,41 @@ check(/payload         jsonb/.test(schema), 'payload is loosely typed jsonb');
 check(!!bank.email && !!bank.email.body, 'the email body lives in the copy bank, not the mailer');
 check(!!bank.version, 'the bank carries a version for copy_bank_ver');
 
+
+/* ---------- 24. a dead link and a broken build say different things ---------- */
+
+console.log((String.fromCharCode(10)) + '[24] The holding page tells a dead link apart from a build failure');
+
+/* A revoked reading whose email was still in an inbox produced "Something
+   went wrong building this page", and the person who clicked it concluded
+   the product was broken. Nothing had gone wrong building anything. */
+function holdingFor(code) {
+  var out = { code: 0, body: '' };
+  var res = {
+    setHeader: function () {},
+    status: function (c) { out.code = c; return this; },
+    send: function (s) { out.body = s; }
+  };
+  return { res: res, out: out };
+}
+var h404 = holdingFor();
+require('../api/reading.js')({ method: 'GET', query: { token: 'not-a-real-token' } }, h404.res);
+
+check(h404.out.code === 404, 'an unknown token is a 404');
+var b404 = h404.out.body;
+check(b404.indexOf('no longer live') !== -1, 'and says the link is no longer live');
+check(b404.indexOf('Something went wrong') === -1,
+  'and does NOT claim something went wrong building the page');
+check(b404.indexOf('nothing to do again') !== -1, 'and reassures them their answers stand');
+check(b404.indexOf('clive@managergap.com') !== -1, 'and still gives them Clive');
+
+/* the 500 wording has to survive, or the split has just deleted it */
+check(READING.indexOf('Something went wrong building this page') !== -1,
+  'the build-failure wording is still there for a real 500');
+check(READING.indexOf('Your reading is being prepared') !== -1,
+  'including its headline');
+check(/var lost = code === 404/.test(READING), 'the two are chosen by status code, not by guesswork');
+
 console.log('\n=====================================');
 console.log(pass + ' passed, ' + fail + ' failed');
 console.log('=====================================');
