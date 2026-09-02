@@ -154,7 +154,10 @@ function receipt(payload) {
   var st = BANK.state[payload.state];
   var cell4 = BANK.receipt.cell4[payload.gating.cell4];
   var cells = [
-    { v: payload.healthy_count, l: BANK.receipt.cell1_label },
+    /* a leading zero under "confirmed healthy" reads as a score rather
+       than as a finding, which is the sarcasm the brief warns about */
+    { v: payload.healthy_count,
+      l: payload.healthy_count === 0 ? BANK.receipt.cell1_label_none : BANK.receipt.cell1_label },
     { v: Math.max(1, payload.quiet_count), l: BANK.receipt.cell2_label },
     { v: 1, l: BANK.receipt.cell3_label },
     { v: cell4.value, l: cell4.label }
@@ -208,7 +211,10 @@ function rows(payload) {
 
 function render(payload) {
   var h = BANK.headline[String(payload.quiet_count)];
-  var sub = h.sub.replace('{state}', payload.state_name);
+  /* all five reading, but thinly, is not the same finding as all five
+     reading well. The brief's variant-0 sub congratulates. */
+  var subText = (payload.quiet_count === 0 && payload.thin && h.sub_thin) ? h.sub_thin : h.sub;
+  var sub = subText.replace('{state}', payload.state_name);
   var st = BANK.state[payload.state];
 
   return '<!doctype html>\n<html lang="en-GB"><head>\n' +

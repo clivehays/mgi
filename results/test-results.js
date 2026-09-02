@@ -15,56 +15,11 @@ function ok(m) { pass++; console.log('  ok    ' + m); }
 function bad(m) { fail++; console.log('  FAIL  ' + m); }
 function check(cond, m) { cond ? ok(m) : bad(m); }
 
-/* ---------- fixtures ---------- */
+/* ---------- fixtures ----------
+   One shared list, so the pages on disk cannot drift from the pages
+   under test. See results/fixtures.js. */
 
-function sub(evidence, o) {
-  o = o || {};
-  return {
-    answers: {
-      gut: o.gut || 'fine', evidence: evidence,
-      output: o.output || 'held', external: o.external || 'no',
-      energy: o.energy || 'same', exposure: o.exposure || 'few_times'
-    },
-    contact: { email: 'm@example.com' }
-  };
-}
-
-/* item order per area: readiness 1,2,13 | results 3,4,14 |
-   involvement 5,6,11 | direction 7,8,15 | alignment 9,10,12 */
-function build(map) {
-  var e = new Array(15).fill(3);
-  Object.keys(map).forEach(function (k) {
-    ({ readiness: [1, 2, 13], results: [3, 4, 14], involvement: [5, 6, 11],
-       direction: [7, 8, 15], alignment: [9, 10, 12] })[k]
-      .forEach(function (n, i) { e[n - 1] = map[k][i]; });
-  });
-  return e;
-}
-
-var FIXTURES = {
-  'cruise-direction-dark': sub(build({ direction: [0, 0, 0] }),
-    { gut: 'great', exposure: 'most_days' }),
-
-  'headwinds-all-stale': sub([0, 3, 3, 3, 0, 2, 0, 0, 2, 0, 2, 2, 3, 1, 1],
-    { gut: 'struggling', output: 'slipped_slightly', external: 'yes', exposure: 'less_weekly' }),
-
-  'cruise-all-fresh': sub(new Array(15).fill(3), { gut: 'great', exposure: 'most_days' }),
-
-  'drift-two-quiet': sub(build({ direction: [0, 1, 1], alignment: [1, 0, 1] }),
-    { gut: 'fine', output: 'held', energy: 'lower', exposure: 'weekly' }),
-
-  'stall-all-dark': sub(new Array(15).fill(0),
-    { gut: 'struggling', output: 'slipped_noticeably', external: 'no', energy: 'lower', exposure: 'less_weekly' }),
-
-  'headwinds-results-focus': sub(build({ results: [0, 1, 1] }),
-    { gut: 'off', output: 'slipped_slightly', external: 'yes', exposure: 'few_times' }),
-
-  'readiness-focus': sub(build({ readiness: [0, 1, 1] }),
-    { gut: 'fine', exposure: 'most_days' }),
-
-  'involvement-focus': sub(build({ involvement: [0, 1, 1] }),
-    { gut: 'fine', exposure: 'most_days' })
-};
+var FIXTURES = require('./fixtures.js').FIXTURES;
 
 var rendered = {};
 Object.keys(FIXTURES).forEach(function (name) {
@@ -232,6 +187,26 @@ check(!/no tool, no process/i.test(rendered['readiness-focus'].html), 'readiness
 check(/no tool, no process/i.test(rendered['involvement-focus'].html), 'involvement keeps the free-fix paragraph');
 
 /* ---------- page weight ---------- */
+console.log('');
+console.log('[16] The thin case, which the brief flagged');
+var hz = rendered['headwinds-quiet-zero'];
+check(hz.payload.quiet_count === 0, 'every ring reads, so quiet_count is 0');
+check(hz.payload.thin === true, 'and it is flagged thin: most items are older than a month');
+check(hz.payload.signal.score === 23, 'signal is 23 of 45, the brief figure');
+check(!/Rarer than it sounds/.test(hz.html),
+  'the congratulatory variant-0 sub does not run on a thin reading');
+check(/Thinly/.test(hz.html), 'the thin sub runs instead');
+check(/Rarer than it sounds/.test(rendered['cruise-all-fresh'].html),
+  'a genuinely healthy variant-0 keeps the original sub');
+check(!rendered['cruise-all-fresh'].payload.thin, 'all-fresh is not flagged thin');
+
+check(!/0<\/span><span class="cell-l">conditions confirmed healthy/.test(rendered['stall-all-dark'].html),
+  'a zero never sits under "confirmed healthy"');
+check(/conditions you can confirm from your own evidence/.test(rendered['stall-all-dark'].html),
+  'the all-dark receipt reframes cell 1 as a finding');
+check(/conditions confirmed healthy/.test(rendered['cruise-all-fresh'].html),
+  'a healthy reading keeps the original cell 1 label');
+
 
 console.log('\n[15] Weight and geometry');
 Object.keys(rendered).forEach(function (n) {

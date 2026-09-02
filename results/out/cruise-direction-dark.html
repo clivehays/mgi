@@ -79,7 +79,11 @@ if(num){
   function count(to){
     var from=parseFloat(num.dataset.value)||0;
     num.dataset.value=to;
-    if(reduce||from===to){num.textContent=fmt(to);return;}
+    /* write the answer first. The count is decoration, and rAF does not
+       always run: a throttled or backgrounded tab would otherwise leave
+       the reader looking at the previous number. */
+    num.textContent=fmt(to);
+    if(reduce||from===to)return;
     if(raf)cancelAnimationFrame(raf);
     var t0=null,dur=320;
     function tick(t){

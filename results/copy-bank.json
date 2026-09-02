@@ -1,6 +1,5 @@
 {
-  "_note": "Every participant-facing string. Deterministic lookup only, no interpolation beyond computed numbers. Lines marked approved are verbatim from the reference or from addendum A and must not be reworded without Clive.",
-
+  "_note": "Every participant-facing string. Deterministic lookup only, no interpolation beyond computed numbers. Lines marked approved are verbatim from the reference or from addendum A and must not be reworded without Clive. headline.0.sub_thin covers the case the brief flagged: all five rings reading, but thinly. The default variant-0 sub congratulates, which is wrong on a poor signal. receipt.cell1_label_none replaces cell 1's label when healthy_count is 0: a leading zero under 'confirmed healthy' reads as a mark out of five rather than as what the five minutes bought.",
   "dimension": {
     "readiness": {
       "asks": "Does this team have what it needs? The skills, the tools, the information, the decisions unblocked.",
@@ -26,7 +25,6 @@
       ],
       "thursday": "Ask one person: what is the thing you work around every week that you have stopped bothering to mention? Then wait. The first answer is usually the polite one, and the second answer is the one you wanted."
     },
-
     "results": {
       "asks": "Is the work landing, at the quality it should, without heroics to get it there?",
       "means": {
@@ -48,7 +46,6 @@
       ],
       "thursday": "Pick one thing that shipped recently and ask the person who made it what it took. Not whether it went well. What it took. The gap between that answer and the status update is the reading you are missing."
     },
-
     "involvement": {
       "asks": "Are people taking ownership, bringing things unprompted, putting themselves into the work rather than through it?",
       "means": {
@@ -70,7 +67,6 @@
       ],
       "thursday": "Ask somebody what they would fix here if nobody was watching. The answer tells you what they have already noticed and not raised, and how they say it tells you why."
     },
-
     "direction": {
       "asks": "Can anyone here say where we are going, and why that rather than something else?",
       "means": {
@@ -95,7 +91,6 @@
       ],
       "thursday": "Ask someone to tell you what the team is trying to do this quarter, and why that rather than something else. Do not help them. The pause before the why is the reading."
     },
-
     "alignment": {
       "asks": "Does disagreement reach you, do problems arrive from the person holding them, and does what you hear ever change your mind?",
       "means": {
@@ -121,7 +116,6 @@
       "thursday": "Say your own current plan out loud and ask what is wrong with it. Then say nothing until somebody answers. The length of that silence is the reading, and it is worth timing."
     }
   },
-
   "state": {
     "cruise": {
       "chip": "Cruise",
@@ -144,16 +138,33 @@
       "receipt_head": "You knew something was wrong."
     }
   },
-
   "headline": {
-    "0": { "head": "All five are reading.", "sub": "Rarer than it sounds. Here is the one worth watching anyway." },
-    "1": { "head": "Four are live. One has gone quiet.", "sub": "The quiet one is where teams in {state} tend to start moving." },
-    "2": { "head": "Three are live. Two have gone quiet.", "sub": "Two at once is a pattern, not a coincidence." },
-    "3": { "head": "Two are live. Three have gone quiet.", "sub": "Most of this team's week is not reaching you." },
-    "4": { "head": "One is live. Four have gone quiet.", "sub": "You are running on one instrument." },
-    "5": { "head": "Nothing reached you this month.", "sub": "That is its own finding, and it is the useful kind." }
+    "0": {
+      "head": "All five are reading.",
+      "sub": "Rarer than it sounds. Here is the one worth watching anyway.",
+      "sub_thin": "Thinly. Most of what sits behind them is older than a month."
+    },
+    "1": {
+      "head": "Four are live. One has gone quiet.",
+      "sub": "The quiet one is where teams in {state} tend to start moving."
+    },
+    "2": {
+      "head": "Three are live. Two have gone quiet.",
+      "sub": "Two at once is a pattern, not a coincidence."
+    },
+    "3": {
+      "head": "Two are live. Three have gone quiet.",
+      "sub": "Most of this team's week is not reaching you."
+    },
+    "4": {
+      "head": "One is live. Four have gone quiet.",
+      "sub": "You are running on one instrument."
+    },
+    "5": {
+      "head": "Nothing reached you this month.",
+      "sub": "That is its own finding, and it is the useful kind."
+    }
   },
-
   "cheap": {
     "eyebrow": "The good news, and it is real",
     "free": {
@@ -165,37 +176,51 @@
       "body": "A Readiness gap is a purchase order, an access request, a decision somebody has been sitting on, or a person who needs an afternoon of training. Those have prices and they have owners. Most of what goes wrong with a team has neither. You are looking at the rare category where the fix is a thing you can put on a list and finish."
     }
   },
-
   "receipt": {
     "eyebrow": "Five minutes ago",
     "cell1_label": "conditions confirmed healthy, with evidence",
     "cell2_label": "named, located, and costing you something now",
     "cell3_label": "question that tests it on Thursday",
     "cell4": {
-      "default":     { "value": "0", "label": "pounds and no process to fix it" },
-      "readiness":   { "value": "1", "label": "thing for you to clear, not for them to absorb" },
-      "involvement": { "value": "1", "label": "thing you can stop doing for them this week" },
-      "results":     { "value": "1", "label": "question that gets you the texture, not the status" }
+      "default": {
+        "value": "0",
+        "label": "pounds and no process to fix it"
+      },
+      "readiness": {
+        "value": "1",
+        "label": "thing for you to clear, not for them to absorb"
+      },
+      "involvement": {
+        "value": "1",
+        "label": "thing you can stop doing for them this week"
+      },
+      "results": {
+        "value": "1",
+        "label": "question that gets you the texture, not the status"
+      }
     },
     "body": "Five minutes of answering, and none of it asked you to describe anyone. It asked when things last happened, which is the one thing a manager can answer accurately.",
     "pivot": "The half you do not have is what your team would say. That is the only thing on this page you cannot get from your own chair.",
     "cta": "Get the other half",
-    "sig": "Clive Hays built the Manager Gap Index."
+    "sig": "Clive Hays built the Manager Gap Index.",
+    "cell1_label_none": "conditions you can confirm from your own evidence today"
   },
-
   "disclosure": {
-    "thursday": { "title": "One thing to try on Thursday" },
+    "thursday": {
+      "title": "One thing to try on Thursday"
+    },
     "rings": {
       "title": "Where the five rings come from",
       "body": "Each ring is one condition of a working team, read from three things you were asked about. A solid segment means that one reached you inside the month. A thin amber segment means it last reached you over a month ago. A dashed segment means you could not recall it at all. The five are Readiness, Results, Involvement, Direction and Alignment, and they are always in the same order so the shape becomes familiar."
     },
-    "state": { "title": "What {state} means" },
+    "state": {
+      "title": "What {state} means"
+    },
     "chair": {
       "title": "How much of this you can see",
       "body": "Every reading on this page came from one chair. Nobody on your team was asked anything, so all of it is <strong>your picture of the team rather than the team's picture of itself.</strong> Those two are rarely identical, and the distance between them is the thing worth measuring next."
     }
   },
-
   "ui": {
     "ring_hint": "Tap any ring to see what it reads.",
     "sowhat_eyebrow": "So what",
