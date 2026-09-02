@@ -1,5 +1,5 @@
 {
-  "_note": "Every participant-facing string. Deterministic lookup only, no interpolation beyond computed numbers. Lines marked approved are verbatim from the reference or from addendum A and must not be reworded without Clive. headline.0.sub_thin covers the case the brief flagged: all five rings reading, but thinly. The default variant-0 sub congratulates, which is wrong on a poor signal. receipt.cell1_label_none replaces cell 1's label when healthy_count is 0: a leading zero under 'confirmed healthy' reads as a mark out of five rather than as what the five minutes bought.",
+  "_note": "Every participant-facing string. Deterministic lookup only, no interpolation beyond computed numbers. Lines marked approved are verbatim from the reference or from addendum A and must not be reworded without Clive. headline.0.sub_thin covers the case the brief flagged: all five rings reading, but thinly. The default variant-0 sub congratulates, which is wrong on a poor signal. receipt.cell1_label_none replaces cell 1's label when healthy_count is 0: a leading zero under 'confirmed healthy' reads as a mark out of five rather than as what the five minutes bought. sub_thin exists on variants 0, 1 and 2 only: at quiet_count 3 or above thin is arithmetically always true, so a thin sub there would delete the brief's own sub rather than qualify it.",
   "dimension": {
     "readiness": {
       "asks": "Does this team have what it needs? The skills, the tools, the information, the decisions unblocked.",
@@ -146,11 +146,13 @@
     },
     "1": {
       "head": "Four are live. One has gone quiet.",
-      "sub": "The quiet one is where teams in {state} tend to start moving."
+      "sub": "The quiet one is where teams in {state} tend to start moving.",
+      "sub_thin": "One is quiet, and the four still reading are thin behind it."
     },
     "2": {
       "head": "Three are live. Two have gone quiet.",
-      "sub": "Two at once is a pattern, not a coincidence."
+      "sub": "Two at once is a pattern, not a coincidence.",
+      "sub_thin": "Two are quiet, and the three still reading are thin behind them."
     },
     "3": {
       "head": "Two are live. Three have gone quiet.",
@@ -229,5 +231,6 @@
     "means_label": "Means",
     "copy_to": "A copy is on its way to {email}",
     "print_note": "The figures below are your own estimate, set on the page."
-  }
+  },
+  "sowhat_headline_thin": "You are managing this team from memory."
 }

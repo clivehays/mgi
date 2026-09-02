@@ -189,7 +189,7 @@ check(/no tool, no process/i.test(rendered['involvement-focus'].html), 'involvem
 /* ---------- page weight ---------- */
 console.log('');
 console.log('[16] The thin case, which the brief flagged');
-var hz = rendered['headwinds-quiet-zero'];
+var hz = rendered['headwinds-all-thin'];
 check(hz.payload.quiet_count === 0, 'every ring reads, so quiet_count is 0');
 check(hz.payload.thin === true, 'and it is flagged thin: most items are older than a month');
 check(hz.payload.signal.score === 23, 'signal is 23 of 45, the brief figure');
@@ -206,6 +206,24 @@ check(/conditions you can confirm from your own evidence/.test(rendered['stall-a
   'the all-dark receipt reframes cell 1 as a finding');
 check(/conditions confirmed healthy/.test(rendered['cruise-all-fresh'].html),
   'a healthy reading keeps the original cell 1 label');
+
+console.log('');
+console.log('[17] thin qualifies the sub wherever it discriminates');
+var tq = rendered['thin-two-quiet'], sq = rendered['solid-two-quiet'];
+check(tq.payload.quiet_count === 2 && tq.payload.thin === true, 'thin-two-quiet is two quiet and thin');
+check(sq.payload.quiet_count === 2 && sq.payload.thin === false, 'solid-two-quiet is two quiet and not thin');
+check(/thin behind them/.test(tq.html), 'the thin pair gets the thin sub');
+check(/a pattern, not a coincidence/.test(sq.html), 'the solid pair keeps the original sub');
+check(!/a pattern, not a coincidence/.test(tq.html), 'the two do not render the same sub');
+check(/managing this team from memory/.test(tq.html), 'thin leads the So What headline');
+check(!/managing this team from memory/.test(sq.html), 'a solid page keeps the dimension headline');
+check(/class="step"/.test(tq.html), 'the calculator survives the thin headline');
+// at quiet_count 3 and above thin is arithmetically certain, so a thin
+// sub there would replace the brief's sub rather than qualify it
+check(/its own finding, and it is the useful kind/.test(rendered['stall-all-dark'].html),
+  'variant 5 keeps its own sub despite being thin');
+check(/running on one instrument|Most of this team/.test(rendered['stall-all-dark'].html) === false,
+  'variant 5 does not borrow another variant sub');
 
 
 console.log('\n[15] Weight and geometry');

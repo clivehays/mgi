@@ -47,10 +47,24 @@ module.exports = {
        fifteen items are older than a month and the team is in Headwinds.
        Signal 23 of 45. The default variant-0 sub congratulates here,
        which is why sub_thin exists. */
-    'headwinds-quiet-zero': sub(build({
+    'headwinds-all-thin': sub(build({
       readiness: [3, 1, 1], results: [3, 1, 1], involvement: [3, 1, 1],
       direction: [2, 1, 1], alignment: [2, 1, 1]
     }), { gut: 'off', output: 'slipped_slightly', external: 'yes', exposure: 'weekly' }),
+
+    /* 1c. thin with two quiet rings. Two areas dark, and the three still
+       reading hold one fresh item each, so the sub has to say both things
+       at once without contradicting itself. */
+    'thin-two-quiet': sub(build({
+      direction: [0, 0, 0], alignment: [0, 0, 0],
+      readiness: [3, 1, 1], results: [2, 1, 1], involvement: [2, 1, 1]
+    }), { gut: 'off', output: 'held', energy: 'lower', exposure: 'weekly' }),
+
+    /* the same two quiet rings with solid ones behind them, which must NOT
+       read as thin. The pair is the point. */
+    'solid-two-quiet': sub(build({
+      direction: [0, 0, 0], alignment: [0, 0, 0]
+    }), { gut: 'fine', output: 'held', exposure: 'most_days' }),
 
     'cruise-all-fresh': sub(new Array(15).fill(3), { gut: 'great', exposure: 'most_days' }),
 

@@ -104,7 +104,7 @@ function soWhat(payload) {
     var slot = copy(d.ledger.slot).split('\n').map(esc).join('<br>');
     return '<section class="sowhat">' +
       '<span class="eyebrow">' + esc(BANK.ui.sowhat_eyebrow) + '</span>' +
-      '<h2 class="sw-head">' + esc(d.sowhat.split('.')[0] + '.') + '</h2>' +
+      '<h2 class="sw-head">' + esc(payload.thin ? BANK.sowhat_headline_thin : d.sowhat.split('.')[0] + '.') + '</h2>' +
       '<p class="sw-slot sw-phrase">' + slot + '</p>' +
       '<p class="sw-cap">' + esc(d.ledger.caption) + '</p>' +
       '<p class="sw-body">' + copy(d.sowhat) + '</p>' +
@@ -123,7 +123,7 @@ function soWhat(payload) {
 
   return '<section class="sowhat">' +
     '<span class="eyebrow">' + esc(BANK.ui.sowhat_eyebrow) + '</span>' +
-    '<h2 class="sw-head">' + esc(d.calc.head) + '</h2>' +
+    '<h2 class="sw-head">' + esc(payload.thin ? BANK.sowhat_headline_thin : d.calc.head) + '</h2>' +
     '<p class="sw-lead">' + esc(d.calc.lead) + '</p>' +
     '<div class="dials">' + stepper('a', calc.a, d.calc.a) + stepper('b', calc.b, d.calc.b) + '</div>' +
     '<p class="sw-slot sw-num" id="sw-num" data-value="' + (calc.a.def * calc.b.def * 5) + '">' +
@@ -211,9 +211,13 @@ function rows(payload) {
 
 function render(payload) {
   var h = BANK.headline[String(payload.quiet_count)];
-  /* all five reading, but thinly, is not the same finding as all five
-     reading well. The brief's variant-0 sub congratulates. */
-  var subText = (payload.quiet_count === 0 && payload.thin && h.sub_thin) ? h.sub_thin : h.sub;
+  /* thin qualifies the sub wherever it discriminates. Two quiet rings
+     with three solid ones behind them is a different position from two
+     quiet with three thin, and those read identically otherwise.
+     Variants 3 and above carry no thin sub: at that quiet count thin is
+     arithmetically certain, so a thin variant would replace the brief's
+     sub outright rather than qualify it. */
+  var subText = (payload.thin && h.sub_thin) ? h.sub_thin : h.sub;
   var sub = subText.replace('{state}', payload.state_name);
   var st = BANK.state[payload.state];
 
