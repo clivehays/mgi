@@ -92,7 +92,12 @@ function tabs(payload) {
     var d = BANK.dimension[a.key];
     var quiet = a.fresh === 0;
     var selected = a.key === payload.focus;
-    return '<button class="inst' + (quiet ? ' off' : '') + '" role="tab" id="t-' + a.key + '"' +
+    /* type="button" is not decoration. A <button> with no type defaults to
+       submit, and these two are the tab strip and the disclosure toggles.
+       There is no form on the page today, so they are inert, and the day
+       anyone wraps this markup in one they become reload buttons on the
+       manager's own reading. */
+    return '<button type="button" class="inst' + (quiet ? ' off' : '') + '" role="tab" id="t-' + a.key + '"' +
       ' aria-controls="readout" aria-selected="' + (selected ? 'true' : 'false') + '"' +
       ' tabindex="' + (selected ? '0' : '-1') + '"' +
       ' data-key="' + a.key + '"' +
@@ -222,7 +227,7 @@ function rows(payload) {
 
   return '<div class="rows">' + items.map(function (r, i) {
     return '<div class="row">' +
-      '<button class="row-t" aria-expanded="false" aria-controls="p' + i + '" id="b' + i + '">' +
+      '<button type="button" class="row-t" aria-expanded="false" aria-controls="p' + i + '" id="b' + i + '">' +
       '<span>' + esc(r.t) + '</span><span class="plus" aria-hidden="true">+</span></button>' +
       '<div class="row-p" id="p' + i + '" role="region" aria-labelledby="b' + i + '" hidden>' + r.b + '</div>' +
       '</div>';

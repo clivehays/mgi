@@ -341,6 +341,22 @@ check(adv && adv.html.indexOf(BANK34.headline['0'].sub_adverse.split('{state}')[
 check(rendered['cruise-all-fresh'].html.indexOf(PRAISE) !== -1,
   'a Cruise team with nothing quiet still gets it');
 
+/* ---------- 35. no button on the page can submit anything ---------- */
+
+/* A <button> with no type attribute defaults to submit. The tab strip and
+   the disclosure toggles had none. There is no form on the page today so
+   they are inert, and the day this markup ends up inside one they become
+   reload buttons on the manager's own reading. */
+console.log(String.fromCharCode(10) + '[35] Every button declares type=button and there is no form to submit to');
+Object.keys(rendered).forEach(function (name) {
+  var html = rendered[name].html;
+  var buttons = html.match(/<button[^>]*>/g) || [];
+  var untyped = buttons.filter(function (b) { return b.indexOf('type=') === -1; });
+  check(buttons.length > 0, name + ': the page has buttons');
+  check(untyped.length === 0, name + ': none of the ' + buttons.length + ' buttons defaults to submit');
+  check(html.indexOf('<form') === -1, name + ': and there is no form on the page');
+});
+
 console.log('\n=====================================');
 console.log(pass + ' passed, ' + fail + ' failed');
 console.log('=====================================');
