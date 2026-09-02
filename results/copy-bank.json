@@ -1,0 +1,208 @@
+{
+  "_note": "Every participant-facing string. Deterministic lookup only, no interpolation beyond computed numbers. Lines marked approved are verbatim from the reference or from addendum A and must not be reworded without Clive.",
+
+  "dimension": {
+    "readiness": {
+      "asks": "Does this team have what it needs? The skills, the tools, the information, the decisions unblocked.",
+      "means": {
+        "all_fresh": "Nothing here needs you this week. Readiness is the instrument that dims when a team quietly absorbs more than it can carry, so it is worth a glance whenever the load changes.",
+        "mostly_fresh": "Most of this is current. The item that has not reached you is the one to chase, because a blocker nobody mentions is a blocker somebody has decided to work around instead.",
+        "mostly_stale": "Most of what this reads has gone quiet. Teams do not stop hitting blockers, they stop mentioning them, and the absorbing that replaces the mentioning looks exactly like capacity from where you sit.",
+        "all_dark": "Nothing on this instrument has reached you at all. Readiness is the one condition where the fix is usually a thing you can buy, approve or unblock, which makes silence here the most expensive kind."
+      },
+      "sowhat": "Every hour on that list was spent getting to the work rather than doing it. It is not lost time in the abstract, it was last week, and it will be this week. The people spending it have mostly stopped mentioning it, which is why it does not appear anywhere you would look.",
+      "calc": {
+        "head": "Readiness is not a mood. It is time spent getting to the work.",
+        "lead": "Set these two the way your week actually looks.",
+        "a": "People on your team",
+        "b": "Hours a day each spends working around something",
+        "caption": "hours a week spent working around something you could remove"
+      },
+      "changes": [
+        "The same blocker stops arriving in three different conversations.",
+        "People stop building workarounds you never asked for.",
+        "Estimates start meaning something again.",
+        "You spend less of your week unblocking and more of it deciding."
+      ],
+      "thursday": "Ask one person: what is the thing you work around every week that you have stopped bothering to mention? Then wait. The first answer is usually the polite one, and the second answer is the one you wanted."
+    },
+
+    "results": {
+      "asks": "Is the work landing, at the quality it should, without heroics to get it there?",
+      "means": {
+        "all_fresh": "Healthy, and the least informative reading on the page. <strong>Results is the last instrument to move.</strong> It holds while the four in front of it slip, which is why strong output on its own tells you very little about next quarter.",
+        "mostly_fresh": "Mostly current. Results holding while something in front of it has gone quiet is the normal order of events, not a reassurance, because output is the last thing to move and the last thing to come back.",
+        "mostly_stale": "The output signals have thinned. That is unusual, since Results is the instrument every other system in the company already watches, and it means what reaches you now is the date rather than the work.",
+        "all_dark": "Nothing about the work itself has reached you directly. You are reading this team through its reporting, and reporting is the one channel that never tells you what a delivery cost."
+      },
+      "sowhat": "Results is the instrument every other system in the company already watches, which makes it the strange one to lose. Delivery dates reach you. What it took to hit them does not. A team hitting its numbers on unsustainable effort and a team hitting them comfortably look identical on a status report. The difference is only visible from inside the work, and that view is not currently reaching you.",
+      "ledger": {
+        "slot": "You know it shipped.\nYou do not know what it cost.",
+        "caption": "what a quiet Results ring reads like"
+      },
+      "changes": [
+        "You hear how the work went, not just that it went.",
+        "Bad news about delivery arrives while it is still cheap.",
+        "You stop finding out what a deadline cost after it has been paid.",
+        "Heroics get named as heroics instead of counted as capacity."
+      ],
+      "thursday": "Pick one thing that shipped recently and ask the person who made it what it took. Not whether it went well. What it took. The gap between that answer and the status update is the reading you are missing."
+    },
+
+    "involvement": {
+      "asks": "Are people taking ownership, bringing things unprompted, putting themselves into the work rather than through it?",
+      "means": {
+        "all_fresh": "People are still spending the part of the job nobody can require. That is the reading that moves first when something is wrong, so its being current is worth more than it looks.",
+        "mostly_fresh": "Two of these are current. One has not reached you in over a month, and that is the one worth chasing. Involvement usually dips well before anyone says the word leaving.",
+        "mostly_stale": "The discretionary signals have thinned. Nobody announces that they have stopped going beyond the brief, and the work carries on arriving, which is what makes this one easy to miss for a quarter.",
+        "all_dark": "None of the unprompted signals have reached you. Involvement is the only instrument here that measures what people choose to give, and choice is the first thing withdrawn and the last thing mentioned."
+      },
+      "sowhat": "Discretionary effort is the part of the job nobody can ask for. The catch nobody was assigned, the second draft, the thing someone fixes because they noticed it. None of that appears on a plan, so its absence does not appear either. The work still ships. It stops being better than it had to be, and you will not get a complaint about it. Nobody withdraws effort loudly.",
+      "ledger": {
+        "slot": "Everything required.\nNothing extra.",
+        "caption": "what a team looks like when involvement goes quiet"
+      },
+      "changes": [
+        "People bring you things before you go looking.",
+        "Fewer handovers arrive at exactly the minimum.",
+        "Someone else starts noticing the thing you would have noticed.",
+        "You stop being the only person who cares whether it is good."
+      ],
+      "thursday": "Ask somebody what they would fix here if nobody was watching. The answer tells you what they have already noticed and not raised, and how they say it tells you why."
+    },
+
+    "direction": {
+      "asks": "Can anyone here say where we are going, and why that rather than something else?",
+      "means": {
+        "all_fresh": "The why is reaching people and coming back in their own words. Direction is the instrument that goes quiet first in a team that still looks fine from every other angle, so a current reading here is the useful kind of boring.",
+        "mostly_fresh": "Most of this is current. The item that has gone quiet is the one to watch, since Direction is used every hour whether it is reading or not.",
+        "mostly_stale": "Most of the direction signals have thinned. People still make the calls, they just make them by guessing, and a guess about what you would want runs safe every time.",
+        "all_dark": "Direction is the first instrument to go quiet in a team that still looks fine from every other angle. It is also the one your team uses every hour, whether it is reading or not."
+      },
+      "sowhat": "A guess about the boss runs safe every time. That is the cost of a quiet Direction ring, and it is not sitting in the future. It happened this week, in work that came out fine, slightly smaller than it could have been. Nobody escalates the bolder version they did not write.",
+      "calc": {
+        "head": "Direction is not a mood. It is a steering input.",
+        "lead": "Your team makes decisions without you all day. Set these two the way your week actually looks.",
+        "a": "People on your team",
+        "b": "Judgement calls each of them makes a day without checking with you",
+        "caption": "decisions a week, steered by what someone thinks you would want"
+      },
+      "changes": [
+        "Fewer decisions bounce back to you.",
+        "The ones that do come back look more like the ones you would have made.",
+        "People start bringing you the hard choice instead of the safe one.",
+        "You stop being the tiebreaker."
+      ],
+      "thursday": "Ask someone to tell you what the team is trying to do this quarter, and why that rather than something else. Do not help them. The pause before the why is the reading."
+    },
+
+    "alignment": {
+      "asks": "Does disagreement reach you, do problems arrive from the person holding them, and does what you hear ever change your mind?",
+      "means": {
+        "all_fresh": "Disagreement is still reaching you, and so are problems, from the people holding them. That is the version of alignment worth having, since it is the only one that can report its own failure.",
+        "mostly_fresh": "Open disagreement is the item that went quiet. <strong>Alignment you can trust is alignment where somebody still pushes back.</strong> Agreement with nothing pressing against it reads identically from your chair, which is the difficulty.",
+        "mostly_stale": "The channels that carry bad news upward have thinned. What replaces them is not silence, it is agreement, arriving on schedule and reading exactly like alignment.",
+        "all_dark": "Nothing has come up this channel at all. Alignment is the one instrument that cannot report its own failure, so a flat reading here tells you least and matters most."
+      },
+      "sowhat": "Every one of those was a small decision that something was not worth saying. None of them felt like a decision at the time. They do not arrive as a complaint later either, because the moment passed and the work carried on, which is how a team gets quieter without anyone choosing it.",
+      "calc": {
+        "head": "Alignment is not agreement. It is whether the disagreement reaches you.",
+        "lead": "Set these two the way your week actually looks.",
+        "a": "People on your team",
+        "b": "Times a day one of them decides something is not worth saying",
+        "caption": "things a week that did not reach you"
+      },
+      "changes": [
+        "Bad news reaches you while it is still small.",
+        "Somebody pushes back in the room instead of afterwards.",
+        "You hear about the problem from the person holding it.",
+        "You stop being the last to know."
+      ],
+      "thursday": "Say your own current plan out loud and ask what is wrong with it. Then say nothing until somebody answers. The length of that silence is the reading, and it is worth timing."
+    }
+  },
+
+  "state": {
+    "cruise": {
+      "chip": "Cruise",
+      "means": "Output is holding and the behaviours of a healthy team are visible around you. Cruise is the state to return to rather than one to sit in, because teams rarely leave it with an announcement. They leave it through the things this page just measured.",
+      "receipt_head": "You had a team that seemed fine."
+    },
+    "drift": {
+      "chip": "Drift",
+      "means": "Output is holding, which is what makes this one awkward. Nothing in the numbers is asking you a question, while the behaviours that produce those numbers have stopped reaching you. Drift is the state managers miss most, because everything that would reveal it is something that quietly stops happening.",
+      "receipt_head": "You had a hunch."
+    },
+    "headwinds": {
+      "chip": "Headwinds",
+      "means": "Output is under pressure and the evidence says the team itself is holding, with something outside it pushing back. This is the most misdiagnosed reading there is. The wrong response is to push the team harder. The right one is to name the weather, shield where you can, and say it upward loudly.",
+      "receipt_head": "You had a team taking a beating and no name for it."
+    },
+    "stall": {
+      "chip": "Stall",
+      "means": "The decline has reached the output and the behaviours of a healthy team are not visible around you. Stall is the one state that announces itself. Recovery starts where the slide started, in the behaviours rather than the output, and it starts with getting the signal back.",
+      "receipt_head": "You knew something was wrong."
+    }
+  },
+
+  "headline": {
+    "0": { "head": "All five are reading.", "sub": "Rarer than it sounds. Here is the one worth watching anyway." },
+    "1": { "head": "Four are live. One has gone quiet.", "sub": "The quiet one is where teams in {state} tend to start moving." },
+    "2": { "head": "Three are live. Two have gone quiet.", "sub": "Two at once is a pattern, not a coincidence." },
+    "3": { "head": "Two are live. Three have gone quiet.", "sub": "Most of this team's week is not reaching you." },
+    "4": { "head": "One is live. Four have gone quiet.", "sub": "You are running on one instrument." },
+    "5": { "head": "Nothing reached you this month.", "sub": "That is its own finding, and it is the useful kind." }
+  },
+
+  "cheap": {
+    "eyebrow": "The good news, and it is real",
+    "free": {
+      "head": "Of everything that can go wrong with a team, this is the cheapest to put right.",
+      "body": "No tool, no process, no meeting added to anyone's week. Most conditions that break a team take months and money to correct. This one takes about a fortnight to show up in the work."
+    },
+    "readiness": {
+      "head": "This one may cost you something, and that is the good news.",
+      "body": "A Readiness gap is a purchase order, an access request, a decision somebody has been sitting on, or a person who needs an afternoon of training. Those have prices and they have owners. Most of what goes wrong with a team has neither. You are looking at the rare category where the fix is a thing you can put on a list and finish."
+    }
+  },
+
+  "receipt": {
+    "eyebrow": "Five minutes ago",
+    "cell1_label": "conditions confirmed healthy, with evidence",
+    "cell2_label": "named, located, and costing you something now",
+    "cell3_label": "question that tests it on Thursday",
+    "cell4": {
+      "default":     { "value": "0", "label": "pounds and no process to fix it" },
+      "readiness":   { "value": "1", "label": "thing for you to clear, not for them to absorb" },
+      "involvement": { "value": "1", "label": "thing you can stop doing for them this week" },
+      "results":     { "value": "1", "label": "question that gets you the texture, not the status" }
+    },
+    "body": "Five minutes of answering, and none of it asked you to describe anyone. It asked when things last happened, which is the one thing a manager can answer accurately.",
+    "pivot": "The half you do not have is what your team would say. That is the only thing on this page you cannot get from your own chair.",
+    "cta": "Get the other half",
+    "sig": "Clive Hays built the Manager Gap Index."
+  },
+
+  "disclosure": {
+    "thursday": { "title": "One thing to try on Thursday" },
+    "rings": {
+      "title": "Where the five rings come from",
+      "body": "Each ring is one condition of a working team, read from three things you were asked about. A solid segment means that one reached you inside the month. A thin amber segment means it last reached you over a month ago. A dashed segment means you could not recall it at all. The five are Readiness, Results, Involvement, Direction and Alignment, and they are always in the same order so the shape becomes familiar."
+    },
+    "state": { "title": "What {state} means" },
+    "chair": {
+      "title": "How much of this you can see",
+      "body": "Every reading on this page came from one chair. Nobody on your team was asked anything, so all of it is <strong>your picture of the team rather than the team's picture of itself.</strong> Those two are rarely identical, and the distance between them is the thing worth measuring next."
+    }
+  },
+
+  "ui": {
+    "ring_hint": "Tap any ring to see what it reads.",
+    "sowhat_eyebrow": "So what",
+    "asks_label": "It asks",
+    "status_label": "Status",
+    "means_label": "Means",
+    "copy_to": "A copy is on its way to {email}",
+    "print_note": "The figures below are your own estimate, set on the page."
+  }
+}
