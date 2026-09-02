@@ -167,13 +167,30 @@ function receipt(numbers, eran) {
   return '<section class="receipt">' + counters + body + cta + '</section>';
 }
 
-function nextMove(eran) {
+/* The worksheet sits after the question, behind a hairline. The question
+   is the beat the section ends on, and a download link in front of it
+   would take that away. The link is token-scoped: the library is the
+   methodology, and it is not left sitting at a guessable path. */
+function worksheet(eran, token) {
+  var n = eran.next_move;
+  if (!token || !n.worksheet || !n.worksheet.id) return '';
+  return '<div class="sheet">' +
+    (n.worksheet_why ? '<p class="sheet-why">' + esc(n.worksheet_why) + '</p>' : '') +
+    '<a class="sheet-link" href="/r/' + encodeURIComponent(token) + '/worksheet.pdf" ' +
+    'download="' + esc(n.worksheet.id) + '.pdf">' +
+    '<span class="sheet-icon mono" aria-hidden="true">PDF</span>' +
+    '<span class="sheet-title">' + esc(n.worksheet.title) + '</span>' +
+    '</a></div>';
+}
+
+function nextMove(eran, token) {
   if (!eran || !eran.next_move) return '';
   var n = eran.next_move;
   return '<section class="next">' +
     '<h2 class="section-head mono">The next move</h2>' +
     '<p class="next-action">' + esc(n.action) + '</p>' +
     '<p class="next-question">' + esc(n.question) + '</p>' +
+    worksheet(eran, token) +
     '</section>';
 }
 
@@ -342,6 +359,19 @@ var CSS = [
 '.next-action{margin:0 0 14px}',
 '.next-question{font-style:italic;font-size:1.1rem;line-height:1.4;margin:0;',
 '  padding-left:16px;border-left:2px solid var(--amber)}',
+'.sheet{margin:24px 0 0;padding:16px 0 0;border-top:1px solid var(--hair)}',
+'.sheet-why{font-family:var(--ui);font-size:.85rem;line-height:1.45;',
+'  color:var(--ink-mute);margin:0 0 12px}',
+'.sheet-link{display:inline-flex;align-items:center;gap:11px;',
+'  text-decoration:none;color:var(--ink);padding:11px 15px 11px 12px;',
+'  border:1px solid var(--rule);border-radius:9px;background:var(--card)}',
+'.sheet-link:hover{border-color:var(--blue)}',
+'.sheet-link:focus-visible{outline:2px solid var(--blue);outline-offset:2px}',
+/* blue rather than navy: navy against the dark card is a badge nobody
+   can read, and blue carries a legible foreground in both themes */
+'.sheet-icon{flex:0 0 auto;font-size:.6rem;letter-spacing:.08em;color:var(--paper);',
+'  background:var(--blue);border-radius:4px;padding:4px 6px;line-height:1}',
+'.sheet-title{font-family:var(--ui);font-size:.92rem;font-weight:500;line-height:1.3}',
 
 /* folded detail */
 '.folds{margin:38px 0 0;border-top:1px solid var(--hair)}',
@@ -371,6 +401,8 @@ var CSS = [
 '  .receipt{background:#fff;color:#000;border:1px solid #000}',
 '  .counter-label,.receipt-body,.cta a{color:#000}',
 '  .cta{display:none}',
+'  .sheet-link{border:1px solid #000}',
+'  .sheet-icon{background:#000;color:#fff}',
 '}'
 ].join('\n');
 
@@ -452,7 +484,7 @@ var JS = [
 
 /* ---------- render ---------- */
 
-function render(numbers) {
+function render(numbers, token) {
   var eran = numbers.eran || null;
 
   var head = eran && eran.headline
@@ -487,7 +519,7 @@ function render(numbers) {
     cost(eran) + '\n' +
     changes(eran) + '\n' +
     receipt(numbers, eran) + '\n' +
-    nextMove(eran) + '\n' +
+    nextMove(eran, token) + '\n' +
     folded(numbers, eran) + '\n' +
 
     '<footer class="foot">' + copyTo +

@@ -174,7 +174,7 @@ module.exports = async function handler(req, res) {
 
   try {
     headers(res);
-    res.status(200).send(page.render(payload));
+    res.status(200).send(page.render(payload, token));
   } catch (e) {
     console.error('MGI render failed for ' + token + ': ' + e.message);
     return holding(res, 500);

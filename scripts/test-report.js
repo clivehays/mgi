@@ -17,6 +17,8 @@ var eran = require('../report/eran.js');
 var page = require('../report/page.js');
 var mail = require('../report/email.js');
 
+var TOKEN = 'A'.repeat(22);
+
 var fail = 0, pass = 0;
 function ok(m) { pass++; console.log('  ok    ' + m); }
 function bad(m) { fail++; console.log('  FAIL  ' + m); }
@@ -72,7 +74,9 @@ function draft() {
     receipt: 'You answered fifteen questions about what you have actually seen. The count above is what that produced. It is your own observation, put in one place, which is more than most managers ever get.',
     next_move: {
       action: 'Take the area with the least reaching you and spend thirty minutes inside one live piece of work with the person doing it. Not a status conversation, the actual work. What you learn that was not in any update is the size of the distance.',
-      question: 'What are you working around right now that you have stopped raising?'
+      question: 'What are you working around right now that you have stopped raising?',
+      worksheet_why: 'Your quietest area is the one this rebuilds first.',
+      worksheet: { id: 'C17', title: 'The Honest One-to-One' }
     },
     state_note: 'Output is holding and the behaviours that produce it are visible around you. This is the state to return to, not one to sit in.',
     sight_note: 'You see the scheduled parts of the week. What happens between those points reaches you only if somebody passes it on, so your reading rests on position as much as on attention.'
@@ -139,7 +143,7 @@ CASES.forEach(function (c) {
     n.eran = mode[1];
     var html;
     try {
-      html = page.render(n);
+      html = page.render(n, TOKEN);
     } catch (e) {
       bad(label + ': render threw ' + e.message);
       return;
@@ -176,11 +180,18 @@ CASES.forEach(function (c) {
       if (status !== 5) bad('has ' + status + ' status lines, expected 5');
       else ok('every readout carries its computed status line');
 
+      if (html.indexOf('/r/' + TOKEN + '/worksheet.pdf') === -1) {
+        bad('the worksheet is not linked');
+      } else if (html.indexOf('The Honest One-to-One') === -1) {
+        bad('the worksheet is linked without its title');
+      } else ok('the worksheet is linked, token-scoped');
+
       if (html.indexOf('id="weekly"') === -1) bad('the cost number is missing');
       else if (html.indexOf('id="dial-a"') === -1 || html.indexOf('id="dial-b"') === -1) {
         bad('a dial is missing');
       } else ok('the cost number and both dials are present');
     } else {
+      if (html.indexOf('worksheet.pdf') !== -1) bad('a worksheet linked with no Eran');
       if (html.indexOf('class="panel"') !== -1) bad('a readout rendered with no Eran');
       else if (html.indexOf('id="weekly"') !== -1) bad('the cost rendered with no Eran');
       else ok('the Eran sections are absent, not placeholdered');

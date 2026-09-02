@@ -13,8 +13,35 @@
    ============================================================= */
 
 var Anthropic = require('@anthropic-ai/sdk');
+var LIBRARY = require('./library.json');
 
 var MODEL = process.env.ERAN_MODEL || 'claude-opus-5';
+
+/* ---------- the worksheet library ----------
+   The 56 worksheets are the methodology, and the next move is the one
+   place on the page where handing the manager a real one beats handing
+   them a good sentence. Eran picks one in a first, small call, and the
+   chosen worksheet's full text is in front of it while it writes the
+   second. The page then links that worksheet's PDF.
+
+   Where the line sits: the worksheet supplies the MOVE. It never
+   supplies the ARGUMENT. Rule 1 is unchanged, and the worksheets are
+   full of neuroscience claims and outside research that must not reach
+   the report, because the reading argues from this manager's answers
+   and nothing else. */
+
+var BY_ID = {};
+LIBRARY.worksheets.forEach(function (w) { BY_ID[w.id] = w; });
+var IDS = LIBRARY.worksheets.map(function (w) { return w.id; });
+
+function catalogue() {
+  return LIBRARY.worksheets.map(function (w) {
+    return w.id + ' | ' + w.title + ' | ' + w.pillar + ' | level ' +
+      w.difficulty + '\n    for: ' + w.forWhat;
+  }).join('\n');
+}
+
+function worksheetOf(id) { return BY_ID[id] || null; }
 
 /* ---------- the contract ----------
    Section 3, as a schema. Every key required, no extras.
@@ -89,8 +116,14 @@ var SCHEMA = {
     receipt: words(45),
     next_move: {
       type: 'object',
-      properties: { action: words(90), question: words(25) },
-      required: ['action', 'question'],
+      properties: {
+        action: words(90),
+        question: words(25),
+        /* why this worksheet, for this manager, in their own terms.
+           Never a description of what the worksheet contains. */
+        worksheet_why: words(20)
+      },
+      required: ['action', 'question', 'worksheet_why'],
       additionalProperties: false
     },
     state_note: words(60),
@@ -116,6 +149,7 @@ var BUDGETS = [
   ['changes.0', 12], ['changes.1', 12], ['changes.2', 12], ['changes.3', 12],
   ['receipt', 45],
   ['next_move.action', 90], ['next_move.question', 25],
+  ['next_move.worksheet_why', 20],
   ['state_note', 60], ['sight_note', 70]
 ];
 
@@ -307,7 +341,18 @@ var SYSTEM = [
   'is and what it is worth.',
   '',
   'next_move is the one action they take next, and the one question to ask.',
-  'The question is a real sentence they could say out loud.',
+  'The question is a real sentence they could say out loud. A worksheet',
+  'from the methodology library has been chosen for this reading and its',
+  'full text is below. The action is the first move out of that worksheet,',
+  'sized to what this manager can do next, in your words rather than its',
+  'own. worksheet_why says why this one suits them, in terms of their own',
+  'answers. It never describes what the worksheet contains.',
+  '',
+  'The worksheet supplies the move. It never supplies the argument. It is',
+  'full of research and neuroscience, and none of that reaches the report:',
+  'rule 1 stands, and the reading argues from this manager answers alone.',
+  'Do not name the worksheet, quote it, or mention that one exists. The',
+  'page links it separately.',
   '',
   'state_note explains what their state means. sight_note explains their',
   'line of sight and gap width together.',
@@ -361,13 +406,69 @@ function brief(numbers, answers) {
   return L.join('\n');
 }
 
+/* ---------- choosing the worksheet ----------
+   A small first call. The catalogue is 56 lines and the answer is one
+   id, so it costs a few seconds and it keeps the writing call from
+   having to hold the whole library in front of it. */
+
+var PICK_SYSTEM = [
+  'You choose one worksheet from a methodology library for one manager,',
+  'from what their own answers show.',
+  '',
+  'The focus area is where their evidence is thinnest on the ground, and',
+  'the worksheet should serve it. Weigh what they actually answered, not',
+  'only the area name. A manager who is present most days and still hears',
+  'nothing needs a different move from one who is rarely there.',
+  '',
+  'Match the difficulty to the state. A team in Cruise can take a level 3.',
+  'A team in Stall needs the smallest move that works.',
+  '',
+  'Return the id and nothing else.'
+].join('\n');
+
+var PICK_SCHEMA = {
+  type: 'object',
+  properties: {
+    id: { type: 'string', enum: IDS, description: 'The worksheet id.' }
+  },
+  required: ['id'],
+  additionalProperties: false
+};
+
+async function pick(client, numbers, answers) {
+  var res = await client.messages.create({
+    model: MODEL,
+    max_tokens: 2000,
+    system: [{ type: 'text', text: PICK_SYSTEM + '\n\nTHE LIBRARY\n\n' + catalogue(),
+      cache_control: { type: 'ephemeral' } }],
+    output_config: { effort: 'low', format: { type: 'json_schema', schema: PICK_SCHEMA } },
+    messages: [{ role: 'user', content: brief(numbers, answers) }]
+  });
+  var text = '';
+  (res.content || []).forEach(function (b) { if (b.type === 'text') text += b.text; });
+  var id = JSON.parse(text).id;
+  return worksheetOf(id);
+}
+
 /* ---------- the call ---------- */
 
-async function ask(client, messages) {
+async function ask(client, messages, sheet) {
+  var system = [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }];
+  system.push(sheet ? {
+    type: 'text',
+    text: 'THE WORKSHEET CHOSEN FOR THIS READING\n\n' + sheet.body
+  } : {
+    /* the choice did not come back. Write the reading anyway: a missing
+       worksheet costs the page one link, and no reading costs a lead. */
+    type: 'text',
+    text: 'No worksheet was available for this reading. Write the action ' +
+      'from the manager answers alone, and make worksheet_why a single ' +
+      'plain sentence about where their attention belongs.'
+  });
   var res = await client.messages.create({
     model: MODEL,
     max_tokens: 8000,
-    system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
+    system: system,
     output_config: { format: { type: 'json_schema', schema: SCHEMA } },
     messages: messages
   });
@@ -390,16 +491,26 @@ async function write(numbers, answers) {
   var json = null;
   var faults = null;
 
+  /* the worksheet first, so the writing call has it in front of it.
+     If the choice fails, the reading is still written; it just goes out
+     without a worksheet rather than not at all. */
+  var sheet = null;
+  try {
+    sheet = await pick(client, numbers, answers);
+  } catch (e) {
+    console.error('MGI: worksheet choice failed: ' + e.message);
+  }
+
   for (var attempt = 0; attempt < 2; attempt++) {
     try {
-      json = await ask(client, messages);
+      json = await ask(client, messages, sheet);
     } catch (e) {
       console.error('MGI: Eran attempt ' + (attempt + 1) + ' failed: ' + e.message);
       json = null;
       continue;
     }
     faults = check(json);
-    if (!faults.length) return json;
+    if (!faults.length) return stamp(json, sheet);
 
     console.error('MGI: Eran attempt ' + (attempt + 1) + ' returned ' +
       faults.length + ' fault(s)');
@@ -428,7 +539,18 @@ async function write(numbers, answers) {
     delete json[k];
   });
   var kept = SECTIONS.filter(function (k) { return json[k] !== undefined; });
-  return kept.length ? json : null;
+  return kept.length ? stamp(json, sheet) : null;
+}
+
+/* Which worksheet the page should link, recorded next to the words that
+   were written from it. Only the id and title: the body is 12,000 words
+   and lives in the bundle, and the page never renders it. If the next
+   move was dropped there is nothing for the link to sit under. */
+function stamp(json, sheet) {
+  if (sheet && json && json.next_move) {
+    json.next_move.worksheet = { id: sheet.id, title: sheet.title };
+  }
+  return json;
 }
 
 module.exports = {

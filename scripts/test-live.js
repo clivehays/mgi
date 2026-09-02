@@ -46,6 +46,7 @@ process.env.MGI_NOTIFY_EMAIL = to;
 
 var submit = require('../api/submit.js');
 var reading = require('../api/reading.js');
+var worksheetRoute = require('../api/worksheet.js');
 
 /* a mixed reading: three areas holding something current, two that have
    gone quiet, and one item nobody could recall */
@@ -140,6 +141,7 @@ function res() {
     ['the receipt counters', /conditions gone quiet/.test(html)],
     ['the next move', /class="next-question"/.test(html)],
     ['both folded rows', (html.match(/class="fold"/g) || []).length === 2],
+    ['the worksheet is linked', new RegExp('/r/' + row.token + '/worksheet.pdf').test(html)],
     ['no em dash', !/—/.test(html)],
     ['no day of the week', !/\b(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\b/i.test(html)],
     ['nothing borrowed', !/\bcohort\b|\bMetLife\b|70\s?%/i.test(html)],
@@ -147,6 +149,22 @@ function res() {
     ['noindex header', /noindex/.test(r2.headers['x-robots-tag'] || '')],
     ['no-store header', /no-store/.test(r2.headers['cache-control'] || '')]
   ];
+  /* the PDF, through the token */
+  var r3 = res();
+  await worksheetRoute({ method: 'GET', query: { token: row.token } }, r3);
+  var pdf = r3.body;
+  var isPdf = Buffer.isBuffer(pdf) && pdf.slice(0, 5).toString() === '%PDF-';
+  checks.push(['the worksheet PDF serves', r3.code === 200 && isPdf]);
+  checks.push(['it is served as a PDF', /application\/pdf/.test(r3.headers['content-type'] || '')]);
+
+  var r4 = res();
+  await worksheetRoute({ method: 'GET', query: { token: 'B'.repeat(22) } }, r4);
+  checks.push(['an unknown token gets no worksheet', r4.code === 404]);
+
+  console.log('\nworksheet: ' + (row.payload.eran && row.payload.eran.next_move.worksheet
+    ? row.payload.eran.next_move.worksheet.id + ' ' + row.payload.eran.next_move.worksheet.title
+    : 'none') + ', ' + (isPdf ? (pdf.length / 1024).toFixed(0) + ' KB' : 'not served'));
+
   console.log('');
   var bad = 0;
   checks.forEach(function (c) {
