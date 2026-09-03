@@ -170,7 +170,8 @@ function talkable(token) {
 
 function talk(token) {
   if (!talkable(token)) return '';
-  return '<section class="talk" id="talk" data-token="' + encodeURIComponent(token) + '">' +
+  return '<section class="talk" id="talk" data-token="' + encodeURIComponent(token) + '"' +
+    ' data-booking="' + esc(booking.link(token)) + '">' +
     '<h2 class="section-head mono">Ask about this</h2>' +
     '<div class="thread" id="thread" role="log" aria-live="polite" aria-label="The conversation"></div>' +
     '<form class="ask" id="ask-form">' +
@@ -382,6 +383,13 @@ rings_.CSS,
 '.turn-eran::before{content:"";display:block;width:22px;height:2px;',
 '  background:var(--amber);margin:0 0 9px}',
 '.turn-wait{color:var(--ink-mute)}',
+/* the booking link, inside a reply. It is the one thing in the thread
+   that goes anywhere, so it looks like it does. */
+'.reply-link{display:inline-block;margin:6px 0 0;background:var(--navy);',
+'  color:var(--on-navy);border-radius:8px;padding:11px 15px;line-height:1;',
+'  font-family:var(--ui);font-size:.88rem;font-weight:500;text-decoration:none}',
+'.reply-link:hover{background:color-mix(in srgb,var(--navy) 86%,var(--blue))}',
+'.reply-link:focus-visible{outline:2px solid var(--blue);outline-offset:2px}',
 '.ask{display:flex;gap:9px;align-items:flex-end}',
 '.ask textarea{flex:1 1 auto;min-width:0;resize:none;font:400 1rem/1.45 var(--serif);',
 '  color:var(--ink);background:var(--card);border:1px solid var(--rule);',
@@ -530,8 +538,31 @@ var JS = [
 '    var form=document.getElementById("ask-form");',
 '    var input=document.getElementById("ask");',
 '    var sendBtn=document.getElementById("ask-send");',
+'    var booking=talk.getAttribute("data-booking")||"";',
 '    var busy=false;',
 '    var spoken=false;',
+'',
+'    /* A reply carries the booking link, and a link nobody can click is',
+'       a link nobody follows. Built out of nodes rather than markup: the',
+'       text is model output and never goes near innerHTML. */',
+'    function paint(el,text){',
+'      el.textContent="";',
+'      var re=/https?:\\/\\/\\S+/g;',
+'      var last=0,m;',
+'      while((m=re.exec(text))!==null){',
+'        if(m.index>last)el.appendChild(document.createTextNode(text.slice(last,m.index)));',
+'        var href=m[0].replace(/[.,;:]+$/,"");',
+'        var a=document.createElement("a");',
+'        a.className="reply-link";',
+'        a.href=href;a.target="_blank";a.rel="noopener noreferrer";',
+'        /* the booking link gets a name. Anything else shows itself. */',
+'        a.textContent=(booking&&href.indexOf(booking.split("?")[0])===0)',
+'          ?"Book thirty minutes with Clive":href;',
+'        el.appendChild(a);',
+'        last=m.index+href.length;',
+'      }',
+'      if(last<text.length)el.appendChild(document.createTextNode(text.slice(last)));',
+'    }',
 '',
 '    function bubble(cls,text){',
 '      var p=document.createElement("p");',
@@ -580,7 +611,7 @@ var JS = [
 '        if(ct.indexOf("application/json")===0){',
 '          return r.json().then(function(j){',
 '            out.className="turn turn-eran";',
-'            out.textContent=j.reply||"";',
+'            paint(out,j.reply||"");',
 '            spoken=true;',
 '            return "";',
 '          });',
@@ -593,7 +624,7 @@ var JS = [
 '            if(res.done)return acc;',
 '            acc+=dec.decode(res.value,{stream:true});',
 '            out.className="turn turn-eran";',
-'            out.textContent=acc;',
+'            paint(out,acc);',
 '            spoken=true;',
 '            out.scrollIntoView({block:"nearest"});',
 '            return pump();',
