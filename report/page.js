@@ -355,17 +355,19 @@ rings_.CSS,
 '  color:var(--on-navy-mute);max-width:14ch}',
 '.receipt-body{margin:0 0 18px;color:var(--on-navy)}',
 /* the page's only ask, so it looks like one */
+/* No `.cta a` rule. There was one, left from when this was a line of
+   text rather than a button, and it beat .cta-link on specificity: it
+   painted the label the same colour as the button it sits on, added two
+   pixels under the text so the label sat low in it, and left a hairline
+   along the bottom edge. One dead rule, three symptoms. */
 '.cta{margin:0;font-family:var(--ui);font-size:.92rem}',
 '.cta-link{display:inline-block;background:var(--on-navy);color:var(--navy);',
-'  border:0;border-bottom:0;border-radius:9px;padding:13px 18px;',
-'  font-weight:600;text-decoration:none}',
-'.cta-link:hover{background:#fff;border-bottom:0}',
+'  border:0;border-radius:9px;padding:14px 20px;line-height:1;',
+'  font-weight:600;text-decoration:none;text-align:center}',
+'.cta-link:hover{background:#fff}',
 '.cta-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px}',
-'.cta-alt{margin:12px 0 0;font-family:var(--ui);font-size:.8rem;line-height:1.5;',
+'.cta-alt{margin:14px 0 0;font-family:var(--ui);font-size:.8rem;line-height:1.5;',
 '  color:var(--on-navy-mute);max-width:30em}',
-'.cta a{color:var(--on-navy);text-decoration:none;',
-'  border-bottom:1px solid rgba(237,231,219,.45);padding-bottom:2px}',
-'.cta a:hover{border-bottom-color:var(--on-navy)}',
 
 /* the conversation */
 '.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;',
