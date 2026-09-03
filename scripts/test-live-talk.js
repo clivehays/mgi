@@ -110,29 +110,28 @@ async function say(text) {
   console.log('\n  > 9');
   console.log('  ' + num.body.split('[[[UI]]]')[0].replace(/\n/g, '\n  '));
 
-  if (await store.hasConsent(token)) bad('a bare number recorded consent');
-  else ok('a bare number recorded no consent');
-
   var blocked = res();
   await trial({ method: 'POST', query: { token: token }, body: { team_size: 9 } }, blocked);
   var bj = JSON.parse(blocked.body);
-  if (bj.blocked) ok('and the trial route refused to provision');
-  else bad('the trial route provisioned without consent: ' + blocked.body);
+  if (bj.blocked) ok('a call that did not come from a press is refused');
+  else bad('the trial route provisioned without a press: ' + blocked.body);
   if (!bj.join_code) ok('no join code was minted');
   else bad('a join code was minted anyway');
 
-  /* 5. the close, after a real yes */
-  var b = await say('Yes, set it up.');
-  console.log('\n  > yes, set it up');
+  /* 5. the manager opens the door in their own words, then presses */
+  var b = await say('What would my team say about this? I want to set it up.');
+  console.log('\n  > what would my team say, I want to set it up');
   console.log('  ' + b.body.split('[[[UI]]]')[0].replace(/\n/g, '\n  '));
 
-  if (await store.hasConsent(token)) ok('a clear yes recorded consent');
-  else bad('a clear yes did not record consent');
+  var who = await store.whoRaisedTrial(token);
+  if (who === 'manager') ok('the record says the manager raised it, not Eran');
+  else console.log('    note  raised_trial reads ' + JSON.stringify(who));
 
   var t = res();
-  await trial({ method: 'POST', query: { token: token }, body: { team_size: 9 } }, t);
+  await trial({ method: 'POST', query: { token: token },
+    body: { team_size: 9, pressed: true } }, t);
   var out = JSON.parse(t.body);
-  if (out.join_url) ok('provisioned once consent was on the record');
+  if (out.join_url) ok('provisioned from a press');
   else { bad('no join link: ' + t.body); }
 
   if (out.message) {
@@ -149,7 +148,8 @@ async function say(text) {
 
   /* 6. a team of two is declined */
   var small = res();
-  await trial({ method: 'POST', query: { token: token }, body: { team_size: 2 } }, small);
+  await trial({ method: 'POST', query: { token: token },
+    body: { team_size: 2, pressed: true } }, small);
   var s = JSON.parse(small.body);
   if (s.declined || s.existing) ok('a team of two gets no new trial');
   else bad('a team of two was provisioned: ' + small.body);

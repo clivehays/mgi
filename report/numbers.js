@@ -152,16 +152,25 @@ function compute(answers, contact, meta) {
    mechanical answer where there is not, so a model outage costs the
    page its words and not its shape. */
 function focusOf(payload) {
+  var areas = payload.areas || [];
+
+  /* Readings written before the focus moved to Eran carry a focus key
+     and no ranking. They are live and linked from emails that do not
+     expire, so they resolve rather than throw. */
+  var mechanical = (payload.ranking && payload.ranking[0]) ||
+    payload.focus || (areas[0] && areas[0].key);
+
   var chosen = payload.eran && payload.eran.focus;
-  var known = payload.areas.filter(function (a) { return a.key === chosen; })[0];
-  var area = known || payload.areas.filter(function (a) {
-    return a.key === payload.ranking[0];
-  })[0] || payload.areas[0];
+  var known = areas.filter(function (a) { return a.key === chosen; })[0];
+  var area = known ||
+    areas.filter(function (a) { return a.key === mechanical; })[0] ||
+    areas[0] || { key: '', plain: '', dimension: '' };
+
   return {
     key: area.key,
     plain: area.plain,
     dimension: area.dimension,
-    mechanical: payload.ranking[0],
+    mechanical: mechanical,
     erans: !!known
   };
 }

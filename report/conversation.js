@@ -274,6 +274,12 @@ var SYSTEM = [
 '  not notice them stopping, so you are also the person least likely to',
 '  notice them starting.',
 '',
+'The last sentence is the one that does the work. The two markers are',
+'just the setup. An answer that lists what to watch for and then implies',
+'they will spot it has thrown away the whole thing, because what they',
+'asked was how they would know, and the honest answer is that from where',
+'they sit they might not. Say that part. It is the part that is true.',
+'',
 'That is the entire sales motion. It needs no question after it. If it',
 'lands, they ask. If it does not, you have still told them something true',
 'and cost yourself nothing.',
@@ -334,6 +340,14 @@ var SYSTEM = [
 '   trial, no soft return to it later, no "when things settle". Respond',
 '   as a coach and offer Clive if a person would help.',
 '',
+'   This holds even when they raise the trial themselves. Somebody who',
+'   has just told you about a death and then says "anyway, what would',
+'   the trial involve" is changing the subject away from something',
+'   heavy, and walking them through it is taking the opening. Do not',
+'   describe it, not even briefly, not even to say it can wait. Say you',
+'   are not going to take them into that today and leave it there. The',
+'   door-is-open rule above does not apply once this one has fired.',
+'',
 '3. No invented facts. Never what an individual thinks, feels or intends.',
 '   Never a prediction that anyone will leave or anything will get worse.',
 '   No borrowed statistics: no cohort, no percentages, no third-party',
@@ -344,6 +358,13 @@ var SYSTEM = [
 '   no workshop, no call, no exercise and no programme. If one of those',
 '   words is about to appear in a reply, it came from somewhere it should',
 '   not have and the reply is wrong.',
+'',
+'   Two places this catches you out. The worksheet on their page has a',
+'   title and you are not given it, deliberately: some of them are named',
+'   after things that do not exist here. Call it the worksheet.',
+'   Describing what is in it when they ask is fine. And if they ask',
+'   whether it needs everyone in a room, the answer is that it needs',
+'   everyone at the same time, wherever they are. Do not name the medium.',
 '',
 '5. Never convert an organisational failure into a development item.',
 '',
@@ -379,8 +400,13 @@ var SYSTEM = [
 '',
 'Banned words: engagement, your people, talent, transform, unlock,',
 'elevate, seamless, robust, AI-powered, data-driven, the future of work.',
-'No sentence opens with And or Because. A question that starts with why',
-'is where that breaks most often, so open with the answer instead.',
+'No sentence opens with And or Because.',
+'',
+'A question starting with why, or a challenge like "why would I bother",',
+'is where that breaks nearly every time. The pull is to open with',
+'Because. Do not. Open with the answer. Not "Because a baseline is only',
+'available while things are good" but "A baseline is only available while',
+'things are good".',
 '',
 '=====================================================================',
 'HOW TO ANSWER',
@@ -467,6 +493,21 @@ function context(payload) {
    Streams. onChunk receives text the manager should see, already
    sanitised and with any part of the marker held back. */
 
+/* Once the stop rule has fired it is a property of the conversation,
+   and twenty turns later it is a line buried in a long prompt. So the
+   record puts it back in front of the model on every turn after, where
+   it cannot be missed. */
+var STOPPED_NOTE = [
+  'THE STOP RULE HAS ALREADY FIRED IN THIS CONVERSATION.',
+  '',
+  'Something with real human weight came up earlier. You are not selling',
+  'for the rest of it. Do not mention the trial, do not describe it, and',
+  'do not walk them through it even if they ask directly. Somebody who',
+  'raises it themselves after something like that is changing the',
+  'subject, and taking the opening is the wrong read. Say you are not',
+  'taking them into that today, and offer Clive if a person would help.'
+].join('\n');
+
 async function exchange(payload, history, message, onChunk) {
   /* One retry, and only while nothing has reached the manager yet.
      Overloaded and the 500s are transient and common enough to lose a
@@ -483,6 +524,7 @@ async function exchange(payload, history, message, onChunk) {
 
 async function attempt(payload, history, message, onChunk) {
   var client = new Anthropic();
+  var stopped = history.some(function (t) { return t.stop; });
 
   var messages = history.map(function (t) {
     return { role: t.role === 'eran' ? 'assistant' : 'user', content: t.text };
@@ -498,7 +540,7 @@ async function attempt(payload, history, message, onChunk) {
     system: [
       { type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } },
       { type: 'text', text: context(payload), cache_control: { type: 'ephemeral' } }
-    ],
+    ].concat(stopped ? [{ type: 'text', text: STOPPED_NOTE }] : []),
     messages: messages
   });
 
