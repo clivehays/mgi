@@ -13,11 +13,6 @@ var store = require('../report/store.js');
 var send = require('../report/send.js');
 var mail = require('../report/email.js');
 
-/* The client is told what it may offer, and never works it out from the
-   prose. Reading Eran's words for "how many people" and provisioning off
-   the next number the manager typed is exactly the bug this replaces. */
-var UI_MARK = '[[[UI]]]';
-
 var PER_DAY = 12;
 var PER_TOKEN = 40;
 var PER_IP_DAY = 60;
@@ -81,7 +76,8 @@ module.exports = async function handler(req, res) {
       row.payload,
       past.map(function (t) { return { role: t.role, text: t.text }; }),
       message,
-      function (chunk) { res.write(chunk); }
+      function (chunk) { res.write(chunk); },
+      token
     );
   } catch (e) {
     console.error('MGI ask failed for ' + token + ': ' + e.message);
@@ -95,16 +91,15 @@ module.exports = async function handler(req, res) {
      once it has engaged it stays engaged for everything after it. */
   var stop = stopped || out.meta.stop;
 
-  /* Section 10. Who put the trial on the table. The one number that
-     says whether the objective has drifted back toward converting. */
-  var raised = out.meta.raised_trial;
-
-  /* What the page may offer next. Absolute 1: the trial, the link and
-     the message happen on a press, so the page is told when a press
-     would make sense and never works it out from the prose. */
-  var ui = {
-    provision: (out.meta.ready && out.meta.team_size) ? out.meta.team_size : null
-  };
+  /* Section 8. Who put the forward step on the table, and anything Eran
+     could not describe precisely. The second is the backlog for making
+     the product explicable. */
+  var raised = out.meta.raised_step;
+  if (out.meta.unanswered) {
+    console.log('MGI_UNANSWERED ' + JSON.stringify({
+      token: token, asked: message.slice(0, 200), missing: out.meta.unanswered
+    }));
+  }
 
   /* Stored before the response closes, not after it. The manager has
      already read the reply, so the wait costs them nothing, and putting
@@ -115,35 +110,31 @@ module.exports = async function handler(req, res) {
     await store.addTurns(token, [
       { turn: turn, role: 'manager', text: message, state: out.meta.state,
         shape: out.meta.shape, stop: stop,
-        raised_trial: raised === 'manager' ? 'manager' : null },
+        raised_step: raised === 'manager' ? 'manager' : null },
       { turn: turn + 1, role: 'eran', text: out.reply, state: out.meta.state,
         exit: out.meta.exit, stop: stop, refusal: out.meta.refusal,
-        raised_trial: raised === 'eran' ? 'eran' : null,
+        raised_step: raised === 'eran' ? 'eran' : null,
+        offered: out.meta.offered, unanswered: out.meta.unanswered,
         faults: out.faults.length ? out.faults.join(' | ') : null }
     ]);
   } catch (e) {
     console.error('MGI turn store failed for ' + token + ': ' + e.message);
   }
 
-  /* the affordances, after the reply and behind a marker the client
-     cuts, so nothing here is ever read as part of what Eran said */
-  res.write('\n' + UI_MARK + JSON.stringify(ui));
+  /* The reply is the whole of what goes down the wire now. There are no
+     affordances left to announce: Eran sets nothing up, so there is
+     nothing for the page to offer to press. */
   res.end();
 
   if (out.faults.length) {
     console.error('MGI conversation faults on ' + token + ': ' + out.faults.join(' | '));
   }
 
-  /* Clive receives the transcript on every exit. That one can wait.
-
-     A trial is only an exit once there is a trial. Eran marks the exit
-     when it starts running the close, which is several turns before
-     anything is provisioned, and without this Clive gets a transcript
-     announcing a trial that does not exist yet. The other two exits are
-     complete the moment they are taken. */
+  /* Clive gets the transcript whichever way it goes, and it is his call
+     prep. Every exit is complete the moment it is taken now: there is
+     nothing left that gets provisioned afterwards. */
   if (out.meta.exit) {
     send.background((async function () {
-      if (out.meta.exit === 'trial' && !(await store.trial(token))) return;
       var full = await store.history(token);
       await mail.transcript(row.payload, token, full, out.meta);
     })());

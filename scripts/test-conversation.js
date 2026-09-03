@@ -94,58 +94,27 @@ if (c.faultsIn(long).some(function (f) { return /six lines/.test(f); })) {
   ok('catches a reply past six lines on a phone');
 } else bad('a ninety-word reply was not faulted for length');
 
-console.log('\nThe team message validator, section 7');
-var good = 'I have been thinking about how we work rather than what we ship, ' +
-  'and I want a better read on it than my own impression. From next week ' +
-  'there is one question a day, about thirty seconds. Answers come back to ' +
-  'me as a team picture, not individually, and I never see who said what. ' +
-  'I will tell you what I do with it. If it turns out to be noise we stop.';
-var gf = c.teamFaults(good);
-if (gf.length) bad('the spec target was faulted: ' + gf.join(' | '));
-else ok('the spec target passes');
-
-[['monitor', 'I want to monitor how the team is doing, one question a day, ' +
-   'answers come back as a team picture and I never see who said what.'],
- ['track', 'I am going to track how we work. Answers come back as a team picture.'],
- ['measure', 'I want to measure how we work. Answers come back as a team picture.'],
- ['engagement', 'This is about engagement. Answers come back as a team picture.'],
- ['survey', 'A short survey, one question a day. Answers come back as a team picture.'],
- ['a product name', 'We are trying Clover ERA. Answers come back as a team picture.']
-].forEach(function (t) {
-  if (c.teamFaults(t[1]).length) ok('rejects ' + t[0]);
-  else bad('allowed ' + t[0]);
-});
-
-var silent = 'I have been thinking about how we work rather than what we ship. ' +
-  'From next week there is one question a day, about thirty seconds each.';
-if (c.teamFaults(silent).some(function (f) { return /who-can-see-it/.test(f); })) {
-  ok('rejects a message that never answers who can see it');
-} else bad('a message that never answers who can see it was allowed');
-
-var over = 'Answers come back as a team picture. ' + new Array(90).join('word ');
-if (c.teamFaults(over).some(function (f) { return /80/.test(f); })) {
-  ok('rejects a message over eighty words');
-} else bad('a message over eighty words was allowed');
-
 console.log('\nThe meta cleaner takes nothing on trust');
 var dirty = c.clean({ state: 'selling', shape: 'panic', exit: 'signup',
-  stop: 'yes', team_size: '9', refusal: new Array(200).join('x') });
+  stop: 'yes', refusal: new Array(200).join('x'),
+  raised_step: 'nobody', unanswered: new Array(400).join('y') });
 is('an unknown state falls back to reading', dirty.state, 'reading');
 is('an unknown objection falls back to none', dirty.shape, 'none');
 is('an unknown exit is dropped', dirty.exit, null);
 is('stop is only ever a real boolean', dirty.stop, false);
-is('a numeric string team size is taken as a number', dirty.team_size, 9);
+is('an unknown raiser is dropped', dirty.raised_step, null);
 if (dirty.refusal.length <= 60) ok('the refusal note is bounded');
 else bad('the refusal note is unbounded');
-is('a team size of nought is refused', c.clean({ team_size: 0 }).team_size, null);
+if (dirty.unanswered.length <= 200) ok('the unanswered note is bounded');
+else bad('the unanswered note is unbounded');
+is('the old trial exit is not accepted', c.clean({ exit: 'trial' }).exit, null);
+is('booking is', c.clean({ exit: 'booking' }).exit, 'booking');
 
 console.log('\nPreview stays out of the live record');
 var live = requireFresh('mgi_readings');
 is('live conversations', live.CONVERSATIONS, 'mgi_conversations');
-is('live trials', live.TRIALS, 'mgi_trials');
 var prev = requireFresh('mgi_preview_readings');
 is('preview conversations', prev.CONVERSATIONS, 'mgi_preview_conversations');
-is('preview trials', prev.TRIALS, 'mgi_preview_trials');
 is('preview rate limit', prev.RATE, 'mgi_preview_ask_rate');
 
 function requireFresh(table) {
@@ -166,36 +135,59 @@ if (/type="email"|name="email"|your email/i.test(pageSrc)) {
   bad('the reading asks for an email address somewhere');
 } else ok('nothing on the reading asks for an address');
 
-console.log('\nThe page never provisions from what it reads');
+console.log('\nNothing sets anything up any more');
 var page = require('fs').readFileSync(
   require('path').join(__dirname, '..', 'report', 'page.js'), 'utf8');
-if (/offerClose/.test(page)) bad('the reply-reading close is still in the page');
-else ok('nothing in the page reads a reply to decide what to offer');
-if (/how many\|team size/.test(page)) bad('the page still matches on the words of a reply');
-else ok('no phrase matching against Eran');
-if (/parseInt\(\(input\.value/.test(page)) bad('the page still parses a number out of the box');
-else ok('no number is parsed out of the input to provision with');
-if (/pressed:true/.test(page)) ok('the only caller declares it came from a press');
-else bad('the client provisions without declaring a press');
-if (/offerConsent/.test(page)) bad('the consent affordance is still in the page');
-else ok('one affordance, not two');
 
-console.log('\nThe trial route provisions on a press and nothing else');
-var trial = require('fs').readFileSync(
-  require('path').join(__dirname, '..', 'api', 'trial.js'), 'utf8');
-if (/body\.pressed !== true/.test(trial) && /blocked: true/.test(trial)) {
-  ok('anything that did not come from a press is refused');
-} else bad('the trial route can be reached without a press');
+[['a reply-reading close', /offerClose/],
+ ['a provisioning affordance', /offerProvision|offerConsent/],
+ ['a number parsed out of the box', /parseInt\(\(input\.value/],
+ ['a join block', /join-block/],
+ ['a team message box', /team-msg/],
+ ['a press flag', /pressed:true/]
+].forEach(function (t) {
+  if (t[1].test(page)) bad(t[0] + ' is still in the page');
+  else ok('no ' + t[0]);
+});
+
+var fs = require('fs');
+var api = fs.readdirSync(require('path').join(__dirname, '..', 'api'));
+if (api.indexOf('trial.js') >= 0) bad('the trial route is still there');
+else ok('no trial route');
+if (api.indexOf('join.js') >= 0) bad('the join page is still there');
+else ok('no join page');
+
+var store = require('../report/store.js');
+if (store.TRIALS || store.startTrial) bad('the store still knows about trials');
+else ok('the store does not know about trials');
+if (c.teamMessage || c.teamFaults) bad('the team message is still in the module');
+else ok('no team message');
+
+console.log('\nOne forward step, one link');
+var booking = require('../report/booking.js');
+var link = booking.link('AAAAAAAAAAAAAAAAAAAAAA');
+if (/^https:\/\/calendly\.com\//.test(link)) ok('the link is the configured Calendly one');
+else bad('the booking link is ' + link);
+if (/utm_content=AAAAAAAAAAAAAAAAAAAAAA/.test(link)) ok('the token rides along');
+else bad('the token is not on the link');
+if (booking.link('') === booking.URL) ok('no token, no query junk');
+else bad('an empty token still appends something');
+
+var vercel = JSON.parse(fs.readFileSync(
+  require('path').join(__dirname, '..', 'vercel.json'), 'utf8'));
+var routes = vercel.rewrites.map(function (r) { return r.source; }).join(' ');
+if (/trial|\/j\//.test(routes)) bad('a dead route is still wired: ' + routes);
+else ok('no dead routes');
 
 console.log('\nThe prompt leads with the objective, not the machinery');
 [['the objective', /MOST USEFUL CONVERSATION THIS MANAGER HAS EVER HAD/],
  ['no quota', /You have no conversion job/],
  ['the earned offer', /EARNED BY THE ANSWERS, NOT ASKED FOR/],
- ['a reason per state', /manager in Stall does not want a paragraph/],
- ['the five absolutes', /FIVE THINGS THAT ARE NOT JUDGEMENT/],
+ ['a reason per state', /A manager in Stall\s+does not want a paragraph/],
+ ['the four absolutes', /FOUR THINGS THAT ARE NOT JUDGEMENT/],
  ['the nouns that exist', /There is no session/],
  ['the label is recorded, not occupied', /not a place you are standing in/],
- ['who raised the trial', /raised_trial is the one that matters/]
+ ['who raised the forward step', /raised_step is the one to be most honest about/]
 ].forEach(function (t) {
   if (t[1].test(c.SYSTEM)) ok(t[0] + ' is stated');
   else bad(t[0] + ' is missing from the prompt');
@@ -204,20 +196,27 @@ console.log('\nThe prompt leads with the objective, not the machinery');
 console.log('\nAnd carries none of the machinery it replaced');
 [['a six step close', /Six steps, in this order/],
  ['a consent gate', /THE CONSENT GATE/],
- ['a list of things that are not openings', /THESE DO NOT OPEN IT/],
  ['a state machine to occupy', /reading   Answer questions about the reading/],
- ['a numbered rule list', /Never ask a setup question from reading/]
+ ['a setup sequence', /then team size, then the message/],
+ ['anything about a team size', /how many, and is this the team/]
 ].forEach(function (t) {
   if (t[1].test(c.SYSTEM)) bad(t[0] + ' is still in the prompt');
   else ok('no ' + t[0]);
 });
 
-console.log('\nThe gates themselves are gone from the code');
-[['decideDoor', c.decideDoor], ['decideConsent', c.decideConsent],
- ['OFFER_LANGUAGE', c.OFFER_LANGUAGE]].forEach(function (t) {
-  if (t[1] === undefined) ok(t[0] + ' is gone');
-  else bad(t[0] + ' is still exported');
+console.log('\nAbsolute 1, the reason for all of it');
+[['sets nothing up', /YOU DO NOT SET ANYTHING UP/],
+ ['describes only what it can', /DESCRIBE ONLY WHAT YOU CAN DESCRIBE PRECISELY/],
+ ['the failure it came from', /no list to hand you/],
+ ['a yes still gets the link', /you still\s+cannot/],
+ ['asked once', /do not raise it again in this conversation/],
+ ['the backlog', /unanswered is the backlog/]
+].forEach(function (t) {
+  if (t[1].test(c.SYSTEM)) ok(t[0] + ' is stated');
+  else bad(t[0] + ' is missing from the prompt');
 });
+
+
 
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed\n');

@@ -12,7 +12,6 @@ var READINGS = process.env.MGI_READINGS_TABLE || 'mgi_readings';
    preview without a third and fourth variable to keep in step */
 var PREFIX = READINGS.replace(/readings$/, '');
 var CONVERSATIONS = PREFIX + 'conversations';
-var TRIALS = PREFIX + 'trials';
 var RATE = PREFIX + 'ask_rate';
 
 function rest(path, opts) {
@@ -48,17 +47,18 @@ async function reading(token) {
 
 async function history(token) {
   return rows(CONVERSATIONS + '?token=eq.' + encodeURIComponent(token) +
-    '&select=turn,role,text,state,stop,raised_trial&order=turn.asc');
+    '&select=turn,role,text,state,stop,offered,raised_step,unanswered' +
+    '&order=turn.asc');
 }
 
-/* Section 10. Who put the trial on the table first, across the whole
-   conversation. If this reads eran more often than about one in three,
-   the objective has drifted back toward converting and the prompt is
-   the thing to look at. */
-async function whoRaisedTrial(token) {
+/* Section 8. Who put the forward step on the table first, across the
+   whole conversation. If this reads eran more often than about one in
+   three, the objective has drifted back and the prompt is the thing to
+   look at. */
+async function whoRaisedStep(token) {
   var got = await rows(CONVERSATIONS + '?token=eq.' + encodeURIComponent(token) +
-    '&raised_trial=not.is.null&select=turn,raised_trial&order=turn.asc&limit=1');
-  return got[0] ? got[0].raised_trial : null;
+    '&raised_step=not.is.null&select=turn,raised_step&order=turn.asc&limit=1');
+  return got[0] ? got[0].raised_step : null;
 }
 
 /* Checks what came back. Written without this it swallowed every
@@ -84,7 +84,9 @@ async function addTurns(token, turns) {
         stop: t.stop === true,
         refusal: t.refusal === undefined ? null : t.refusal,
         faults: t.faults === undefined ? null : t.faults,
-        raised_trial: t.raised_trial === undefined ? null : t.raised_trial
+        raised_step: t.raised_step === undefined ? null : t.raised_step,
+        offered: t.offered === true,
+        unanswered: t.unanswered === undefined ? null : t.unanswered
       };
     }))
   });
@@ -132,58 +134,16 @@ async function rateHit(ip, ceiling) {
   return true;
 }
 
-/* ---------- the trial ---------- */
-
-async function trial(token) {
-  var got = await rows(TRIALS + '?token=eq.' + encodeURIComponent(token) + '&select=*');
-  return got[0] || null;
-}
-
-async function trialByCode(code) {
-  var got = await rows(TRIALS + '?join_code=eq.' + encodeURIComponent(code) + '&select=*');
-  return got[0] || null;
-}
-
-async function startTrial(row) {
-  var r = await rest(TRIALS, {
-    method: 'POST',
-    headers: { Prefer: 'return=representation' },
-    body: JSON.stringify(row)
-  });
-  if (!r || !r.ok) {
-    console.error('MGI trial insert failed: ' +
-      (r ? r.status + ' ' + (await r.text()) : 'no store configured'));
-    return null;
-  }
-  return (await r.json())[0] || row;
-}
-
-async function countJoin(code) {
-  var t = await trialByCode(code);
-  if (!t) return null;
-  await rest(TRIALS + '?join_code=eq.' + encodeURIComponent(code), {
-    method: 'PATCH',
-    headers: { Prefer: 'return=minimal' },
-    body: JSON.stringify({ joined: (t.joined || 0) + 1 })
-  });
-  return t;
-}
-
 module.exports = {
   rest: rest,
   rows: rows,
   reading: reading,
   history: history,
-  whoRaisedTrial: whoRaisedTrial,
+  whoRaisedStep: whoRaisedStep,
   addTurns: addTurns,
   counts: counts,
   rateHit: rateHit,
-  trial: trial,
-  trialByCode: trialByCode,
-  startTrial: startTrial,
-  countJoin: countJoin,
   READINGS: READINGS,
   CONVERSATIONS: CONVERSATIONS,
-  TRIALS: TRIALS,
   RATE: RATE
 };

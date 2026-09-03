@@ -3,14 +3,14 @@
 
      node scripts/test-live-talk.js <token>
 
-   Runs the ask route, the close, the trial route and the join page the
-   way a browser does, so the wiring is tested and not just the prompt.
-   Real model calls, real rows in the preview tables. No email is sent
-   to a manager: the only message is the transcript to Clive on an exit,
-   which is the thing being tested.
+   Runs the ask route the way a browser does, so the wiring is tested
+   and not just the prompt. Real model calls, real rows in the preview
+   tables. No email reaches a manager: the only message is the
+   transcript to Clive on an exit, which is part of what is tested.
    ============================================================= */
 
 var io = require('fs');
+var path = require('path');
 var ENV = 'C:\\Users\\Administrator\\clover-agents\\.env';
 io.readFileSync(ENV, 'utf8').split(/\r?\n/).forEach(function (line) {
   line = line.trim();
@@ -29,8 +29,6 @@ process.env.MGI_FROM_EMAIL = 'The Manager Gap Index <reading@managergap.com>';
 process.env.MGI_NOTIFY_FROM = process.env.MGI_FROM_EMAIL;
 
 var ask = require('../api/ask.js');
-var trial = require('../api/trial.js');
-var join = require('../api/join.js');
 var reading = require('../api/reading.js');
 var store = require('../report/store.js');
 
@@ -90,8 +88,8 @@ async function say(text) {
   else bad('the reply did not stream, ' + a.chunks + ' chunk(s)');
   if (a.body.indexOf('[[[META') === -1) ok('the control block never reached the client');
   else bad('the control block leaked to the client');
-  if (a.body.indexOf('[[[UI]]]') !== -1) ok('the affordance line is on the wire');
-  else bad('no affordance line was sent');
+  if (a.body.indexOf('[[[') === -1) ok('nothing but the reply reached the client');
+  else bad('a control marker leaked to the client');
 
   /* 3. it was stored, with the objection classified */
   var turns = await store.history(token);
@@ -104,75 +102,44 @@ async function say(text) {
     ok('classified as surveillance, which is what section 10 counts');
   } else bad('classified as ' + JSON.stringify(rows[0] && rows[0].shape));
 
-  /* 4. The bug, replayed. A number on its own, with no consenting turn
-     behind it, provisions nothing. */
-  var num = await say('9');
-  console.log('\n  > 9');
-  console.log('  ' + num.body.split('[[[UI]]]')[0].replace(/\n/g, '\n  '));
+  /* 4. Nothing sets anything up any more. */
+  var setup = await say('Yes please, set it up for my team.');
+  console.log('\n  > yes please, set it up');
+  console.log('  ' + setup.body.replace(/\n/g, '\n  '));
+  if (/calendly\.com/i.test(setup.body)) ok('handed over the booking link');
+  else bad('no booking link on a direct ask');
+  if (/how many|team size|join link|starts on/i.test(setup.body)) {
+    bad('talked as though it could set something up');
+  } else ok('asked for nothing and started nothing');
 
-  var blocked = res();
-  await trial({ method: 'POST', query: { token: token }, body: { team_size: 9 } }, blocked);
-  var bj = JSON.parse(blocked.body);
-  if (bj.blocked) ok('a call that did not come from a press is refused');
-  else bad('the trial route provisioned without a press: ' + blocked.body);
-  if (!bj.join_code) ok('no join code was minted');
-  else bad('a join code was minted anyway');
+  var who = await store.whoRaisedStep(token);
+  console.log('    note  raised_step reads ' + JSON.stringify(who));
 
-  /* 5. the manager opens the door in their own words, then presses */
-  var b = await say('What would my team say about this? I want to set it up.');
-  console.log('\n  > what would my team say, I want to set it up');
-  console.log('  ' + b.body.split('[[[UI]]]')[0].replace(/\n/g, '\n  '));
+  /* 5. what could not be described precisely, for the backlog */
+  var vague = await say('What are the fifteen daily questions? Give me the list.');
+  console.log('\n  > give me the list');
+  console.log('  ' + vague.body.replace(/\n/g, '\n  '));
+  var logged = await store.rows(store.CONVERSATIONS + '?token=eq.' +
+    encodeURIComponent(token) + '&unanswered=not.is.null&select=unanswered');
+  if (logged.length) ok('recorded for the backlog: ' + logged[0].unanswered);
+  else bad('nothing was recorded as unanswerable');
 
-  var who = await store.whoRaisedTrial(token);
-  if (who === 'manager') ok('the record says the manager raised it, not Eran');
-  else console.log('    note  raised_trial reads ' + JSON.stringify(who));
+  /* 6. the routes that used to exist are gone */
+  var api = io.readdirSync(path.join(__dirname, '..', 'api'));
+  if (api.indexOf('trial.js') === -1 && api.indexOf('join.js') === -1) {
+    ok('no trial route and no join page');
+  } else bad('a dead route is still deployed');
 
-  var t = res();
-  await trial({ method: 'POST', query: { token: token },
-    body: { team_size: 9, pressed: true } }, t);
-  var out = JSON.parse(t.body);
-  if (out.join_url) ok('provisioned from a press');
-  else { bad('no join link: ' + t.body); }
+  /* 7. the page's only ask is the same booking link */
+  var html = String(page.body);
+  var cta = (html.match(/class="cta-link" href="([^"]*)"/) || [])[1] || '';
+  if (/calendly\.com/.test(cta)) ok('the page CTA is the booking link');
+  else bad('the page CTA is ' + cta);
+  if (cta.indexOf(token) > 0) ok('and it carries the token');
+  else bad('the CTA carries no token');
+  if (/Replying to the email/.test(html)) ok('the reply-to-email line is under it');
+  else bad('no reply-to-email line');
 
-  if (out.message) {
-    console.log('\n  THE TEAM MESSAGE');
-    console.log('  ' + out.message.replace(/\n/g, '\n  '));
-    var c = require('../report/conversation.js');
-    var f = c.teamFaults(out.message);
-    if (f.length) bad('the team message: ' + f.join(' | '));
-    else ok('the team message passes every rule in section 7');
-  } else bad('no team message was written');
-
-  if (out.first_report && out.ends_at) ok('both dates fixed: ' + out.first_report + ' and ' + out.ends_at);
-  else bad('the dates are missing');
-
-  /* 6. a team of two is declined */
-  var small = res();
-  await trial({ method: 'POST', query: { token: token },
-    body: { team_size: 2, pressed: true } }, small);
-  var s = JSON.parse(small.body);
-  if (s.declined || s.existing) ok('a team of two gets no new trial');
-  else bad('a team of two was provisioned: ' + small.body);
-
-  /* 7. the join page */
-  var code = out.join_code;
-  var j = res();
-  await join({ method: 'GET', query: { code: code } }, j);
-  if (j.code === 200) ok('the join page answers');
-  else bad('the join page returned ' + j.code);
-  if (/team picture|who said what/i.test(String(j.body))) {
-    ok('and answers who-can-see-it before anyone asks');
-  } else bad('the join page never answers who can see it');
-
-  var bogus = res();
-  await join({ method: 'GET', query: { code: 'ZZZZ-ZZZZ' } }, bogus);
-  if (bogus.code === 404) ok('an unknown code is not live');
-  else bad('an unknown code returned ' + bogus.code);
-
-  /* 8. the join was counted */
-  var after = await store.trialByCode(code);
-  if (after && after.joined >= 1) ok('the join was counted');
-  else bad('the join was not counted');
 
   console.log('\n' + pass + ' passed, ' + fail + ' failed\n');
   process.exit(fail ? 1 : 0);

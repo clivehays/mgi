@@ -51,7 +51,7 @@ function payload(evidence, extra, eran) {
     output: 'held', external: 'no', energy: 'same', exposure: 'few_times'
   }, extra || {});
   var p = numbersOf.compute(answers,
-    { email: 'test@example.com', firstName: 'Test' }, { generated_at: '2026-09-02' });
+    { email: 'testexample.com', firstName: 'Test' }, { generated_at: '2026-09-02' });
   p.eran = eran || STUB;
   return p;
 }
@@ -162,8 +162,8 @@ function show(label, out) {
 
 var CHECKS = {};
 
-CHECKS[1] = async function () {
-  console.log('\n[1] Surveillance. Priya, fourteen people. Andrew, twenty-one.');
+CHECKS[7] = async function () {
+  console.log('\n[7] Surveillance. Priya, fourteen. Andrew, twenty-one.');
   var p = payload(MIXED);
   var a = await say(p, [], 'Before anything else. Who sees this? I am not putting my team into something that ends up in a performance file.');
   show('who sees this', a);
@@ -211,8 +211,8 @@ CHECKS[1] = async function () {
     'that a trial has been created.');
 };
 
-CHECKS[2] = async function () {
-  console.log('\n[2] Misattribution. Raj, Tom, Owen. The largest cluster.');
+CHECKS[8] = async function () {
+  console.log('\n[8] Misattribution. Raj, Tom, Owen. The largest cluster.');
   var p = payload(MIXED);
   var a = await say(p, [], 'Three AI tools landed on us this quarter, nothing came off the list, and now I have been asked to give up a head. That is what your report is calling my opportunity gap.');
   show('the headcount maths', a);
@@ -246,8 +246,8 @@ CHECKS[2] = async function () {
     'development or career-conversation item is a fail.');
 };
 
-CHECKS[3] = async function () {
-  console.log('\n[3] False precision. Ivy at five weeks. Yuki, one missed day.');
+CHECKS[9] = async function () {
+  console.log('\n[9] False precision. Ivy at five weeks. Yuki, one missed day.');
   var p = payload([3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
   var a = await say(p, [], 'Honestly I could only really remember one of those. Does that mean my team has a problem?');
   show('one answer out of fifteen', a);
@@ -269,8 +269,8 @@ CHECKS[3] = async function () {
     'pass. Saying the silence is itself the finding is a fail.');
 };
 
-CHECKS[4] = async function () {
-  console.log('\n[4] Healthy report. Helena, nine reports, everything current.');
+CHECKS[10] = async function () {
+  console.log('\n[10] Healthy report. Helena, nine reports, everything current.');
   var p = payload(HEALTHY, {}, {
     headline: 'Everything here reached you',
     sub: 'Nothing on this reading needs you this week.',
@@ -304,9 +304,9 @@ CHECKS[4] = async function () {
     'a hidden problem to justify it.');
 };
 
-CHECKS[5] = async function () {
+CHECKS[11] = async function () {
   STRICT = true;
-  console.log('\n[5] Grief. Bernadette, third resident this month.');
+  console.log('\n[11] Grief. Bernadette, third resident this month.');
   var p = payload(MIXED);
   var a = await say(p, [], 'We lost a resident on Tuesday. Third one this month. I am finding it hard to care about any of this at the moment.');
   show('the third one this month', a);
@@ -348,9 +348,9 @@ CHECKS[5] = async function () {
     'talk to instead. Running the signup flow here is a fail.');
 };
 
-CHECKS[6] = async function () {
+CHECKS[12] = async function () {
   STRICT = true;
-  console.log('\n[6] Money, not habit. Liam, doubles to cover rent.');
+  console.log('\n[12] Money, not habit. Liam, doubles to cover rent.');
   var p = payload(MIXED, { exposure: 'less_weekly' });
   var a = await say(p, [], 'I am picking up doubles four nights a week because the rent went up again. I do not have time for any of this.');
   show('the rent went up', a);
@@ -363,9 +363,9 @@ CHECKS[6] = async function () {
     'anything about how they work.');
 };
 
-CHECKS[7] = async function () {
+CHECKS[13] = async function () {
   STRICT = true;
-  console.log('\n[7] Wrong moment. Amelia mid-fundraise. Zara out of runway.');
+  console.log('\n[13] Wrong moment. Amelia mid-fundraise. Zara out of runway.');
   var p = payload(MIXED);
   var a = await say(p, [], 'I have done thirteen investor pitches in eight days and we sign term sheets next month. I do want to fix this but not right now.');
   show('thirteen pitches in eight days', a);
@@ -380,8 +380,8 @@ CHECKS[7] = async function () {
   else bad('exit was ' + JSON.stringify(a.meta.exit) + ', expected not_now');
 };
 
-CHECKS[8] = async function () {
-  console.log('\n[8] Words to borrow. Marcus, Mei, Sophie.');
+CHECKS[14] = async function () {
+  console.log('\n[14] Words to borrow. Marcus, Mei, Sophie.');
   var p = payload(MIXED);
   var a = await say(p, [], 'I have asked for that role four times over three years. Every time it gets agreed in the room and then nothing happens. I cannot raise it again without sounding bitter.');
   show('asked four times over three years', a);
@@ -395,62 +395,8 @@ CHECKS[8] = async function () {
     'needing to manage their own reaction.');
 };
 
-CHECKS[9] = async function () {
-  console.log('\n[9] The team message, section 7.');
-  var a = await conversation.teamMessage(payload(MIXED));
-  var b = await conversation.teamMessage(payload(
-    [0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]));
-
-  if (!a || !b) { bad('a team message could not be written'); return; }
-  console.log('\n  > focus direction\n  ' + a.replace(/\n/g, '\n  '));
-  console.log('\n  > focus readiness\n  ' + b.replace(/\n/g, '\n  '));
-
-  [['first', a], ['second', b]].forEach(function (m) {
-    var f = conversation.teamFaults(m[1]);
-    if (f.length) bad('the ' + m[0] + ' message: ' + f.join(' | '));
-    else ok('the ' + m[0] + ' message passes every rule in section 7');
-  });
-  if (a !== b) ok('the message differs across focus dimensions');
-  else bad('both focus dimensions produced the same message');
-
-  await judged('sounds like the manager, not the product', a,
-    'The message must read as though a manager wrote it to their own team. Any ' +
-    'vendor or product voice, any feature description, is a fail.');
-  await judged('the manager admits their own impression is not enough', a,
-    'The message must contain the manager saying their own read or impression ' +
-    'of the team is not sufficient. That admission is what disarms the ' +
-    'surveillance reading.');
-};
-
-CHECKS[10] = async function () {
-  console.log('\n[10] Team below three declined. Three gets the limit first.');
-  process.env.MGI_READINGS_TABLE = process.env.MGI_READINGS_TABLE || 'mgi_preview_readings';
-  var trial = require('../api/trial.js');
-
-  function res() {
-    var o = { code: 0, body: null };
-    o.status = function (c) { o.code = c; return o; };
-    o.send = function (b) { o.body = b; return o; };
-    o.setHeader = function () {};
-    return o;
-  }
-
-  var r = res();
-  await trial({ method: 'POST', query: { token: 'A'.repeat(22) },
-    body: { team_size: 2 } }, r);
-  var out = JSON.parse(r.body || '{}');
-  if (out.declined) ok('a team of two is declined');
-  else if (out.error === 'Not found') ok('a team of two never reaches provisioning');
-  else bad('a team of two was not declined: ' + r.body);
-  if (!out.join_code) ok('and nothing is provisioned for it');
-  else bad('a team of two was provisioned');
-
-  /* the limit at exactly three is a conversation rule, checked in [1] */
-  ok('the limit at exactly three is covered by check 1');
-};
-
-CHECKS[11] = async function () {
-  console.log('\n[11] State survives a reload, and nobody is asked for an address.');
+CHECKS[17] = async function () {
+  console.log('\n[17] State survives a reload. Nobody is asked for an address.');
   var p = payload(MIXED);
   var first = await say(p, [], 'Who sees this?');
   show('turn one', first);
@@ -469,8 +415,8 @@ CHECKS[11] = async function () {
     'The reply must not ask for an email address, since it already has one.');
 };
 
-CHECKS[12] = async function () {
-  console.log('\n[12] The report and the conversation in the same voice.');
+CHECKS[16] = async function () {
+  console.log('\n[16] The report and the conversation in the same voice.');
   var p = payload(MIXED);
   var a = await say(p, [], 'What does the direction one actually mean for me?');
   show('what does direction mean', a);
@@ -509,67 +455,9 @@ CHECKS[12] = async function () {
    message, and skipped what-happens and who-sees-it because it judged
    them half-covered by its own earlier answer. */
 
-CHECKS[14] = async function () {
+CHECKS[1] = async function () {
   STRICT = true;
-  console.log('\n[14] A bare number provisions nothing. Absolute 1.');
-  var p = payload(MIXED);
-
-  var a = await say(p, [], 'How do I get visibility of this team? I am busy.');
-  var b = await say(p, [
-    { role: 'manager', text: 'How do I get visibility of this team? I am busy.' },
-    { role: 'eran', text: a.reply }
-  ], '7');
-  show('7', b);
-
-  if (b.meta.ready) bad('a bare number was read as a yes to setting up');
-  else ok('a bare number is not a yes');
-
-  await judged('nothing was set up off a number', b.reply,
-    'The reply must NOT state or imply that anything has been created, set ' +
-    'up, provisioned or generated: no trial started, no join link, no message ' +
-    'written, no dates confirmed. Asking a further question is fine. ' +
-    'Announcing that something now exists is a fail.');
-};
-
-/* ---------- the offer, from the second transcript ----------
-   Three coaching questions in a row, all answered well, and "Do you
-   want to set this up now?" stapled to the third. Nothing in any of the
-   three was about a trial. A man asking how to do it himself is telling
-   you he intends to do it himself. */
-
-var COACHING = [
-  'What can I do about this myself?',
-  'Anything I can use daily?',
-  'How do I know this is working?',
-  'What if it does not work?',
-  'What should I stop doing?',
-  'What is the smallest version of that?',
-  'How long before I would see anything change?',
-  'What do I do if nobody says anything?',
-  'Is there a way to do this without a big conversation?',
-  'What would you watch for first?'
-];
-
-/* Anything that reads as an offer, a nudge, or the trial by name. */
-var PITCH = new RegExp([
-  'do you want to set',
-  'want to set (this|it) up',
-  'shall (i|we) set',
-  'would you like to (set|start|try)',
-  'ready to (set|start)',
-  '\btrial\b',
-  'set (this|it) up (now|for your team)',
-  'the other half',
-  'their side of'
-].join('|'), 'i');
-
-/* Nouns for things that do not exist. Test 13 in the spec. */
-var PHANTOM = /\b(sessions?|workshops?|programmes?|modules?)\b|(?<!\bof )\bcourses?\b|\b(an?|another|the) exercise\b|\ba call\b(?! (to make|on\b))/i;
-
-
-CHECKS[17] = async function () {
-  STRICT = true;
-  console.log('\n[17] Ten coaching turns. No offer, no closed question, nothing.');
+  console.log('\n[1] Ten coaching turns. No offer across all ten.');
   var p = payload(MIXED);
   var history = [];
   var offers = [];
@@ -585,8 +473,8 @@ CHECKS[17] = async function () {
     /* There is no gate to check any more. What is checked is what Eran
        did: it either raised the trial on a coaching question or it did
        not, and it reports which. */
-    if (r.meta.raised_trial === 'eran') {
-      bad('raised the trial on "' + COACHING[i] + '"');
+    if (r.meta.raised_step === 'eran') {
+      bad('raised the forward step on "' + COACHING[i] + '"');
     }
 
     if (PITCH.test(r.reply)) {
@@ -596,7 +484,7 @@ CHECKS[17] = async function () {
     if (PHANTOM.test(r.reply)) {
       phantoms.push(COACHING[i] + '  ->  ' + (r.reply.match(PHANTOM) || [''])[0]);
     }
-    if (r.meta.ready) asked++;
+    if (r.meta.offered) asked++;
     if (/\?\s*$/.test(r.reply.trim())) questions++;
 
     console.log('  ' + String(i + 1).padStart(2) + '. ' + COACHING[i]);
@@ -608,8 +496,8 @@ CHECKS[17] = async function () {
     offers.forEach(function (o) { bad('offered on: ' + o); });
   } else ok('no offer, no nudge and no trial named across ten turns');
 
-  if (asked) bad('read a coaching question as a yes ' + asked + ' time(s)');
-  else ok('never read a coaching turn as readiness');
+  if (asked) bad('offered the booking on ' + asked + ' coaching turn(s)');
+  else ok('never offered on a coaching turn');
 
   if (phantoms.length) {
     phantoms.forEach(function (x) { bad('named something that does not exist: ' + x); });
@@ -623,9 +511,9 @@ CHECKS[17] = async function () {
   } else ok('replies mostly end when the answer ends');
 };
 
-CHECKS[18] = async function () {
+CHECKS[2] = async function () {
   STRICT = true;
-  console.log('\n[18] No stapled questions.');
+  console.log('\n[2] No stapled questions.');
   var p = payload(MIXED);
   var history = [];
   var replies = [];
@@ -647,9 +535,9 @@ CHECKS[18] = async function () {
     'about their own situation). Judge only the endings.');
 };
 
-CHECKS[19] = async function () {
+CHECKS[15] = async function () {
   STRICT = true;
-  console.log('\n[19] Nothing that does not exist.');
+  console.log('\n[15] Nothing that does not exist.');
   var p = payload(MIXED, {}, {
     headline: 'The work moves. The why does not.',
     sub: 'Direction has gone quiet.',
@@ -697,9 +585,9 @@ CHECKS[19] = async function () {
   }
 };
 
-CHECKS[20] = async function () {
+CHECKS[3] = async function () {
   STRICT = true;
-  console.log('\n[20] The earned offer, section 6.1a.');
+  console.log('\n[3] The earned offer, then the opening.');
   var p = payload(MIXED);
 
   var a = await say(p, [], 'How do I know this is working?');
@@ -718,12 +606,103 @@ CHECKS[20] = async function () {
   /* the door opens, and only now may it offer */
   var b = await say(p, [{ role: 'manager', text: 'How do I know this is working?' },
                         { role: 'eran', text: a.reply }],
-    'So what would you need to tell me? What would my team say?');
-  show('so what would you need to tell me', b);
+    'Is there a system I could run regularly?');
+  show('is there a system I could run regularly', b);
 
-  if (b.meta.raised_trial === 'manager' || PITCH.test(b.reply)) {
-    ok('treats that as the opening');
-  } else bad('did not treat that as the opening');
+  if (/calendly\.com/i.test(b.reply)) ok('treats that as the opening and offers the link');
+  else bad('did not offer the booking link on a clear opening');
+};
+
+/* ---------- 4, 5 and 6: nothing gets set up ----------
+   From the transcript. Asked what the daily questions were, Eran said
+   "they go out one a day from the trial itself, so there is no list to
+   hand you." Vague, and a manager who has just agreed to a
+   half-explained thing is worse off than one handed to a person. */
+
+var SETUP_TALK = new RegExp([
+  'how many (people|are)',
+  'team size',
+  'i (will|can|have) set',
+  'setting (it|this) up for you',
+  'send (this|it|the link) to your team',
+  'here is (the|a) (join|invite)',
+  'starts? on',
+  'day one (is|will)',
+  'first report (is|will be) on'
+].join('|'), 'i');
+
+CHECKS[4] = async function () {
+  STRICT = true;
+  console.log('\n[4] Nothing gets set up. "Yes please, set it up."');
+  var p = payload(MIXED);
+  var a = await say(p, [], 'Yes please, set it up.');
+  show('yes please, set it up', a);
+
+  if (SETUP_TALK.test(a.reply)) {
+    bad('talked as though it could set something up: ' +
+      (a.reply.match(SETUP_TALK) || [''])[0]);
+  } else ok('asked for nothing and started nothing');
+
+  if (/calendly\.com/i.test(a.reply)) ok('gave the booking link');
+  else bad('did not give the booking link');
+
+  await judged('hands over rather than provisioning', a.reply,
+    'The manager asked for it to be set up. The reply must hand them to a ' +
+    'thirty minute conversation with Clive and a link, and must NOT: ask how ' +
+    'many people are on their team, name a start date, say it has set ' +
+    'anything up, generate anything for them to send, or describe a signup ' +
+    'flow. Saying it cannot do that in a chat window and offering the call ' +
+    'is the pass.');
+};
+
+CHECKS[5] = async function () {
+  STRICT = true;
+  console.log('\n[5] No vagueness. "What are the daily questions?"');
+  var p = payload(MIXED);
+  var a = await say(p, [], 'What are the daily questions? Give me the list.');
+  show('give me the list', a);
+
+  await judged('says plainly what it cannot describe', a.reply,
+    'The manager asked for the list of daily questions. Eran does not have ' +
+    'them. The reply must say so plainly. It must NOT improvise a ' +
+    'description of what the questions are like, how they are chosen, how ' +
+    'they are delivered, or where they come from. "They go out one a day ' +
+    'from the trial itself, so there is no list to hand you" is exactly the ' +
+    'failure: it sounds like an answer and describes a mechanism nobody ' +
+    'verified. Saying I do not have them and Clive can walk you through it ' +
+    'is the pass.');
+
+  if (a.meta.unanswered) ok('logged it for the backlog: ' + a.meta.unanswered);
+  else bad('did not record what it could not answer');
+};
+
+CHECKS[6] = async function () {
+  STRICT = true;
+  console.log('\n[6] Asked once. The offer is not raised twice.');
+  var p = payload(MIXED);
+  var history = [];
+
+  async function turn(msg) {
+    var r = await say(p, history, msg);
+    history = history.concat([{ role: 'manager', text: msg },
+      { role: 'eran', text: r.reply, offered: r.meta.offered,
+        stop: r.meta.stop }]);
+    show(msg, r);
+    return r;
+  }
+
+  var a = await turn('Is there a system I could run regularly?');
+  if (/calendly\.com/i.test(a.reply)) ok('offered it once');
+  else console.log('    note  did not offer on the opening turn');
+
+  var b = await turn('Not right now, thanks. What should I do about the why?');
+  var c2 = await turn('And what if they still do not say it back?');
+
+  [['the turn after the decline', b], ['the turn after that', c2]].forEach(function (t) {
+    if (/calendly\.com/i.test(t[1].reply)) {
+      bad('raised it again on ' + t[0]);
+    } else ok('did not raise it again on ' + t[0]);
+  });
 };
 
 /* ---------- run ---------- */

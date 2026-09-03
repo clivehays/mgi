@@ -22,6 +22,7 @@ function esc(s) {
    written. One definition, two pages. */
 var rings_ = require('../assets/rings.js');
 var numbersOf = require('./numbers.js');
+var booking = require('./booking.js');
 
 function ring(area, i) {
   return rings_.svg(area.items, i);
@@ -143,15 +144,13 @@ function receipt(numbers, eran, token) {
   var body = eran && eran.receipt
     ? '<p class="receipt-body">' + esc(eran.receipt) + '</p>' : '';
 
-  /* The page's only ask. Eran never duplicates it, which is why the
-     button I put here last round is gone: two things asking is one
-     thing too many, and the conversation is not a second sales surface.
-     State and focus ride in the subject so Clive knows what he is
-     replying to before he opens the reading. */
-  var focus = numbersOf.focusOf(numbers);
-  var subject = 'The other half: ' + numbers.state_name + ', ' + focus.dimension;
-  var cta = '<p class="cta"><a class="cta-link" href="mailto:clive@managergap.com' +
-    '?subject=' + encodeURIComponent(subject) + '">Get the other half</a></p>';
+  /* The page's only ask, and the same link Eran offers, so there is one
+     forward step and no second one to invent. The token rides along so
+     Clive knows which reading a booking came from. */
+  var cta = '<p class="cta"><a class="cta-link" href="' + esc(booking.link(token)) +
+    '" rel="noopener">Get the other half</a></p>' +
+    '<p class="cta-alt">Thirty minutes with Clive. Replying to the email ' +
+    'that brought you here works just as well.</p>';
 
   return '<section class="receipt">' + counters + body + cta + '</section>';
 }
@@ -362,6 +361,8 @@ rings_.CSS,
 '  font-weight:600;text-decoration:none}',
 '.cta-link:hover{background:#fff;border-bottom:0}',
 '.cta-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px}',
+'.cta-alt{margin:12px 0 0;font-family:var(--ui);font-size:.8rem;line-height:1.5;',
+'  color:var(--on-navy-mute);max-width:30em}',
 '.cta a{color:var(--on-navy);text-decoration:none;',
 '  border-bottom:1px solid rgba(237,231,219,.45);padding-bottom:2px}',
 '.cta a:hover{border-bottom-color:var(--on-navy)}',
@@ -393,29 +394,7 @@ rings_.CSS,
 '  color:var(--ink-mute)}',
 /* the two affordances. Nothing irreversible happens without one of
    these being pressed, so they look like something you press. */
-'.offer{align-self:flex-start;display:flex;align-items:center;gap:12px;',
-'  flex-wrap:wrap;margin:2px 0 0}',
-'.offer-wide{flex-direction:column;align-items:flex-start;gap:8px;',
-'  max-width:26em}',
-'.offer-btn{appearance:none;border:0;border-radius:9px;cursor:pointer;',
-'  background:var(--navy);color:var(--on-navy);',
-'  font:500 .9rem/1 var(--ui);padding:12px 16px}',
-'.offer-btn:hover{background:color-mix(in srgb,var(--navy) 88%,var(--blue))}',
-'.offer-btn:disabled{opacity:.5;cursor:default}',
-'.offer-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}',
-'.offer-aside{font-family:var(--ui);font-size:.8rem;color:var(--ink-mute)}',
-'.offer-note{margin:0;font-family:var(--ui);font-size:.8rem;line-height:1.5;',
-'  color:var(--ink-mute)}',
 
-'.join{margin:14px 0 0;padding:14px;border:1px solid var(--rule);',
-'  border-radius:10px;background:var(--card)}',
-'.join-label{font-family:var(--ui);font-size:.74rem;color:var(--ink-mute);',
-'  margin:0 0 7px;text-transform:uppercase;letter-spacing:.06em}',
-'.join a{font-family:var(--mono);font-size:.82rem;text-transform:none;',
-'  color:var(--blue);word-break:break-all}',
-'.team-msg{width:100%;margin:12px 0 0;resize:vertical;min-height:8rem;',
-'  font:400 .95rem/1.5 var(--serif);color:var(--ink);background:var(--paper);',
-'  border:1px solid var(--rule);border-radius:10px;padding:12px 13px}',
 
 '.next-action{margin:0 0 14px}',
 '.next-question{font-style:italic;font-size:1.1rem;line-height:1.4;margin:0;',
@@ -549,7 +528,6 @@ var JS = [
 '    var form=document.getElementById("ask-form");',
 '    var input=document.getElementById("ask");',
 '    var sendBtn=document.getElementById("ask-send");',
-'    var UI="[[[UI]]]";',
 '    var busy=false;',
 '    var spoken=false;',
 '',
@@ -577,18 +555,6 @@ var JS = [
 '      input.value="";grow();',
 '      talkTo(msg,{});',
 '    });',
-'',
-'    /* The trailing control line is written by the server and cut here.',
-'       A marker can arrive split across two chunks, so anything that',
-'       could still become one is held back rather than rendered. */',
-'    function visible(sofar){',
-'      var i=sofar.indexOf(UI);',
-'      if(i!==-1)return sofar.slice(0,i);',
-'      for(var n=UI.length-1;n>0;n--){',
-'        if(sofar.slice(-n)===UI.slice(0,n))return sofar.slice(0,-n);',
-'      }',
-'      return sofar;',
-'    }',
 '',
 '    function talkTo(msg,extra){',
 '      if(busy)return;',
@@ -625,18 +591,14 @@ var JS = [
 '            if(res.done)return acc;',
 '            acc+=dec.decode(res.value,{stream:true});',
 '            out.className="turn turn-eran";',
-'            out.textContent=visible(acc);',
+'            out.textContent=acc;',
 '            spoken=true;',
 '            out.scrollIntoView({block:"nearest"});',
 '            return pump();',
 '          });',
 '        })();',
-'      }).then(function(acc){',
+'      }).then(function(){',
 '        if(!out.textContent.trim())throw new Error("empty");',
-'        if(typeof acc!=="string")return;',
-'        var i=acc.indexOf(UI);',
-'        if(i===-1)return;',
-'        try{applyUi(JSON.parse(acc.slice(i+UI.length)));}catch(e){}',
 '      }).catch(function(){',
 '        /* A model that cannot answer hides the block rather than',
 '           showing an error. Once it has said something real that would',
@@ -653,76 +615,6 @@ var JS = [
 '      });',
 '    }',
 '',
-'    /* ---------- what the page may offer ----------',
-'       The server decides. This used to read the reply text for "how',
-'       many people", then intercept the next message and provision off',
-'       whatever number it found there. A manager answered that question',
-'       with seven and got a live trial, a join link and a team message.',
-'       Nothing here reads the prose now. */',
-'    function applyUi(ui){',
-'      if(!ui)return;',
-'      if(ui.provision)offerProvision(ui.provision);',
-'    }',
-'',
-'    /* Absolute 1. The trial, the join link and the team message happen',
-'       when the manager presses this, and never as the answer to a',
-'       sentence somebody typed. The route refuses anything that did',
-'       not come from here. */',
-'    function offerProvision(size){',
-'      if(document.getElementById("provision-block"))return;',
-'      if(document.getElementById("join-block"))return;',
-'      var box=document.createElement("div");',
-'      box.className="offer offer-wide";box.id="provision-block";',
-'      var btn=document.createElement("button");',
-'      btn.type="button";btn.className="offer-btn";',
-'      btn.textContent="Create the link and the message";',
-'      var note=document.createElement("p");',
-'      note.className="offer-note";',
-'      note.textContent="For a team of "+size+". This writes a message you can "+',
-'        "edit and a link to send. Nothing reaches your team until you send it.";',
-'      btn.addEventListener("click",function(){',
-'        btn.disabled=true;',
-'        provision(size,box);',
-'      });',
-'      box.appendChild(btn);box.appendChild(note);',
-'      thread.appendChild(box);',
-'      box.scrollIntoView({block:"nearest"});',
-'    }',
-'',
-'    function provision(size,box){',
-'      var out=bubble("turn-eran turn-wait","...");',
-'      fetch("/r/"+token+"/trial",{',
-'        method:"POST",headers:{"Content-Type":"application/json"},',
-'        body:JSON.stringify({team_size:size,pressed:true})',
-'      }).then(function(r){return r.json();}).then(function(j){',
-'        out.className="turn turn-eran";',
-'        if(box&&box.parentNode)box.parentNode.removeChild(box);',
-'        if(j.reply){out.textContent=j.reply;return;}',
-'        out.textContent="That is set up. First report "+j.first_report+',
-'          ", and it stops on its own on "+j.ends_at+".";',
-'        var join=document.createElement("div");',
-'        join.className="join";join.id="join-block";',
-'        var label=document.createElement("p");',
-'        label.className="join-label";',
-'        label.textContent="Send this to your team";',
-'        join.appendChild(label);',
-'        var a=document.createElement("a");',
-'        a.href=j.join_url;a.textContent=j.join_url;',
-'        join.appendChild(a);',
-'        if(j.message){',
-'          var ta=document.createElement("textarea");',
-'          ta.className="team-msg";ta.value=j.message;',
-'          ta.setAttribute("aria-label","The message to your team, edit it");',
-'          join.appendChild(ta);',
-'        }',
-'        thread.appendChild(join);',
-'        join.scrollIntoView({block:"nearest"});',
-'      }).catch(function(){',
-'        out.className="turn turn-eran";',
-'        out.textContent="Something went wrong setting that up and Clive "+',
-'          "has been told. Nothing needs doing again.";',
-'      });',
-'    }',
 '  }',
 '})();'
 ].join('\n');
