@@ -89,8 +89,17 @@ function clean(meta) {
    cannot be recalled. The two that can be repaired mid-stream are, and
    the rest are recorded against the turn for Clive to read. */
 
+/* Zero-width characters arrive in front of the booking address, and
+   they are worse than invisible. JavaScript counts U+FEFF as
+   whitespace, so one inside an address truncates the link the reader
+   was meant to click, and the page would show a shortened href that
+   goes nowhere. Repaired here with the em dashes rather than recorded,
+   because there is no case where one belongs in a reply. */
+var ZERO_WIDTH = /[﻿​‌‍⁠]/g;
+
 function sanitise(chunk) {
-  return chunk.replace(/[—–]/g, ',').replace(/!/g, '.');
+  return chunk.replace(ZERO_WIDTH, '')
+    .replace(/[—–]/g, ',').replace(/!/g, '.');
 }
 
 /* Two of the report's rules are scoped to a page, not to a person
