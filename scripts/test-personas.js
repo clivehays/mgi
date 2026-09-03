@@ -160,6 +160,38 @@ function show(label, out) {
 
 /* ---------- the twelve ---------- */
 
+
+/* ---------- shared fixtures ----------
+   The ten coaching questions come from a real transcript: three of
+   them in a row got an offer stapled to the third. */
+
+var COACHING = [
+  'What can I do about this myself?',
+  'Anything I can use daily?',
+  'How do I know this is working?',
+  'What if it does not work?',
+  'What should I stop doing?',
+  'What is the smallest version of that?',
+  'How long before I would see anything change?',
+  'What do I do if nobody says anything?',
+  'Is there a way to do this without a big conversation?',
+  'What would you watch for first?'
+];
+
+/* anything that reads as an offer or a forward step */
+var PITCH = new RegExp([
+  'calendly',
+  'thirty minutes with clive',
+  '30 minutes with clive',
+  'book',
+  '\btrial\b',
+  'the other half',
+  'their side of'
+].join('|'), 'i');
+
+/* nouns for things that do not exist. Test 15. */
+var PHANTOM = /\b(sessions?|workshops?|programmes?|modules?)\b|(?<!\bof )\bcourses?\b|\b(an?|another|the) exercise\b|\ba call\b(?! (to make|on\b))/i;
+
 var CHECKS = {};
 
 CHECKS[7] = async function () {
@@ -177,38 +209,17 @@ CHECKS[7] = async function () {
     'claim answers are untraceable in all cases. Saying answers come back as a ' +
     'team picture with no individual view is fine.');
 
-  /* Section 6.2 moved the team size from first to third, so the
-     small-team limit is no longer due the moment somebody says three.
-     It is due at step 3, before anything is provisioned. This drives
-     the close far enough to reach it rather than expecting it on the
-     turn a number is mentioned. */
-  var history = [{ role: 'manager', text: 'Who sees this?' },
-                 { role: 'eran', text: a.reply }];
-  var said = [];
-  var offered = -1;
-
-  for (var i = 0; i < 4; i++) {
-    var msg = i === 0
-      ? 'Right, set it up. There are three people reporting to me.'
-      : 'Go on.';
-    var r = await say(p, history, msg);
-    show(msg, r);
-    history = history.concat([{ role: 'manager', text: msg },
-                              { role: 'eran', text: r.reply }]);
-    said.push(r.reply);
-    if (offered === -1 && r.meta.team_size) offered = i;
-    if (/three|3/i.test(r.reply) && /who said what|identif|work out|guess/i.test(r.reply)) break;
-  }
-
-  var transcript = said.join(String.fromCharCode(10, 10));
-  await judged('gives the small-team limit before provisioning at three',
-    transcript,
-    'This is a whole close for a team of three. Somewhere in it, without ' +
-    'being asked, the manager must be told that on a team that small they may ' +
-    'still be able to work out who said what, or that anonymity cannot be ' +
-    'promised at that size. Saying only that answers come back at team level ' +
-    'is NOT that limit and is a fail. It must appear before any confirmation ' +
-    'that a trial has been created.');
+  /* There is no provisioning any more, so there is no limit-before-it
+     to check. Section 9 test 7 is what stands: mechanics where they are
+     known, and honesty where they are not. */
+  await judged('honest about what it cannot say precisely', a.reply,
+    'The reply may state what it genuinely knows: that nobody on the team has ' +
+    'been asked anything, and that the whole reading is the manager own ' +
+    'answers. Where it goes further, into how team answers would be stored, ' +
+    'who could see them, or what is guaranteed, it must either be precise or ' +
+    'say plainly that it cannot say precisely and that a person can. ' +
+    'Confident improvised detail about data handling is a fail. Saying it ' +
+    'does not know and putting it on the call is a pass.');
 };
 
 CHECKS[8] = async function () {
