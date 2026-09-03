@@ -166,43 +166,6 @@ if (/type="email"|name="email"|your email/i.test(pageSrc)) {
   bad('the reading asks for an email address somewhere');
 } else ok('nothing on the reading asks for an address');
 
-console.log('\nThe consent gate, section 6.1');
-
-/* The bug this replaces: a manager answered "how many people on the
-   team" with 7 and found a live trial, a join link and a team message
-   waiting on the other side of it. */
-[['a bare number answering the gate', { meta: { consent: true }, wasAsked: true, message: '7' }, false],
- ['a number with punctuation', { meta: { consent: true }, wasAsked: true, message: ' 7. ' }, false],
- ['a number with spaces round it', { meta: { consent: true }, wasAsked: true, message: '  12  ' }, false],
- ['a volunteered "how do I start"', { meta: { consent: true }, wasAsked: false, message: 'How do I start?' }, true],
- ['"Yes, set it up" with the model saying no', { meta: { consent: false }, wasAsked: false, message: 'Yes, set it up.' }, true],
- ['a bare yes with nothing asked', { meta: { consent: true }, wasAsked: false, message: 'Yes.' }, false],
- ['"Yes, I have tried that"', { meta: { consent: true }, wasAsked: false, message: 'Yes, I have tried that.' }, false],
- ['"Yes, three of us"', { meta: { consent: true }, wasAsked: false, message: 'Yes, three of us.' }, false],
- ['a bare yes to the closed question', { meta: { consent: false }, wasAsked: true, message: 'Yes.' }, true],
- ['a volunteered "set it up"', { meta: { consent: true }, wasAsked: false, message: 'Right, set it up.' }, true],
- ['consent claimed on a vague message', { meta: { consent: true }, wasAsked: false, message: 'that makes sense to me' }, false],
- ['consent claimed on a question', { meta: { consent: true }, wasAsked: false, message: 'and what does it cost?' }, false],
- ['a number, even where the gate was asked', { meta: { consent: true }, wasAsked: true, message: '9' }, false],
- ['a clear yes to the closed question', { meta: { consent: true }, wasAsked: true, message: 'yes, set it up' }, true],
- ['the button, which needs no reading', { meta: { consent: false }, pressed: true }, true],
- ['already consented, and it stays', { meta: { consent: false }, already: true }, true],
- ['interest with no claim behind it', { meta: { consent: false }, wasAsked: true, message: 'what would it involve?' }, false]
-].forEach(function (t) {
-  var r = c.decideConsent(t[1]);
-  if (r.given === t[2]) ok((t[2] ? 'accepts ' : 'refuses ') + t[0]);
-  else bad((t[2] ? 'refused ' : 'ACCEPTED ') + t[0]);
-});
-
-console.log('\nThe close is logged, step by step');
-var m2 = c.clean({ close_step: 3, team_size: 7, asked_consent: true, consent: true });
-is('close_step is carried', m2.close_step, 3);
-is('so is the team size', m2.team_size, 7);
-is('asked_consent is a real boolean', m2.asked_consent, true);
-is('a close_step of nought is refused', c.clean({ close_step: 0 }).close_step, null);
-is('and one past six', c.clean({ close_step: 9 }).close_step, null);
-is('consent is never truthy by accident', c.clean({ consent: 'yes' }).consent, false);
-
 console.log('\nThe page never provisions from what it reads');
 var page = require('fs').readFileSync(
   require('path').join(__dirname, '..', 'report', 'page.js'), 'utf8');
@@ -212,31 +175,50 @@ if (/how many\|team size/.test(page)) bad('the page still matches on the words o
 else ok('no phrase matching against Eran');
 if (/parseInt\(\(input\.value/.test(page)) bad('the page still parses a number out of the box');
 else ok('no number is parsed out of the input to provision with');
-if (/consent_offer/.test(page) && /ui\.provision/.test(page)) {
-  ok('both affordances come from the server');
-} else bad('the page does not take its affordances from the server');
+if (/pressed:true/.test(page)) ok('the only caller declares it came from a press');
+else bad('the client provisions without declaring a press');
+if (/offerConsent/.test(page)) bad('the consent affordance is still in the page');
+else ok('one affordance, not two');
 
-console.log('\nThe trial route asks the record, not the caller');
+console.log('\nThe trial route provisions on a press and nothing else');
 var trial = require('fs').readFileSync(
   require('path').join(__dirname, '..', 'api', 'trial.js'), 'utf8');
-if (/hasConsent/.test(trial) && /blocked: true/.test(trial)) {
-  ok('provisioning is refused without a consenting turn');
-} else bad('the trial route can be reached without consent');
+if (/body\.pressed !== true/.test(trial) && /blocked: true/.test(trial)) {
+  ok('anything that did not come from a press is refused');
+} else bad('the trial route can be reached without a press');
 
-console.log('\nWhat the prompt now says');
-[['Eran never offers', /YOU NEVER OFFER THE TRIAL/],
- ['the things that are not openings', /THESE DO NOT OPEN IT/],
- ['how the offer gets earned', /HOW THE OFFER GETS EARNED/],
- ['the closed question', /Do you want to set this up now\?/],
- ['the order', /Do not reorder\. Do not skip/],
- ['section 6.3', /NOTHING IRREVERSIBLE COMES FROM A SENTENCE THEY TYPED/],
- ['rule 11', /Never ask a setup question from reading/],
- ['rule 12', /One thing per turn/],
- ['rule 14, the nouns that exist', /There\s+is no session/]
+console.log('\nThe prompt leads with the objective, not the machinery');
+[['the objective', /MOST USEFUL CONVERSATION THIS MANAGER HAS EVER HAD/],
+ ['no quota', /You have no conversion job/],
+ ['the earned offer', /EARNED BY THE ANSWERS, NOT ASKED FOR/],
+ ['a reason per state', /manager in Stall does not want a paragraph/],
+ ['the five absolutes', /FIVE THINGS THAT ARE NOT JUDGEMENT/],
+ ['the nouns that exist', /There is no session/],
+ ['the label is recorded, not occupied', /not a place you are standing in/],
+ ['who raised the trial', /raised_trial is the one that matters/]
 ].forEach(function (t) {
   if (t[1].test(c.SYSTEM)) ok(t[0] + ' is stated');
   else bad(t[0] + ' is missing from the prompt');
 });
+
+console.log('\nAnd carries none of the machinery it replaced');
+[['a six step close', /Six steps, in this order/],
+ ['a consent gate', /THE CONSENT GATE/],
+ ['a list of things that are not openings', /THESE DO NOT OPEN IT/],
+ ['a state machine to occupy', /reading   Answer questions about the reading/],
+ ['a numbered rule list', /Never ask a setup question from reading/]
+].forEach(function (t) {
+  if (t[1].test(c.SYSTEM)) bad(t[0] + ' is still in the prompt');
+  else ok('no ' + t[0]);
+});
+
+console.log('\nThe gates themselves are gone from the code');
+[['decideDoor', c.decideDoor], ['decideConsent', c.decideConsent],
+ ['OFFER_LANGUAGE', c.OFFER_LANGUAGE]].forEach(function (t) {
+  if (t[1] === undefined) ok(t[0] + ' is gone');
+  else bad(t[0] + ' is still exported');
+});
+
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed\n');
 process.exit(fail ? 1 : 0);

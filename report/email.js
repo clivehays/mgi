@@ -109,8 +109,15 @@ function transcript(payload, token, turns, meta) {
   L.push('');
   L.push('Reading: ' + (process.env.MGI_SITE_ORIGIN || 'https://managergap.com') +
     '/r/' + token);
-  L.push('State: ' + payload.state_name + ', focus ' + payload.focus_dimension +
+  var focus = require('./numbers.js').focusOf(payload);
+  L.push('State: ' + payload.state_name + ', focus ' + focus.dimension +
     ', ' + payload.reading_count + ' reading and ' + payload.quiet_count + ' quiet');
+  /* section 3 of the report spec: focus_why is never rendered, it comes
+     here, so a pick that differs from the ranking is visible. */
+  if (payload.eran && payload.eran.focus_why) {
+    L.push('Why that focus: ' + payload.eran.focus_why +
+      (focus.key === focus.mechanical ? '' : '  (the ranking said ' + focus.mechanical + ')'));
+  }
   L.push('Exit: ' + meta.exit);
   if (meta.shape && meta.shape !== 'none') L.push('Objection: ' + meta.shape);
   if (meta.refusal) L.push('Refusal that applied: ' + meta.refusal);

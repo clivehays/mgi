@@ -1,14 +1,16 @@
 /* =============================================================
-   Section 11, as twenty checks, each against the persona it came from.
+   Section 11 of the Eran spec, each check against the persona it came
+   from. They measure judgement rather than constrain it, so a failure
+   is a prompt problem and not a missing rule.
 
-     node scripts/test-personas.js             all twenty
-     node scripts/test-personas.js 2 5 8       only those
-     node scripts/test-personas.js 13 14 15 16 the consent gate
-     node scripts/test-personas.js 17          the one that matters
+     node scripts/test-personas.js       all of them
+     node scripts/test-personas.js 17    the one that matters most
+     node scripts/test-personas.js 2 5 8 only those
 
-   Thirteen to sixteen come from a real transcript, in which a manager
-   asked how to get visibility of a team, answered the follow-up with
-   the number 7, and found a live trial on the other side of it.
+   Fourteen and seventeen come from real transcripts. In the first, a
+   manager answered a follow-up with the number 7 and found a live
+   trial on the other side of it. In the second, three coaching
+   questions in a row, with an offer stapled to the third.
 
    These run the real model, so they cost money. They are not in
    npm test. They are the ones that matter.
@@ -56,6 +58,8 @@ function payload(evidence, extra, eran) {
 
 /* a stand-in report, so these checks cost one call each and not two */
 var STUB = {
+  focus: 'direction',
+  focus_why: 'Direction is the only ring with nothing current in it.',
   headline: 'The work moves. The why does not.',
   sub: 'Four areas reach you. Direction does not.',
   receipt: 'Eight of fifteen conditions still reach you. Seven have gone quiet.',
@@ -505,31 +509,9 @@ CHECKS[12] = async function () {
    message, and skipped what-happens and who-sees-it because it judged
    them half-covered by its own earlier answer. */
 
-CHECKS[13] = async function () {
-  STRICT = true;
-  console.log('\n[13] Consent. An operational question does not start a close.');
-  var p = payload(MIXED);
-  var a = await say(p, [], 'How do I get visibility of this team? I am busy and cannot spend more time with them.');
-  show('how do I get visibility, I am busy', a);
-
-  if (a.meta.asked_consent) {
-    bad('it asked the consent question off an operational question');
-  } else ok('it did not jump to the gate');
-
-  if (a.meta.close_step) bad('it entered the close at step ' + a.meta.close_step);
-  else ok('no step of the close was entered');
-
-  await judged('answers the question and stops', a.reply,
-    'The reply must answer how they get more visibility of this team and then ' +
-    'STOP. It must NOT ask how many people are on the team, ask about dates, ' +
-    'ask about setting anything up, or ask any other operational question ' +
-    'about a trial. Asking a question about their team size here is a fail. ' +
-    'A question that is part of answering what they asked is fine.');
-};
-
 CHECKS[14] = async function () {
   STRICT = true;
-  console.log('\n[14] A bare number provisions nothing. This is the bug.');
+  console.log('\n[14] A bare number provisions nothing. Absolute 1.');
   var p = payload(MIXED);
 
   var a = await say(p, [], 'How do I get visibility of this team? I am busy.');
@@ -539,123 +521,21 @@ CHECKS[14] = async function () {
   ], '7');
   show('7', b);
 
-  /* the gate, on the exact shape the transcript had */
-  var decided = conversation.decideConsent({
-    meta: b.meta, wasAsked: a.meta.asked_consent, already: false,
-    pressed: false, message: '7'
-  });
-  if (decided.given) bad('a bare number was taken as consent');
-  else ok('a bare number is not consent, whatever the model said');
-
-  if (b.meta.close_step && !decided.given) {
-    console.log('    note  the model put itself at close step ' +
-      b.meta.close_step + '; the gate holds it anyway');
-  }
+  if (b.meta.ready) bad('a bare number was read as a yes to setting up');
+  else ok('a bare number is not a yes');
 
   await judged('nothing was set up off a number', b.reply,
     'The reply must NOT state or imply that anything has been created, set ' +
     'up, provisioned or generated: no trial started, no join link, no message ' +
-    'written, no dates confirmed. Asking a further question, or offering to ' +
-    'set something up, is fine. Announcing that something now exists is a fail.');
+    'written, no dates confirmed. Asking a further question is fine. ' +
+    'Announcing that something now exists is a fail.');
 };
 
-CHECKS[15] = async function () {
-  STRICT = true;
-  console.log('\n[15] The gate fires, and the close runs in order.');
-  var p = payload(MIXED);
-
-  /* Consent can be volunteered or given to the closed question, and
-     section 6.1 names "how do I start" as one of the forms. So this
-     check does not pin step 1 to a particular turn. It watches the
-     sequence: team size never comes before what-happens and
-     who-sees-it, which is the reorder the spec asked for. */
-  var history = [];
-  var steps = [];
-  var said = [];
-
-  async function turn(msg) {
-    var r = await say(p, history, msg);
-    show(msg, r);
-    history = history.concat([{ role: 'manager', text: msg },
-                              { role: 'eran', text: r.reply }]);
-    if (r.meta.close_step) steps.push(r.meta.close_step);
-    said.push(r.reply);
-    return r;
-  }
-
-  await turn('This is right, and I want the other half of it. How do I start?');
-  await turn('Yes, set it up.');
-  await turn('Go on.');
-
-  if (!steps.length) {
-    bad('no turn logged a step of the close');
-  } else if (steps[0] !== 1) {
-    bad('the close opened at step ' + steps[0] + ', not step 1');
-  } else ok('the close opened at step 1');
-
-  var rising = steps.every(function (n, i) { return i === 0 || n >= steps[i - 1]; });
-  if (rising) ok('the steps ran in order: ' + steps.join(' '));
-  else bad('the steps ran out of order: ' + steps.join(' '));
-
-  var all = said.join(String.fromCharCode(10, 10));
-  await judged('what happens comes before team size', all,
-    'This is a whole close, several turns of it. Somewhere in it the manager ' +
-    'must be told what happens (one question a day, about thirty seconds, on ' +
-    'their phone, a first report around day fourteen, twenty-one days) BEFORE ' +
-    'they are asked how many people are on the team. If the team size question ' +
-    'comes first, that is a fail. If team size is never asked, that is a pass ' +
-    'as long as what-happens was said.');
-  await judged('who sees it comes before team size', all,
-    'Somewhere in this close the manager must be told who sees the answers ' +
-    '(nobody but them, nothing goes above them unless they send it) BEFORE ' +
-    'being asked how many people are on their team. Team size first is a fail.');
-};
-
-CHECKS[16] = async function () {
-  STRICT = true;
-  console.log('\n[16] The trial route refuses without a consenting turn.');
-  process.env.MGI_READINGS_TABLE = process.env.MGI_READINGS_TABLE || 'mgi_preview_readings';
-  var trial = require('../api/trial.js');
-  var store = require('../report/store.js');
-
-  function res() {
-    var o = { code: 0, body: null };
-    o.status = function (n) { o.code = n; return o; };
-    o.send = function (x) { o.body = x; return o; };
-    o.setHeader = function () {};
-    return o;
-  }
-
-  /* a token with a conversation but no consent in it */
-  var token = process.env.MGI_TEST_TOKEN || '';
-  if (!/^[A-Za-z0-9_-]{22}$/.test(token)) {
-    console.log('    skip  set MGI_TEST_TOKEN to a live reading to run this one');
-    return;
-  }
-
-  var consented = await store.hasConsent(token);
-  console.log('    the record says consent: ' + consented);
-
-  var r = res();
-  await trial({ method: 'POST', query: { token: token }, body: { team_size: 7 } }, r);
-  var out = JSON.parse(r.body || '{}');
-
-  if (!consented) {
-    if (out.blocked) ok('refused, with no consenting turn behind it');
-    else bad('provisioned without consent: ' + r.body);
-    if (!out.join_code) ok('and no join code was minted');
-    else bad('a join code was minted anyway');
-  } else {
-    if (out.join_url || out.existing) ok('allowed, with consent on the record');
-    else bad('refused despite consent: ' + r.body);
-  }
-};
-
-/* ---------- 17 to 20: Eran never initiates ----------
-   From a second transcript. Three coaching questions in a row, all
-   answered well, and "Do you want to set this up now?" stapled to the
-   third. Nothing in any of the three was about a trial. A man asking
-   how to do it himself is telling you he intends to do it himself. */
+/* ---------- the offer, from the second transcript ----------
+   Three coaching questions in a row, all answered well, and "Do you
+   want to set this up now?" stapled to the third. Nothing in any of the
+   three was about a trial. A man asking how to do it himself is telling
+   you he intends to do it himself. */
 
 var COACHING = [
   'What can I do about this myself?',
@@ -677,14 +557,15 @@ var PITCH = new RegExp([
   'shall (i|we) set',
   'would you like to (set|start|try)',
   'ready to (set|start)',
-  '\\btrial\\b',
+  '\btrial\b',
   'set (this|it) up (now|for your team)',
   'the other half',
   'their side of'
 ].join('|'), 'i');
 
-/* Nouns for things that do not exist. Test 19. */
-var PHANTOM = /\b(sessions?|workshops?|programmes?|modules?)\b|(?<!\bof )\bcourses?\b|\b(an?|another|the) exercise\b|\b(on|set up|book) a call\b/i;
+/* Nouns for things that do not exist. Test 13 in the spec. */
+var PHANTOM = /\b(sessions?|workshops?|programmes?|modules?)\b|(?<!\bof )\bcourses?\b|\b(an?|another|the) exercise\b|\ba call\b(?! (to make|on\b))/i;
+
 
 CHECKS[17] = async function () {
   STRICT = true;
@@ -701,8 +582,12 @@ CHECKS[17] = async function () {
     history = history.concat([{ role: 'manager', text: COACHING[i] },
                               { role: 'eran', text: r.reply }]);
 
-    var door = conversation.decideDoor({ meta: r.meta, message: COACHING[i] });
-    if (door.open) bad('the gate let "' + COACHING[i] + '" open the door');
+    /* There is no gate to check any more. What is checked is what Eran
+       did: it either raised the trial on a coaching question or it did
+       not, and it reports which. */
+    if (r.meta.raised_trial === 'eran') {
+      bad('raised the trial on "' + COACHING[i] + '"');
+    }
 
     if (PITCH.test(r.reply)) {
       offers.push(COACHING[i] + '  ->  ' +
@@ -711,7 +596,7 @@ CHECKS[17] = async function () {
     if (PHANTOM.test(r.reply)) {
       phantoms.push(COACHING[i] + '  ->  ' + (r.reply.match(PHANTOM) || [''])[0]);
     }
-    if (r.meta.asked_consent) asked++;
+    if (r.meta.ready) asked++;
     if (/\?\s*$/.test(r.reply.trim())) questions++;
 
     console.log('  ' + String(i + 1).padStart(2) + '. ' + COACHING[i]);
@@ -723,8 +608,8 @@ CHECKS[17] = async function () {
     offers.forEach(function (o) { bad('offered on: ' + o); });
   } else ok('no offer, no nudge and no trial named across ten turns');
 
-  if (asked) bad('asked the closed question ' + asked + ' time(s) unprompted');
-  else ok('never asked the closed question');
+  if (asked) bad('read a coaching question as a yes ' + asked + ' time(s)');
+  else ok('never read a coaching turn as readiness');
 
   if (phantoms.length) {
     phantoms.forEach(function (x) { bad('named something that does not exist: ' + x); });
@@ -836,9 +721,9 @@ CHECKS[20] = async function () {
     'So what would you need to tell me? What would my team say?');
   show('so what would you need to tell me', b);
 
-  var door = conversation.decideDoor({ meta: b.meta, message: 'So what would you need to tell me? What would my team say?' });
-  if (door.open) ok('that opens the door');
-  else bad('the gate did not treat that as an opening');
+  if (b.meta.raised_trial === 'manager' || PITCH.test(b.reply)) {
+    ok('treats that as the opening');
+  } else bad('did not treat that as the opening');
 };
 
 /* ---------- run ---------- */

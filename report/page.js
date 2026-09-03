@@ -21,6 +21,7 @@ function esc(s) {
    page draws the same five as a teaser while the reading is being
    written. One definition, two pages. */
 var rings_ = require('../assets/rings.js');
+var numbersOf = require('./numbers.js');
 
 function ring(area, i) {
   return rings_.svg(area.items, i);
@@ -60,8 +61,9 @@ function chip(numbers) {
 }
 
 function rings(numbers) {
+  var focus = numbersOf.focusOf(numbers);
   var tabs = numbers.areas.map(function (a, i) {
-    var on = a.key === numbers.focus;
+    var on = a.key === focus.key;
     return '<button type="button" class="ring" role="tab" id="tab-' + a.key + '" ' +
       'aria-controls="readout" aria-selected="' + (on ? 'true' : 'false') + '" ' +
       'tabindex="' + (on ? '0' : '-1') + '" data-area="' + a.key + '">' +
@@ -89,7 +91,7 @@ function readout(numbers, eran) {
   }).join('');
   if (!panels) return '';
   return '<section class="readout" id="readout" role="tabpanel" ' +
-    'aria-labelledby="tab-' + esc(numbers.focus) + '" tabindex="0">' +
+    'aria-labelledby="tab-' + esc(numbersOf.focusOf(numbers).key) + '" tabindex="0">' +
     panels + '</section>';
 }
 
@@ -141,23 +143,17 @@ function receipt(numbers, eran, token) {
   var body = eran && eran.receipt
     ? '<p class="receipt-body">' + esc(eran.receipt) + '</p>' : '';
 
-  /* Section 6.1. Eran never offers the trial, so the page has to ask.
-     This is the only thing on the reading that does, and it is a
-     button rather than a sentence for that reason: the manager either
-     presses it or they do not, and nothing has to read their mind.
+  /* The page's only ask. Eran never duplicates it, which is why the
+     button I put here last round is gone: two things asking is one
+     thing too many, and the conversation is not a second sales surface.
+     State and focus ride in the subject so Clive knows what he is
+     replying to before he opens the reading. */
+  var focus = numbersOf.focusOf(numbers);
+  var subject = 'The other half: ' + numbers.state_name + ', ' + focus.dimension;
+  var cta = '<p class="cta"><a class="cta-link" href="mailto:clive@managergap.com' +
+    '?subject=' + encodeURIComponent(subject) + '">Get the other half</a></p>';
 
-     It works without the conversation. Where there is no model the
-     button is not rendered and the line to Clive carries it, which is
-     what section 9 means by the page's own CTA still working. */
-  var start = talkable(token)
-    ? '<button type="button" class="receipt-cta" id="start-trial">' +
-      'Set this up for my team</button>' : '';
-
-  var cta = '<p class="cta"><a href="mailto:clive@managergap.com' +
-    '?subject=' + encodeURIComponent('My reading, number ' + numbers.meta.reading_no) +
-    '">Tell Clive what this got wrong</a></p>';
-
-  return '<section class="receipt">' + counters + body + start + cta + '</section>';
+  return '<section class="receipt">' + counters + body + cta + '</section>';
 }
 
 /* ---------- the conversation ----------
@@ -359,12 +355,13 @@ rings_.CSS,
 '.counter-label{font-family:var(--ui);font-size:.75rem;line-height:1.3;',
 '  color:var(--on-navy-mute);max-width:14ch}',
 '.receipt-body{margin:0 0 18px;color:var(--on-navy)}',
-'.receipt-cta{appearance:none;border:0;border-radius:9px;cursor:pointer;',
-'  background:var(--on-navy);color:var(--navy);font:600 .92rem/1 var(--ui);',
-'  padding:13px 18px;margin:0 0 16px}',
-'.receipt-cta:hover{background:#fff}',
-'.receipt-cta:focus-visible{outline:2px solid var(--blue);outline-offset:3px}',
+/* the page's only ask, so it looks like one */
 '.cta{margin:0;font-family:var(--ui);font-size:.92rem}',
+'.cta-link{display:inline-block;background:var(--on-navy);color:var(--navy);',
+'  border:0;border-bottom:0;border-radius:9px;padding:13px 18px;',
+'  font-weight:600;text-decoration:none}',
+'.cta-link:hover{background:#fff;border-bottom:0}',
+'.cta-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px}',
 '.cta a{color:var(--on-navy);text-decoration:none;',
 '  border-bottom:1px solid rgba(237,231,219,.45);padding-bottom:2px}',
 '.cta a:hover{border-bottom-color:var(--on-navy)}',
@@ -664,44 +661,13 @@ var JS = [
 '       Nothing here reads the prose now. */',
 '    function applyUi(ui){',
 '      if(!ui)return;',
-'      if(ui.consent_offer)offerConsent();',
 '      if(ui.provision)offerProvision(ui.provision);',
 '    }',
 '',
-'    /* Section 6.1. Eran never offers, so this is the thing that asks.',
-'       Pressing it is unambiguous, needs no reading of anybody\'s',
-'       intent, and carries its own consent. */',
-'    var startBtn=document.getElementById("start-trial");',
-'    if(startBtn){',
-'      startBtn.addEventListener("click",function(){',
-'        startBtn.disabled=true;',
-'        talk.scrollIntoView({block:"start"});',
-'        talkTo("Set it up for my team.",{consent:true});',
-'      });',
-'    }',
-'',
-'    function offerConsent(){',
-'      if(document.getElementById("consent-block"))return;',
-'      var box=document.createElement("div");',
-'      box.className="offer";box.id="consent-block";',
-'      var btn=document.createElement("button");',
-'      btn.type="button";btn.className="offer-btn";',
-'      btn.textContent="Yes, set it up";',
-'      btn.addEventListener("click",function(){',
-'        if(box.parentNode)box.parentNode.removeChild(box);',
-'        talkTo("Yes, set it up.",{consent:true});',
-'      });',
-'      var aside=document.createElement("span");',
-'      aside.className="offer-aside";',
-'      aside.textContent="or keep asking";',
-'      box.appendChild(btn);box.appendChild(aside);',
-'      thread.appendChild(box);',
-'      box.scrollIntoView({block:"nearest"});',
-'    }',
-'',
-'    /* Section 6.3. The trial, the join link and the team message happen',
-'       when the manager presses this. They are never the answer to a',
-'       sentence somebody typed. */',
+'    /* Absolute 1. The trial, the join link and the team message happen',
+'       when the manager presses this, and never as the answer to a',
+'       sentence somebody typed. The route refuses anything that did',
+'       not come from here. */',
 '    function offerProvision(size){',
 '      if(document.getElementById("provision-block"))return;',
 '      if(document.getElementById("join-block"))return;',
@@ -727,7 +693,7 @@ var JS = [
 '      var out=bubble("turn-eran turn-wait","...");',
 '      fetch("/r/"+token+"/trial",{',
 '        method:"POST",headers:{"Content-Type":"application/json"},',
-'        body:JSON.stringify({team_size:size})',
+'        body:JSON.stringify({team_size:size,pressed:true})',
 '      }).then(function(r){return r.json();}).then(function(j){',
 '        out.className="turn turn-eran";',
 '        if(box&&box.parentNode)box.parentNode.removeChild(box);',

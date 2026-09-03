@@ -83,9 +83,19 @@ var DIAL = function (labelWords) {
   };
 };
 
+var AREA_KEYS = ['readiness', 'results', 'involvement', 'direction', 'alignment'];
+
 var SCHEMA = {
   type: 'object',
   properties: {
+    /* Which ring the page leads on. The instrument supplies its
+       weakest-first ranking as an input and this is the judgement made
+       on top of it. focus_why is never rendered: it goes in the
+       transcript Clive reads, so a strange pick is visible rather than
+       mysterious. */
+    focus: { type: 'string', enum: AREA_KEYS,
+      description: 'The area the page leads on.' },
+    focus_why: words(20),
     headline: words(6),
     sub: words(18),
     readouts: {
@@ -129,8 +139,8 @@ var SCHEMA = {
     state_note: words(60),
     sight_note: words(70)
   },
-  required: ['headline', 'sub', 'readouts', 'cost', 'changes', 'receipt',
-    'next_move', 'state_note', 'sight_note'],
+  required: ['focus', 'focus_why', 'headline', 'sub', 'readouts', 'cost',
+    'changes', 'receipt', 'next_move', 'state_note', 'sight_note'],
   additionalProperties: false
 };
 
@@ -138,6 +148,7 @@ var SCHEMA = {
    Hard. The page works because it is short. */
 
 var BUDGETS = [
+  ['focus_why', 20],
   ['headline', 6], ['sub', 18],
   ['readouts.readiness.asks', 20], ['readouts.readiness.means', 45],
   ['readouts.results.asks', 20], ['readouts.results.means', 45],
@@ -155,6 +166,10 @@ var BUDGETS = [
 
 /* the sections the page can drop independently. A budget break or a rule
    break inside one removes that section and nothing else. */
+/* focus is not in this list on purpose. Every other section can be
+   dropped and the page still renders; a missing focus would leave the
+   readout with no ring selected, so it falls back to the ranking
+   instead of being removed. */
 var SECTIONS = ['headline', 'sub', 'readouts', 'cost', 'changes', 'receipt',
   'next_move', 'state_note', 'sight_note'];
 
@@ -242,6 +257,14 @@ function check(json) {
     return [{ section: 'all', path: 'all', why: 'is not an object.' }];
   }
 
+  /* the focus has to be one of the five, and it has to be argued for */
+  if (AREA_KEYS.indexOf(json.focus) === -1) {
+    fault('focus', 'is not one of the five areas.');
+  }
+  if (typeof json.focus_why !== 'string' || !json.focus_why.trim()) {
+    fault('focus_why', 'is missing. Every pick carries its reason.');
+  }
+
   /* shape */
   SECTIONS.forEach(function (k) {
     if (json[k] === undefined || json[k] === null) fault(k, 'the key is missing.');
@@ -316,6 +339,8 @@ var SYSTEM = [
   '1. No borrowed evidence. No cohort, no survey, no named research house,',
   '   no percentage, no statistic that is not in the payload you are given.',
   '   The argument stands on this manager own answers and nothing else.',
+  '   You reason about the numbers freely and print only the ones the',
+  '   instrument computed. Never state a figure you were not given.',
   '2. No prediction. Never that someone will leave, that output will fall,',
   '   or that things will get worse. State consequence in the present tense,',
   '   as something already happening.',
@@ -326,8 +351,14 @@ var SYSTEM = [
   '   thinks, feels or intends.',
   '5. The manager is the subject. Every section answers what this means for',
   '   them. The health of the team is the evidence, not the topic.',
-  '6. Sell to every state. A healthy team is a good buyer. The reason changes',
-  '   with the state. Never invent a problem to justify one.',
+  '6. Every state gets a reason the reading matters, and it is a different',
+  '   reason in each. Cruise: nothing needs fixing, which is the only time',
+  '   a clean baseline can be taken, and teams do not leave Cruise with an',
+  '   announcement. Drift: caught while it is still cheap, output holding,',
+  '   nothing to explain upward yet. Headwinds: they need the team own',
+  '   account of what the weather is doing to them, and evidence to take',
+  '   upward. Stall: it cannot be fixed from their side of it, and they',
+  '   want it short. Never invent a problem to justify any of them.',
   '7. Voice. Short sentences. Direct peer tone. No em dashes and no en',
   '   dashes. No bullets. Banned words: engagement, your people, talent,',
   '   transform, unlock, elevate, seamless, robust, AI-powered, data-driven,',
@@ -338,6 +369,18 @@ var SYSTEM = [
   '   there rather than something long. Count your words.',
   '',
   'WHAT EACH FIELD IS',
+  '',
+  'focus is which of the five rings the page leads on, and the choice is',
+  'yours. You are given the ranking, weakest first, and it is often the',
+  'right answer. It is not always. A Direction ring that is dark while',
+  'Alignment is merely stale can still have Alignment as the live problem,',
+  'because what a manager can move is not always what scored lowest. Read',
+  'the fifteen answers and decide.',
+  '',
+  'focus_why is one line saying why this one rather than the mechanical',
+  'pick. The manager never sees it. Clive does, so an unusual choice is',
+  'visible rather than mysterious. If you agreed with the ranking, say',
+  'that plainly rather than inventing a reason to differ.',
   '',
   'headline and sub sit above the fold with five rings and a state chip.',
   'All of it together stays under forty words, so headline and sub are the',
@@ -405,7 +448,8 @@ function brief(numbers, answers) {
   L.push('Gap width: ' + numbers.gap_width_label);
   L.push('Conditions still reading: ' + numbers.reading_count + ' of 15');
   L.push('Conditions gone quiet: ' + numbers.quiet_count + ' of 15');
-  L.push('Focus area: ' + numbers.focus_dimension + ', "' + numbers.focus_plain + '"');
+  L.push('Ranking, weakest first: ' + numbers.ranking.join(', '));
+  L.push('That ordering is an input, not the answer. You choose the focus.');
   L.push('');
   L.push('THE FIVE AREAS. Each asked three things. The recency on each line');
   L.push('is what this manager answered.');
@@ -413,7 +457,7 @@ function brief(numbers, answers) {
     L.push('');
     L.push(a.dimension + ' (' + a.plain + '): ' + a.fresh + ' reaching you, ' +
       a.stale + ' gone quiet, ' + a.dark + ' not recalled' +
-      (a.key === numbers.focus ? '   <- the focus' : ''));
+      (a.key === numbers.ranking[0] ? '   <- weakest by the ranking' : ''));
     a.items.forEach(function (it) {
       L.push('  [' + it.label + '] ' + it.question);
     });

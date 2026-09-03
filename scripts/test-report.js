@@ -52,6 +52,8 @@ function draft() {
     means: 'What you have here is what you saw yourself. The rest of it sits outside where you are placed to look, so it arrives when someone chooses to carry it.'
   };
   return {
+    focus: 'direction',
+    focus_why: 'Direction is the only ring with nothing current in it.',
     headline: 'Most of this reached you',
     sub: 'Two areas are running on what you remember rather than what you watched.',
     readouts: {

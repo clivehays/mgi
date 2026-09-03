@@ -48,16 +48,17 @@ async function reading(token) {
 
 async function history(token) {
   return rows(CONVERSATIONS + '?token=eq.' + encodeURIComponent(token) +
-    '&select=turn,role,text,state,stop,consent,close_step,asked_consent' +
-    '&order=turn.asc');
+    '&select=turn,role,text,state,stop,raised_trial&order=turn.asc');
 }
 
-/* Section 6.1, and the only thing standing between a typed sentence and
-   a provisioned trial. Read from the record, never from the model. */
-async function hasConsent(token) {
+/* Section 10. Who put the trial on the table first, across the whole
+   conversation. If this reads eran more often than about one in three,
+   the objective has drifted back toward converting and the prompt is
+   the thing to look at. */
+async function whoRaisedTrial(token) {
   var got = await rows(CONVERSATIONS + '?token=eq.' + encodeURIComponent(token) +
-    '&consent=is.true&select=turn&limit=1');
-  return got.length > 0;
+    '&raised_trial=not.is.null&select=turn,raised_trial&order=turn.asc&limit=1');
+  return got[0] ? got[0].raised_trial : null;
 }
 
 /* Checks what came back. Written without this it swallowed every
@@ -83,9 +84,7 @@ async function addTurns(token, turns) {
         stop: t.stop === true,
         refusal: t.refusal === undefined ? null : t.refusal,
         faults: t.faults === undefined ? null : t.faults,
-        consent: t.consent === true,
-        asked_consent: t.asked_consent === true,
-        close_step: t.close_step === undefined ? null : t.close_step
+        raised_trial: t.raised_trial === undefined ? null : t.raised_trial
       };
     }))
   });
@@ -175,7 +174,7 @@ module.exports = {
   rows: rows,
   reading: reading,
   history: history,
-  hasConsent: hasConsent,
+  whoRaisedTrial: whoRaisedTrial,
   addTurns: addTurns,
   counts: counts,
   rateHit: rateHit,

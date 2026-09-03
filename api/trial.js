@@ -61,21 +61,22 @@ module.exports = async function handler(req, res) {
   var row = await store.reading(token);
   if (!row || !row.payload) return json(res, 404, { error: 'Not found' });
 
-  /* Section 6.1, enforced where it cannot be talked around. A manager
-     answered a question with the number seven and found a live trial, a
-     join link and a team message waiting on the other side of it. So
-     this route asks the record, not the model and not the caller: is
-     there a turn in this conversation where they said yes.
+  /* Absolute 1, and the only part of the offer that is machinery. This
+     route provisions on a press and on nothing else. A manager answered
+     a question with the number seven and found a live trial, a join
+     link and a team message on the other side of it, because the page
+     was reading replies and calling this itself.
 
-     Everything else in the close is words. This is the part that is
-     irreversible, and it is the part that is locked. */
-  var consented = await store.hasConsent(token);
-  if (!consented) {
-    console.error('MGI trial refused for ' + token + ': no consenting turn');
+     The press is the whole gate. There is exactly one caller in the
+     client and it is a button, and this refuses anything that did not
+     come from one. The word said is not a gate: sentences are Eran's
+     business, and the irreversible thing is not. */
+  if (body.pressed !== true) {
+    console.error('MGI trial refused for ' + token + ': not from a press');
     return json(res, 200, {
       blocked: true,
-      reply: 'Nothing is set up yet, and nothing will be until you say so. ' +
-        'Tell me when you want it and I will walk you through it.'
+      reply: 'Nothing is set up yet. Nothing will be until you press the ' +
+        'button that says so.'
     });
   }
 

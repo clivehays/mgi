@@ -55,15 +55,21 @@ var RECENCY_LABEL = {
   0: 'not recalled'
 };
 
-/* ---------- focus ----------
-   The area with the fewest fresh. Ties break to the instrument's own
-   weakest-first ranking, then to the fixed order below. Resolved
-   silently: a page that hands the reader an unresolved ranking has
-   given them work instead of an answer. */
+/* ---------- ranking ----------
+   Weakest first: fewest fresh, then the instrument's own ordering, then
+   the fixed order below.
+
+   This used to decide the focus. It does not any more. The instrument
+   publishes the ranking and Eran picks which ring the page leads on,
+   because the mechanical answer is often right and not always: a
+   Direction ring that is dark while Alignment is merely stale can still
+   have Alignment as the live problem. Ranking is an input to that
+   judgement, and ranking[0] is what the page falls back to when Eran
+   has not answered at all. */
 
 var FIXED_ORDER = ['direction', 'alignment', 'involvement', 'readiness', 'results'];
 
-function rankFocus(areas) {
+function ranked(areas) {
   return areas.slice().sort(function (a, b) {
     if (a.fresh !== b.fresh) return a.fresh - b.fresh;
     if (a.rank !== b.rank) return a.rank - b.rank;
@@ -107,8 +113,7 @@ function compute(answers, contact, meta) {
     };
   });
 
-  var sorted = rankFocus(areas);
-  var focus = sorted[0];
+  var order = ranked(areas);
 
   /* the receipt's two counters, across all fifteen items */
   var reading = areas.reduce(function (t, a) { return t + a.fresh; }, 0);
@@ -126,9 +131,10 @@ function compute(answers, contact, meta) {
     state: result.state.key,
     state_name: result.state.name,
     areas: areas,
-    focus: focus.key,
-    focus_dimension: focus.dimension,
-    focus_plain: focus.plain,
+
+    /* weakest first, supplied to Eran as input. The page leads on
+       Eran's focus; this is what it leads on if Eran never answered. */
+    ranking: order.map(function (a) { return a.key; }),
     signal: { score: result.signal, max: MGI.EVIDENCE.length * 3 },
     line_of_sight: result.lineOfSight.key,
     line_of_sight_label: result.lineOfSight.label,
@@ -142,8 +148,28 @@ function compute(answers, contact, meta) {
   };
 }
 
+/* Which ring the page leads on. Eran's pick where there is one, and the
+   mechanical answer where there is not, so a model outage costs the
+   page its words and not its shape. */
+function focusOf(payload) {
+  var chosen = payload.eran && payload.eran.focus;
+  var known = payload.areas.filter(function (a) { return a.key === chosen; })[0];
+  var area = known || payload.areas.filter(function (a) {
+    return a.key === payload.ranking[0];
+  })[0] || payload.areas[0];
+  return {
+    key: area.key,
+    plain: area.plain,
+    dimension: area.dimension,
+    mechanical: payload.ranking[0],
+    erans: !!known
+  };
+}
+
 module.exports = {
   compute: compute,
+  focusOf: focusOf,
+  ranked: ranked,
   AREAS: AREAS,
   tierOf: tierOf,
   FRESH_FLOOR: FRESH_FLOOR,

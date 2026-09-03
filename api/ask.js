@@ -70,16 +70,6 @@ module.exports = async function handler(req, res) {
   var stopped = past.some(function (t) { return t.stop; });
   var turn = past.length;
 
-  /* Was the last thing said to them the closed question from the gate?
-     Consent can land nowhere else. */
-  var lastEran = null;
-  past.forEach(function (t) { if (t.role === 'eran') lastEran = t; });
-  var wasAsked = !!(lastEran && lastEran.asked_consent);
-  var already = past.some(function (t) { return t.consent; });
-
-  /* The button posts this. It is unambiguous and needs no reading. */
-  var pressed = body.consent === true;
-
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'private, no-store');
   res.setHeader('X-Accel-Buffering', 'no');
@@ -105,51 +95,15 @@ module.exports = async function handler(req, res) {
      once it has engaged it stays engaged for everything after it. */
   var stop = stopped || out.meta.stop;
 
-  /* Section 6.1, decided here. Whether somebody is ready is not a
-     judgement the model gets to make, so the trial is only on the table
-     when the manager's own words put it there. */
-  var door = conversation.decideDoor({
-    meta: out.meta, pressed: pressed, message: message
-  });
-  if (door.ignored) {
-    console.error('MGI door refused on ' + token + ': ' + door.ignored);
-  }
+  /* Section 10. Who put the trial on the table. The one number that
+     says whether the objective has drifted back toward converting. */
+  var raised = out.meta.raised_trial;
 
-  /* And an offer stapled to an answer nobody asked for. The reply has
-     already streamed so it cannot be unsaid; it is recorded against the
-     turn, and the page is not given the affordance to go with it. */
-  var stapled = !door.open && conversation.OFFER_LANGUAGE.test(out.reply);
-  if (stapled) {
-    console.error('MGI offer made on ' + token + ' with no door open: ' +
-      JSON.stringify(message.slice(0, 80)));
-    out.faults.push('offered the trial where the manager had not asked. Section 6.1.');
-  }
-
-  /* The model may say a turn was consent; it only counts if the previous
-     reply asked the closed question and the message was not a bare
-     number. */
-  var consent = conversation.decideConsent({
-    meta: out.meta, wasAsked: wasAsked, already: already,
-    pressed: pressed, message: message
-  });
-  if (consent.ignored) {
-    console.error('MGI consent refused on ' + token + ': ' + consent.ignored);
-  }
-
-  /* Test 16: a step of the close with no consenting turn behind it is a
-     failure, not a judgement call. It is recorded either way, so the
-     record shows what happened rather than a tidied version of it. */
-  var step = out.meta.close_step;
-  if (step && !consent.given) {
-    console.error('MGI close step ' + step + ' on ' + token +
-      ' with no consent behind it');
-  }
-
-  /* What the page may offer next. The client never reads the prose to
-     work this out: that is how a typed number provisioned a trial. */
+  /* What the page may offer next. Absolute 1: the trial, the link and
+     the message happen on a press, so the page is told when a press
+     would make sense and never works it out from the prose. */
   var ui = {
-    consent_offer: door.open && !consent.given && out.meta.asked_consent === true,
-    provision: (consent.given && out.meta.team_size) ? out.meta.team_size : null
+    provision: (out.meta.ready && out.meta.team_size) ? out.meta.team_size : null
   };
 
   /* Stored before the response closes, not after it. The manager has
@@ -160,12 +114,11 @@ module.exports = async function handler(req, res) {
   try {
     await store.addTurns(token, [
       { turn: turn, role: 'manager', text: message, state: out.meta.state,
-        shape: out.meta.shape, stop: stop, consent: consent.given,
-        close_step: step },
+        shape: out.meta.shape, stop: stop,
+        raised_trial: raised === 'manager' ? 'manager' : null },
       { turn: turn + 1, role: 'eran', text: out.reply, state: out.meta.state,
         exit: out.meta.exit, stop: stop, refusal: out.meta.refusal,
-        consent: consent.given, asked_consent: out.meta.asked_consent,
-        close_step: step,
+        raised_trial: raised === 'eran' ? 'eran' : null,
         faults: out.faults.length ? out.faults.join(' | ') : null }
     ]);
   } catch (e) {
