@@ -64,11 +64,78 @@ function clean(meta) {
     exit: EXITS.indexOf(meta.exit) >= 0 ? meta.exit : null,
     stop: meta.stop === true,
     refusal: typeof meta.refusal === 'string' ? meta.refusal.slice(0, 60) : null,
+    asked_consent: meta.asked_consent === true,
+    consent: meta.consent === true,
+    close_step: null,
     team_size: null
   };
+  var step = Number(meta.close_step);
+  if (isFinite(step) && step >= 1 && step <= 6) out.close_step = Math.round(step);
   var n = Number(meta.team_size);
   if (isFinite(n) && n > 0 && n < 1000) out.team_size = Math.round(n);
   return out;
+}
+
+/* ---------- the consent gate, decided here rather than by the model ----
+   Section 6.1. A manager typed seven in answer to a question they had
+   been asked, and found a live trial, a join link and a team message on
+   the other side of it. The model had decided that was a yes.
+
+   So consent is not a judgement the model makes on its own. It can only
+   land in one place: on the turn that answers the closed question, on a
+   turn where the previous reply actually asked it. Anywhere else it is
+   ignored, whatever the model says.
+
+   The other way in is the button, which is unambiguous and needs no
+   reading at all. */
+
+function CONSENT_NUMBER_ONLY(text) {
+  return /^[^a-z]*\d+[^a-z]*$/i.test(String(text || '').trim());
+}
+
+/* The forms section 6.1 names, and the ones that mean the same thing.
+   Consent does not have to answer the closed question: a manager who
+   says "how do I start" has agreed, and making them say it twice is
+   worse than the bug this guards. What it does have to do is look like
+   a yes to something other than the model. */
+var PLAIN_YES = new RegExp([
+  '^(yes|yep|yeah|yes please|ok|okay|sure|go on|please do)\\b',
+  '\\b(set it up|sign me up|let us do it|lets do it|let\'s do it)\\b',
+  '\\b(go ahead|do it|start it|get it started|i am in|i\'m in)\\b',
+  '\\bhow do i (start|begin|set (it|this) up)\\b',
+  '\\bi want (to|it|this)\\b.*\\b(start|set|try|do)\\b'
+].join('|'), 'i');
+
+function decideConsent(opts) {
+  /* already consented, and it stays consented */
+  if (opts.already) return { given: true, why: 'earlier in the conversation' };
+
+  /* the button. Nothing to interpret. */
+  if (opts.pressed) return { given: true, why: 'pressed the button' };
+
+  if (!opts.meta.consent) return { given: false, why: null };
+
+  var message = String(opts.message || '').trim();
+
+  /* a number is never a yes, whatever it is answering. This is the
+     turn that provisioned a live trial. */
+  if (CONSENT_NUMBER_ONLY(message)) {
+    return { given: false, why: null, ignored:
+      'the model read a bare number as consent' };
+  }
+
+  /* Two signals have to agree: the model calls it consent, and the
+     message itself reads as one. Either it answers the closed question,
+     or it plainly says yes on its own. The model alone is not enough,
+     because the model alone is what went wrong. */
+  if (opts.wasAsked) {
+    return { given: true, why: 'a clear yes to the closed question' };
+  }
+  if (PLAIN_YES.test(message)) {
+    return { given: true, why: 'said yes without being asked' };
+  }
+  return { given: false, why: null, ignored:
+    'the model read consent into a message that does not say yes' };
 }
 
 /* ---------- what a reply may never contain ----------
@@ -263,19 +330,68 @@ var SYSTEM = [
 'NOT NOW. The fit is right and the fortnight is wrong. Say so, say why,',
 'leave the door open, and do not soften it back into an ask.',
 '',
-'THE CLOSE, in order, and only once a trial is what they want:',
-'1. Confirm the team. How many, and is this the team the reading is',
-'   about. Below three, decline and hand to Clive. At exactly three,',
-'   give the small-team limit before provisioning, never after.',
-'2. What happens, in three beats. One question a day, thirty seconds, on',
-'   their phone, anonymous at team level. Day fourteen the first report,',
-'   their reading and the team side by side. Twenty-one days, no card,',
-'   stop whenever.',
-'3. Who sees it. Answer before they ask: nobody but them, and nothing',
-'   goes to anyone above them unless they send it.',
-'4. The team message, which is written for them.',
-'5. A join link to send their team, never a list of addresses to type.',
-'6. Provision, confirm the two dates, and stop selling.',
+'=====================================================================',
+'THE CONSENT GATE. Read this twice. It is the rule that gets broken.',
+'=====================================================================',
+'',
+'NOTHING IN THE CLOSE BEGINS UNTIL THEY HAVE SAID THEY WANT IT.',
+'',
+'You do not ask a setup question in order to find out whether they want',
+'it. Asking how many people are on the team, to see what comes back, is',
+'how a manager ends up inside a close they never agreed to.',
+'',
+'THESE ARE NOT CONSENT:',
+'  answering a question you asked',
+'  a number',
+'  describing their team, or naming its size unprompted',
+'  asking what it would involve',
+'  saying the reading is right',
+'  being interested',
+'',
+'That is interest. Interest is not agreement.',
+'',
+'CONSENT IS a sentence that plainly means yes. "Let us do it." "How do',
+'I start." "Set it up." Or they press the button, which you never see',
+'and never need to.',
+'',
+'When you believe someone is ready, ask ONE closed question, then stop',
+'and wait for the answer:',
+'',
+'  Do you want to set this up now? It takes about two minutes and',
+'  nothing goes to your team until you send it.',
+'',
+'Set asked_consent true on that turn. If the answer is anything other',
+'than a clear yes, you stay in deciding and the close does not start.',
+'',
+'=====================================================================',
+'THE CLOSE. Six steps, in this order, only after consent.',
+'=====================================================================',
+'',
+'Do not reorder. Do not skip. Do not compress a step because you think',
+'you half-covered it earlier in the conversation. You did not. Run it.',
+'',
+'1. What happens. One question a day, thirty seconds, on their phone,',
+'   anonymous at team level. Day fourteen the first report, their',
+'   reading and the team side by side. Twenty-one days, no card, stop',
+'   whenever.',
+'2. Who sees it. Before they ask: nobody but them, and nothing reaches',
+'   anyone above them unless they send it.',
+'3. Team size. How many, and is this the team the reading is about.',
+'   Below three, decline and hand to Clive. At exactly three, give the',
+'   small-team limit before going any further.',
+'4. The team message. It is drafted for them, shown to them, and they',
+'   can edit it. You never send it.',
+'5. The join link, which comes with the message.',
+'6. Confirm day one and day fourteen as dates. Then stop selling.',
+'',
+'Put the step number in close_step on every turn inside the close, so a',
+'skipped step is visible afterwards.',
+'',
+'NOTHING IRREVERSIBLE COMES FROM A SENTENCE THEY TYPED. The trial, the',
+'join link and the team message happen when they press something. They',
+'are never your answer to a message. A manager who types a number must',
+'not find a live trial on the other side of it. At step 4, say what',
+'pressing it will do, and let them press it.',
 '',
 'Their email is already on the submission. Never ask for it again.',
 '',
@@ -303,11 +419,25 @@ var SYSTEM = [
 '   marks. Never "great question". One question per turn at most. Never',
 '   more than six lines on a phone, which is about ' + REPLY_WORDS + ' words.',
 '10. Never repeat the reading back at them. They have just read it.',
-'11. Never hedge the reading. Old evidence widens the gap, it never',
+'11. Never ask a setup question from reading. Team size, dates, and',
+'    anything else operational belongs after consent. Asking one early',
+'    is how a manager ends up inside a close they never agreed to.',
+'12. One thing per turn. Answer the question, then stop. Do not answer',
+'    and then move the conversation somewhere they have not asked to',
+'    go. If you have written an answer and then a question about',
+'    something else, delete the question.',
+'13. Never hedge the reading. Old evidence widens the gap, it never',
 '    softens the finding. These words do not appear: thin, uncertain,',
 '    tentative, approximate, best guess, low confidence. Saying an',
 '    answer rests on one thing is stating evidence, which is required.',
 '    Saying the reading is therefore shaky is hedging, which is not.',
+'14. Name only what exists. This product has a reading, five areas, a',
+'    worksheet, one question a day, a team picture and a trial. There',
+'    is no session, no dashboard, no check-in, no module, no',
+'    programme, no workshop and no platform. The worksheets are',
+'    written in the language of facilitated sessions; that is their',
+'    language, not this product. If a thing is not on the list above,',
+'    do not give it a name.',
 '',
 '=====================================================================',
 'HOW TO ANSWER',
@@ -323,7 +453,13 @@ var SYSTEM = [
 ' "stop":true when the stop rule has engaged, and true in every turn',
 '        afterwards,',
 ' "refusal":"which refusal applied" or null,',
-' "team_size":the number when they have confirmed it, else null}',
+' "asked_consent":true only on the turn where you asked the closed',
+'        question from the consent gate and nothing else,',
+' "consent":true only when THEIR message you are answering was a clear',
+'        yes to that closed question. Never true for a number, for an',
+'        answer to any other question, or for interest,',
+' "close_step":1 to 6 when this turn is a step of the close, else null,',
+' "team_size":the number when they have confirmed it at step 3, else null}',
 '',
 'shape is which of the four objections this turn was, from their message,',
 'not from your answer. It is how Clive learns which objection is costing',
@@ -399,6 +535,20 @@ function context(payload) {
    sanitised and with any part of the marker held back. */
 
 async function exchange(payload, history, message, onChunk) {
+  /* One retry, and only while nothing has reached the manager yet.
+     Overloaded and the 500s are transient and common enough to lose a
+     live turn to; once a word has been streamed a retry would repeat
+     it, so past that point the failure stands. */
+  try {
+    return await attempt(payload, history, message, onChunk);
+  } catch (e) {
+    if (!e || e.streamed) throw e;
+    console.error('MGI: retrying the exchange after ' + e.message);
+    return await attempt(payload, history, message, onChunk);
+  }
+}
+
+async function attempt(payload, history, message, onChunk) {
   var client = new Anthropic();
 
   var messages = history.map(function (t) {
@@ -429,7 +579,13 @@ async function exchange(payload, history, message, onChunk) {
     }
   });
 
-  await stream.finalMessage();
+  try {
+    await stream.finalMessage();
+  } catch (e) {
+    /* the caller only retries what nobody has seen yet */
+    if (shown) e.streamed = true;
+    throw e;
+  }
 
   var split = splitMeta(full);
   var reply = sanitise(split.reply).trim();
@@ -578,6 +734,7 @@ async function teamMessage(payload) {
 
 module.exports = {
   exchange: exchange,
+  decideConsent: decideConsent,
   teamMessage: teamMessage,
   teamFaults: teamFaults,
   faultsIn: faultsIn,

@@ -13,6 +13,11 @@ var store = require('../report/store.js');
 var send = require('../report/send.js');
 var mail = require('../report/email.js');
 
+/* The client is told what it may offer, and never works it out from the
+   prose. Reading Eran's words for "how many people" and provisioning off
+   the next number the manager typed is exactly the bug this replaces. */
+var UI_MARK = '[[[UI]]]';
+
 var PER_DAY = 12;
 var PER_TOKEN = 40;
 var PER_IP_DAY = 60;
@@ -65,6 +70,16 @@ module.exports = async function handler(req, res) {
   var stopped = past.some(function (t) { return t.stop; });
   var turn = past.length;
 
+  /* Was the last thing said to them the closed question from the gate?
+     Consent can land nowhere else. */
+  var lastEran = null;
+  past.forEach(function (t) { if (t.role === 'eran') lastEran = t; });
+  var wasAsked = !!(lastEran && lastEran.asked_consent);
+  var already = past.some(function (t) { return t.consent; });
+
+  /* The button posts this. It is unambiguous and needs no reading. */
+  var pressed = body.consent === true;
+
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
   res.setHeader('Cache-Control', 'private, no-store');
   res.setHeader('X-Accel-Buffering', 'no');
@@ -90,6 +105,33 @@ module.exports = async function handler(req, res) {
      once it has engaged it stays engaged for everything after it. */
   var stop = stopped || out.meta.stop;
 
+  /* Section 6.1, decided here. The model may say a turn was consent; it
+     only counts if the previous reply asked the closed question and the
+     message was not a bare number. */
+  var consent = conversation.decideConsent({
+    meta: out.meta, wasAsked: wasAsked, already: already,
+    pressed: pressed, message: message
+  });
+  if (consent.ignored) {
+    console.error('MGI consent refused on ' + token + ': ' + consent.ignored);
+  }
+
+  /* Test 16: a step of the close with no consenting turn behind it is a
+     failure, not a judgement call. It is recorded either way, so the
+     record shows what happened rather than a tidied version of it. */
+  var step = out.meta.close_step;
+  if (step && !consent.given) {
+    console.error('MGI close step ' + step + ' on ' + token +
+      ' with no consent behind it');
+  }
+
+  /* What the page may offer next. The client never reads the prose to
+     work this out: that is how a typed number provisioned a trial. */
+  var ui = {
+    consent_offer: !consent.given && out.meta.asked_consent === true,
+    provision: (consent.given && out.meta.team_size) ? out.meta.team_size : null
+  };
+
   /* Stored before the response closes, not after it. The manager has
      already read the reply, so the wait costs them nothing, and putting
      this in the background loses the turn to anyone who types the next
@@ -98,15 +140,21 @@ module.exports = async function handler(req, res) {
   try {
     await store.addTurns(token, [
       { turn: turn, role: 'manager', text: message, state: out.meta.state,
-        shape: out.meta.shape, stop: stop },
+        shape: out.meta.shape, stop: stop, consent: consent.given,
+        close_step: step },
       { turn: turn + 1, role: 'eran', text: out.reply, state: out.meta.state,
         exit: out.meta.exit, stop: stop, refusal: out.meta.refusal,
+        consent: consent.given, asked_consent: out.meta.asked_consent,
+        close_step: step,
         faults: out.faults.length ? out.faults.join(' | ') : null }
     ]);
   } catch (e) {
     console.error('MGI turn store failed for ' + token + ': ' + e.message);
   }
 
+  /* the affordances, after the reply and behind a marker the client
+     cuts, so nothing here is ever read as part of what Eran said */
+  res.write('\n' + UI_MARK + JSON.stringify(ui));
   res.end();
 
   if (out.faults.length) {

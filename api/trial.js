@@ -61,6 +61,24 @@ module.exports = async function handler(req, res) {
   var row = await store.reading(token);
   if (!row || !row.payload) return json(res, 404, { error: 'Not found' });
 
+  /* Section 6.1, enforced where it cannot be talked around. A manager
+     answered a question with the number seven and found a live trial, a
+     join link and a team message waiting on the other side of it. So
+     this route asks the record, not the model and not the caller: is
+     there a turn in this conversation where they said yes.
+
+     Everything else in the close is words. This is the part that is
+     irreversible, and it is the part that is locked. */
+  var consented = await store.hasConsent(token);
+  if (!consented) {
+    console.error('MGI trial refused for ' + token + ': no consenting turn');
+    return json(res, 200, {
+      blocked: true,
+      reply: 'Nothing is set up yet, and nothing will be until you say so. ' +
+        'Tell me when you want it and I will walk you through it.'
+    });
+  }
+
   /* Below three, decline and hand over. A team picture drawn from two
      people is not a team picture, and provisioning one anyway would be
      the first promise this product broke. */

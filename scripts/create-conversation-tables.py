@@ -51,6 +51,22 @@ create table if not exists {p}conversations (
   -- cannot be recalled, so this is how the voice gets tuned.
   faults       text,
 
+  -- section 6.1. True on the manager's turn that gave a clear yes, or
+  -- that pressed the start affordance, and on every turn after it.
+  -- Nothing in the close may begin without one of these behind it, and
+  -- test 16 makes a close with no consenting turn a failure rather
+  -- than a judgement call.
+  consent      boolean not null default false,
+
+  -- true on the reply that asked the closed question, and nothing else.
+  -- Consent can only be given in answer to it, which is what stops the
+  -- model reading a yes into a turn nobody asked a question in.
+  asked_consent boolean not null default false,
+
+  -- which step of 6.2 this turn was, 1 to 6, or null outside the close.
+  -- Logged so a skipped or reordered step is visible afterwards.
+  close_step   smallint,
+
   created_at   timestamptz not null default now()
 );
 create index if not exists {p}conversations_token_idx on {p}conversations (token, turn);
