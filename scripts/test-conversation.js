@@ -173,6 +173,28 @@ else bad('the token is not on the link');
 if (booking.link('') === booking.URL) ok('no token, no query junk');
 else bad('an empty token still appends something');
 
+/* A configured address is pasted, and pasting picks up characters nobody
+   can see. A zero width one in front of the scheme is not a cosmetic
+   problem: the browser stops reading the href as absolute and resolves it
+   against the reading, so the one ask on the page lands the manager on
+   managergap.com/r/ plus the entire booking address. This is the check
+   that stops it coming back the next time the value is re-pasted. */
+var ZW = ['\uFEFF', '\u200B', '\u200C', '\u200D', '\u2060'];
+var dirty = 0;
+ZW.forEach(function (ch) {
+  var got = booking.clean(ch + 'https://calendly.com/x' + ch);
+  if (got !== 'https://calendly.com/x') dirty++;
+});
+if (!dirty) ok('a pasted address survives every zero width character');
+else bad(dirty + ' zero width character(s) still reach the link');
+
+if (booking.clean('\uFEFFhttps://calendly.com/x').indexOf('http') === 0)
+  ok('the cleaned address still starts with the scheme');
+else bad('the cleaned address is not absolute, so the href would be relative');
+
+if (booking.clean('managergap.com/nope') === '') ok('an address with no scheme is refused');
+else bad('a scheme-less address is accepted and would resolve relatively');
+
 var vercel = JSON.parse(fs.readFileSync(
   require('path').join(__dirname, '..', 'vercel.json'), 'utf8'));
 var routes = vercel.rewrites.map(function (r) { return r.source; }).join(' ');
