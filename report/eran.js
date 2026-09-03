@@ -181,7 +181,20 @@ var RULES = [
   [/(?<!\bI )\bwill (leave|quit|resign|go|fall|drop|decline|worsen|get worse|slip|stop)\b(?!\s+(it|that|this|there|here))/i,
     'a prediction. Rule 2: state consequence in the present tense, as something already happening.'],
   [/\b(is|are) (going to|likely to)\b/i, 'a prediction. Rule 2.'],
-  [/^\s*[-*•]\s/m, 'a bullet. Rule 7.']
+  [/^\s*[-*•]\s/m, 'a bullet. Rule 7.'],
+  /* Nouns for things this product does not have. The worksheets are
+     written as facilitated sessions and two of them are titled one, so
+     this vocabulary is always in front of the writer. It reached the
+     page, and then the conversation, and a manager asked what session.
+     There is no session. There is a worksheet.
+     exercise and call are scoped to the noun: "your call" is a
+     decision and "call it what you like" is a verb. */
+  [/\b(sessions?|workshops?|programmes?|modules?)\b|(?<!\bof )\bcourses?\b/i,
+    'a name for something this product does not have. There is a reading, a worksheet, one question a day and a trial. Nothing else has a name.'],
+  [/\b(an?|another|the) exercise\b/i,
+    'an exercise. The manager has a worksheet, not an exercise.'],
+  [/\b(on|set up|book|jump on|hop on) a call\b|\ba (quick|short|thirty[- ]minute) call\b/i,
+    'a call. There is no call in this product.']
 ];
 
 function countWords(s) {

@@ -219,8 +219,10 @@ if (/hasConsent/.test(trial) && /blocked: true/.test(trial)) {
 } else bad('the trial route can be reached without consent');
 
 console.log('\nWhat the prompt now says');
-[['the gate', /NOTHING IN THE CLOSE BEGINS UNTIL/],
- ['not consent: a number', /THESE ARE NOT CONSENT/],
+[['Eran never offers', /YOU NEVER OFFER THE TRIAL/],
+ ['the things that are not openings', /THESE DO NOT OPEN IT/],
+ ['how the offer gets earned', /HOW THE OFFER GETS EARNED/],
+ ['the closed question', /Do you want to set this up now\?/],
  ['the order', /Do not reorder\. Do not skip/],
  ['section 6.3', /NOTHING IRREVERSIBLE COMES FROM A SENTENCE THEY TYPED/],
  ['rule 11', /Never ask a setup question from reading/],

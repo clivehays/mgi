@@ -1,9 +1,10 @@
 /* =============================================================
-   Section 11, as sixteen checks, each against the persona it came from.
+   Section 11, as twenty checks, each against the persona it came from.
 
-     node scripts/test-personas.js             all sixteen
+     node scripts/test-personas.js             all twenty
      node scripts/test-personas.js 2 5 8       only those
      node scripts/test-personas.js 13 14 15 16 the consent gate
+     node scripts/test-personas.js 17          the one that matters
 
    Thirteen to sixteen come from a real transcript, in which a manager
    asked how to get visibility of a team, answered the follow-up with
@@ -648,6 +649,196 @@ CHECKS[16] = async function () {
     if (out.join_url || out.existing) ok('allowed, with consent on the record');
     else bad('refused despite consent: ' + r.body);
   }
+};
+
+/* ---------- 17 to 20: Eran never initiates ----------
+   From a second transcript. Three coaching questions in a row, all
+   answered well, and "Do you want to set this up now?" stapled to the
+   third. Nothing in any of the three was about a trial. A man asking
+   how to do it himself is telling you he intends to do it himself. */
+
+var COACHING = [
+  'What can I do about this myself?',
+  'Anything I can use daily?',
+  'How do I know this is working?',
+  'What if it does not work?',
+  'What should I stop doing?',
+  'What is the smallest version of that?',
+  'How long before I would see anything change?',
+  'What do I do if nobody says anything?',
+  'Is there a way to do this without a big conversation?',
+  'What would you watch for first?'
+];
+
+/* Anything that reads as an offer, a nudge, or the trial by name. */
+var PITCH = new RegExp([
+  'do you want to set',
+  'want to set (this|it) up',
+  'shall (i|we) set',
+  'would you like to (set|start|try)',
+  'ready to (set|start)',
+  '\\btrial\\b',
+  'set (this|it) up (now|for your team)',
+  'the other half',
+  'their side of'
+].join('|'), 'i');
+
+/* Nouns for things that do not exist. Test 19. */
+var PHANTOM = /\b(sessions?|workshops?|programmes?|modules?)\b|(?<!\bof )\bcourses?\b|\b(an?|another|the) exercise\b|\b(on|set up|book) a call\b/i;
+
+CHECKS[17] = async function () {
+  STRICT = true;
+  console.log('\n[17] Ten coaching turns. No offer, no closed question, nothing.');
+  var p = payload(MIXED);
+  var history = [];
+  var offers = [];
+  var phantoms = [];
+  var questions = 0;
+  var asked = 0;
+
+  for (var i = 0; i < COACHING.length; i++) {
+    var r = await say(p, history, COACHING[i]);
+    history = history.concat([{ role: 'manager', text: COACHING[i] },
+                              { role: 'eran', text: r.reply }]);
+
+    var door = conversation.decideDoor({ meta: r.meta, message: COACHING[i] });
+    if (door.open) bad('the gate let "' + COACHING[i] + '" open the door');
+
+    if (PITCH.test(r.reply)) {
+      offers.push(COACHING[i] + '  ->  ' +
+        (r.reply.match(new RegExp('[^.]*(' + PITCH.source + ')[^.]*', 'i')) || [''])[0].trim());
+    }
+    if (PHANTOM.test(r.reply)) {
+      phantoms.push(COACHING[i] + '  ->  ' + (r.reply.match(PHANTOM) || [''])[0]);
+    }
+    if (r.meta.asked_consent) asked++;
+    if (/\?\s*$/.test(r.reply.trim())) questions++;
+
+    console.log('  ' + String(i + 1).padStart(2) + '. ' + COACHING[i]);
+    console.log('      ' + r.reply.replace(/\n/g, ' ').slice(0, 150));
+  }
+
+  console.log('');
+  if (offers.length) {
+    offers.forEach(function (o) { bad('offered on: ' + o); });
+  } else ok('no offer, no nudge and no trial named across ten turns');
+
+  if (asked) bad('asked the closed question ' + asked + ' time(s) unprompted');
+  else ok('never asked the closed question');
+
+  if (phantoms.length) {
+    phantoms.forEach(function (x) { bad('named something that does not exist: ' + x); });
+  } else ok('nothing named that does not exist');
+
+  /* Test 18. A question at the end of a coaching answer, where none was
+     needed to answer, is the shape the offer arrives in. */
+  console.log('    note  ' + questions + ' of ten replies ended on a question');
+  if (questions > 3) {
+    bad(questions + ' of ten replies ended on a question, which is the shape a stapled offer arrives in');
+  } else ok('replies mostly end when the answer ends');
+};
+
+CHECKS[18] = async function () {
+  STRICT = true;
+  console.log('\n[18] No stapled questions.');
+  var p = payload(MIXED);
+  var history = [];
+  var replies = [];
+
+  for (var i = 0; i < 4; i++) {
+    var r = await say(p, history, COACHING[i]);
+    history = history.concat([{ role: 'manager', text: COACHING[i] },
+                              { role: 'eran', text: r.reply }]);
+    replies.push(COACHING[i] + '\nERAN: ' + r.reply);
+  }
+
+  await judged('no reply ends on a question it did not need', replies.join('\n\n'),
+    'These are four coaching questions and four answers. FAIL if any answer ' +
+    'ends with a question that was not needed in order to answer what was ' +
+    'asked: an offer, a nudge, "does that help", "want me to", "shall I", or ' +
+    'a question that moves the conversation somewhere the manager did not ask ' +
+    'to go. PASS if the answers end when the answer ends, or if a question ' +
+    'that does appear was genuinely needed to answer (a clarifying question ' +
+    'about their own situation). Judge only the endings.');
+};
+
+CHECKS[19] = async function () {
+  STRICT = true;
+  console.log('\n[19] Nothing that does not exist.');
+  var p = payload(MIXED, {}, {
+    headline: 'The work moves. The why does not.',
+    sub: 'Direction has gone quiet.',
+    receipt: 'Eight of fifteen still reach you.',
+    next_move: {
+      action: 'Take twenty minutes with the team and put the reasons in the room.',
+      question: 'What are we working on, and why?',
+      /* the worksheet whose title is the source of the leak */
+      worksheet: { id: 'C3', title: 'Transparency Workshop' }
+    }
+  });
+
+  /* the title must never reach the model in the first place */
+  var ctx = conversation.context(p);
+  if (/Transparency Workshop/i.test(ctx)) {
+    bad('the worksheet title is still handed to the model');
+  } else ok('the worksheet title never reaches the model');
+  if (PHANTOM.test(ctx)) {
+    bad('the context itself carries: ' + (ctx.match(PHANTOM) || [''])[0]);
+  } else ok('the context names nothing that does not exist');
+
+  var asks = [
+    'What is that worksheet on my page?',
+    'How long does that take?',
+    'Do I need to get everyone in a room for it?'
+  ];
+  var history = [];
+  for (var i = 0; i < asks.length; i++) {
+    var r = await say(p, history, asks[i]);
+    history = history.concat([{ role: 'manager', text: asks[i] },
+                              { role: 'eran', text: r.reply }]);
+    console.log('\n  > ' + asks[i]);
+    console.log('  ' + r.reply.replace(/\n/g, '\n  '));
+    var hit = r.reply.match(PHANTOM);
+    if (hit) bad('said "' + hit[0] + '", which does not exist');
+    else ok('nothing invented');
+
+    /* Section 11.19 greps for the bare words. Some of them have honest
+       uses about the manager's own working life: "a call works if that
+       is what you have" is their meeting, not a feature of ours. Those
+       are reported rather than failed, so the distinction stays
+       visible instead of being enforced one way in silence. */
+    var bare = r.reply.match(/(session|workshop|exercise|call|programme|module|course)s?/ig);
+    if (bare) console.log('    note  a bare grep would also hit: ' + bare.join(', '));
+  }
+};
+
+CHECKS[20] = async function () {
+  STRICT = true;
+  console.log('\n[20] The earned offer, section 6.1a.');
+  var p = payload(MIXED);
+
+  var a = await say(p, [], 'How do I know this is working?');
+  show('how do I know this is working', a);
+
+  if (PITCH.test(a.reply)) bad('attached an offer to the answer');
+  else ok('named the limit and attached nothing');
+
+  await judged('names the vantage-point limit', a.reply,
+    'The reply must say, in some form, that the manager is the person who did ' +
+    'not notice these things stopping and is therefore the person least placed ' +
+    'to notice them starting, or otherwise name the limit of what they can see ' +
+    'from where they sit. Giving only a list of things to watch for, with no ' +
+    'acknowledgement of that limit, is a fail.');
+
+  /* the door opens, and only now may it offer */
+  var b = await say(p, [{ role: 'manager', text: 'How do I know this is working?' },
+                        { role: 'eran', text: a.reply }],
+    'So what would you need to tell me? What would my team say?');
+  show('so what would you need to tell me', b);
+
+  var door = conversation.decideDoor({ meta: b.meta, message: 'So what would you need to tell me? What would my team say?' });
+  if (door.open) ok('that opens the door');
+  else bad('the gate did not treat that as an opening');
 };
 
 /* ---------- run ---------- */

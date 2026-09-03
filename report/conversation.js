@@ -66,6 +66,7 @@ function clean(meta) {
     refusal: typeof meta.refusal === 'string' ? meta.refusal.slice(0, 60) : null,
     asked_consent: meta.asked_consent === true,
     consent: meta.consent === true,
+    door: meta.door === true,
     close_step: null,
     team_size: null
   };
@@ -104,6 +105,80 @@ var PLAIN_YES = new RegExp([
   '\\b(go ahead|do it|start it|get it started|i am in|i\'m in)\\b',
   '\\bhow do i (start|begin|set (it|this) up)\\b',
   '\\bi want (to|it|this)\\b.*\\b(start|set|try|do)\\b'
+].join('|'), 'i');
+
+/* ---------- the door ----------
+   Section 6.1. Eran does not decide that somebody looks ready, because
+   asked that every turn it eventually says yes, and it says it at the
+   end of a good answer to a question about something else. A manager
+   asked three coaching questions in a row and got "Do you want to set
+   this up now?" stapled to the third.
+
+   So the trial is only on the table when the manager's own words put it
+   there, and that is decided here. The model may say the door opened;
+   it only counts if the message looks like one of section 6.1's
+   openings. Both have to agree. */
+
+var DOOR_OPEN = new RegExp([
+  /* what their team would say, the half they cannot see */
+  'what (would|do|might) (my |the )?team (say|think)',
+  'their (side|half|answers|view)',
+  '(the )?(other |missing )?half',
+  'what (i|I) (cannot|can not|can\'t) see',
+  /* what it would take */
+  'what would it (take|involve|cost)',
+  'how (does|would) (it|this|that) work',
+  /* scoped to the product. Bare "how long" also matches "how long
+     before I would see anything change", which is a coaching question
+     about their own move and opens nothing. */
+  'how (long|much) (does|is|would|will) (it|this|that|the trial)\\b',
+  'what does it cost|how much is it|the price|pricing',
+  /* the product by name */
+  '\\btrial\\b|\\bclover ?era\\b|the product|sign ?up|subscri',
+  /* they say they want it */
+  'i want (to|it|this)|set (it|this) up|how do i (start|begin)',
+  'let us do it|lets do it|let\'s do it|sign me up'
+].join('|'), 'i');
+
+/* The things that look like openings and are not. Every one is a
+   manager saying keep coaching. Checked first, so "what can I do about
+   this myself" never counts however the model reads it. */
+var NOT_A_DOOR = new RegExp([
+  'what (can|could|should) i do',
+  'anything i can (use|do|try)',
+  'how do i know (this|it|that) is working',
+  'what if it (does not|doesn\'t|does nt) work',
+  'what should i stop',
+  'on my own|myself|by myself'
+].join('|'), 'i');
+
+function decideDoor(opts) {
+  if (opts.pressed) return { open: true, why: 'pressed the button' };
+  var message = String(opts.message || '').trim();
+
+  if (NOT_A_DOOR.test(message) && !/\btrial\b|set (it|this) up/i.test(message)) {
+    return { open: false, why: null, ignored: opts.meta && opts.meta.door
+      ? 'the model read a coaching question as an opening' : null };
+  }
+  if (!DOOR_OPEN.test(message)) {
+    return { open: false, why: null, ignored: opts.meta && opts.meta.door
+      ? 'the model opened the door on a message that does not open it' : null };
+  }
+  return { open: true, why: 'their own words' };
+}
+
+/* An offer, in the forms it arrives in. Used to catch one stapled to an
+   answer where the manager never opened the door. It cannot be unsaid,
+   the reply having already streamed, so it is recorded against the turn
+   and the page is not given the affordance. */
+var OFFER_LANGUAGE = new RegExp([
+  'do you want to set (this|it) up',
+  'want to (set (this|it) up|give it a go|try it)',
+  'shall (i|we) set (this|it) up',
+  'would you like to (set|start|try)',
+  'ready to (set (this|it) up|start)',
+  'i can set (this|it) up',
+  'should (i|we) (set (this|it) up|get (this|it) started)'
 ].join('|'), 'i');
 
 function decideConsent(opts) {
@@ -165,12 +240,30 @@ function sanitise(chunk) {
    narrowed to the constructions that actually hedge, and the rest of
    the list stands. */
 
+/* the words rule 3 lists, as one alternation used by the scoped rule */
+var HEDGES = '(thin|uncertain|tentative|approximate|shaky|rough|unreliable)';
+
 var CONVERSATION_RULES = eran.RULES.filter(function (r) {
   return !/day of the week/.test(r[1]) && !/discounts the reading/.test(r[1]);
 }).concat([
-  [/\b(thin|tentative|approximate|uncertain|best guess)\b/i,
-    'a word that discounts the reading. Rule 3: old evidence widens the gap, it never softens the finding.'],
-  [/\b(low|limited|little|no|not much) confidence\b/i,
+  /* Rule 3 forbids hedging THE READING. Every word on its list has an
+     honest use pointed at something else, and banning them bare fired
+     on the product's own voice: the instrument's action copy says "if
+     the why comes back thin, that is your earliest warning", which is a
+     finding stated confidently, and "someone who is uncertain will nod"
+     is a true thing to say about a person.
+
+     So the rule is scoped to the target rather than the word. Hedge a
+     reading, a finding, the evidence, and it fires. Describe a thin
+     answer or an uncertain person, and it does not. */
+  [new RegExp(
+    '\\b(reading|readings|finding|findings|evidence|sample|picture|result|' +
+    'results|score|scores|data|report)\\b[^.]{0,40}\\b' + HEDGES + '\\b' +
+    '|\\b' + HEDGES + '\\b[^.]{0,25}\\b(reading|finding|evidence|sample|' +
+    'picture|basis|result|score)\\b', 'i'),
+    'the reading hedged. Rule 3: old evidence widens the gap, it never softens the finding.'],
+  /* no honest use in this conversation */
+  [/\bbest guess\b|\b(low|limited|little|no|not much) confidence\b/i,
     'confidence, used as a hedge. Rule 3.']
 ]);
 
@@ -331,38 +424,72 @@ var SYSTEM = [
 'leave the door open, and do not soften it back into an ask.',
 '',
 '=====================================================================',
-'THE CONSENT GATE. Read this twice. It is the rule that gets broken.',
+'YOU NEVER OFFER THE TRIAL. Not once. This is the rule that breaks.',
 '=====================================================================',
 '',
-'NOTHING IN THE CLOSE BEGINS UNTIL THEY HAVE SAID THEY WANT IT.',
+'The page has a button. The button asks. You do not.',
 '',
-'You do not ask a setup question in order to find out whether they want',
-'it. Asking how many people are on the team, to see what comes back, is',
-'how a manager ends up inside a close they never agreed to.',
+'Whether somebody seems ready is not a judgement you make, because you',
+'are asked it every turn and eventually you will answer yes, and you',
+'will answer it at the end of a good reply to a question about something',
+'else. That is how an offer ends up stapled to a coaching answer.',
 '',
-'THESE ARE NOT CONSENT:',
+'So the trial is discussed ONLY when the manager opens the door in their',
+'own words. These open it:',
+'',
+'  they ask what their team would say, or about the half they cannot see',
+'  they ask what it would take, how it works, what it costs, how long',
+'  they ask about the trial, the product, or Clover ERA by name',
+'  they say they want to do it, or they press the button',
+'',
+'THESE DO NOT OPEN IT. Every one of them is a manager telling you to',
+'keep coaching:',
+'',
+'  "What can I do about this myself?"',
+'  "Anything I can use daily?"',
+'  "How do I know this is working?"',
+'  "What if it does not work?"',
+'  "What should I stop doing?"',
+'  any question about their own actions, their habits, or their week',
+'  describing their team, or naming a headcount',
 '  answering a question you asked',
-'  a number',
-'  describing their team, or naming its size unprompted',
-'  asking what it would involve',
-'  saying the reading is right',
-'  being interested',
 '',
-'That is interest. Interest is not agreement.',
+'A manager asking how to do it himself is telling you he intends to do',
+'it himself. Answer that. Nothing else.',
 '',
-'CONSENT IS a sentence that plainly means yes. "Let us do it." "How do',
-'I start." "Set it up." Or they press the button, which you never see',
-'and never need to.',
-'',
-'When you believe someone is ready, ask ONE closed question, then stop',
-'and wait for the answer:',
+'WHEN THE DOOR IS OPEN, answer what they actually asked, then ask one',
+'closed question and stop:',
 '',
 '  Do you want to set this up now? It takes about two minutes and',
 '  nothing goes to your team until you send it.',
 '',
-'Set asked_consent true on that turn. If the answer is anything other',
-'than a clear yes, you stay in deciding and the close does not start.',
+'Set asked_consent true on that turn and set door true on any turn where',
+'their message opened it. Anything other than a clear yes and you stay',
+'in deciding. Answering a question is not consent. A number is not',
+'consent.',
 '',
+'=====================================================================',
+'HOW THE OFFER GETS EARNED, since you never make it',
+'=====================================================================',
+'',
+'Some honest answers run into the edge of what this manager can see from',
+'where they sit. When that happens, name the limit as part of the',
+'answer, and attach nothing to it. No question. No offer. No nudge.',
+'',
+'"How do I know this is working?" is the clearest case. The true answer',
+'is that they will be watching for two behaviours from the same chair',
+'that already missed those behaviours stopping. Say that, and stop.',
+'',
+'  You watch for two things you can date. Someone disagrees with you in',
+'  front of others. Someone brings you an idea you did not ask for.',
+'  Both are over a month old now. The catch is that you are the person',
+'  who did not notice them stopping, so you are also the person least',
+'  likely to notice them starting.',
+'',
+'That last sentence is the whole of it. If it lands, they ask. If it',
+'does not, you have still told them something true and cost yourself',
+'nothing. Do not help it along. A question after it undoes it.',
+
 '=====================================================================',
 'THE CLOSE. Six steps, in this order, only after consent.',
 '=====================================================================',
@@ -433,6 +560,10 @@ var SYSTEM = [
 '    tentative, approximate, best guess, low confidence. Saying an',
 '    answer rests on one thing is stating evidence, which is required.',
 '    Saying the reading is therefore shaky is hedging, which is not.',
+'14a. The worksheet on their page has a title, and you are not given',
+'    it, deliberately. Two of the fifty-six are named after things that',
+'    do not exist here. Call it the worksheet. Describing what is in it',
+'    is fine when they ask. Giving it a name of your own is not.',
 '14. Name only what exists. This product has a reading, five areas, a',
 '    worksheet, one question a day, a team picture and a trial. There',
 '    is no session, no dashboard, no check-in, no module, no',
@@ -455,6 +586,8 @@ var SYSTEM = [
 ' "stop":true when the stop rule has engaged, and true in every turn',
 '        afterwards,',
 ' "refusal":"which refusal applied" or null,',
+' "door":true only when THEIR message opened the door, from the list in',
+'        the section above. Never true for a coaching question,',
 ' "asked_consent":true only on the turn where you asked the closed',
 '        question from the consent gate and nothing else,',
 ' "consent":true only when THEIR message you are answering was a clear',
@@ -524,8 +657,15 @@ function context(payload) {
       L.push('The next move: ' + e.next_move.action);
       L.push('The question you gave them: ' + e.next_move.question);
       if (e.next_move.worksheet) {
-        L.push('The worksheet on their page: ' + e.next_move.worksheet.title +
-          ' (they can already download it, so never send them to find it)');
+        /* The title is deliberately not passed. Two of the fifty-six are
+           called "Transparency Workshop" and "Peer-to-Peer Learning
+           Sessions", and handing either of those to Eran is how it
+           started talking about the session and the forty five minutes
+           with the team. There is no session in this product. The
+           manager can read the title on their own page; Eran calls it
+           the worksheet and nothing else. */
+        L.push('There is a worksheet on their page, already downloadable.');
+        L.push('Call it "the worksheet". Do not name it.');
       }
     }
   }
@@ -737,6 +877,8 @@ async function teamMessage(payload) {
 module.exports = {
   exchange: exchange,
   decideConsent: decideConsent,
+  decideDoor: decideDoor,
+  OFFER_LANGUAGE: OFFER_LANGUAGE,
   teamMessage: teamMessage,
   teamFaults: teamFaults,
   faultsIn: faultsIn,

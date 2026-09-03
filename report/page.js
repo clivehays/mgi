@@ -130,7 +130,7 @@ function changes(eran) {
     '<ul class="change-list">' + rows + '</ul></section>';
 }
 
-function receipt(numbers, eran) {
+function receipt(numbers, eran, token) {
   var counters = '<div class="counters">' +
     '<div class="counter"><span class="counter-n mono">' + numbers.reading_count + '</span>' +
     '<span class="counter-label">conditions still reading</span></div>' +
@@ -141,11 +141,23 @@ function receipt(numbers, eran) {
   var body = eran && eran.receipt
     ? '<p class="receipt-body">' + esc(eran.receipt) + '</p>' : '';
 
+  /* Section 6.1. Eran never offers the trial, so the page has to ask.
+     This is the only thing on the reading that does, and it is a
+     button rather than a sentence for that reason: the manager either
+     presses it or they do not, and nothing has to read their mind.
+
+     It works without the conversation. Where there is no model the
+     button is not rendered and the line to Clive carries it, which is
+     what section 9 means by the page's own CTA still working. */
+  var start = talkable(token)
+    ? '<button type="button" class="receipt-cta" id="start-trial">' +
+      'Set this up for my team</button>' : '';
+
   var cta = '<p class="cta"><a href="mailto:clive@managergap.com' +
     '?subject=' + encodeURIComponent('My reading, number ' + numbers.meta.reading_no) +
     '">Tell Clive what this got wrong</a></p>';
 
-  return '<section class="receipt">' + counters + body + cta + '</section>';
+  return '<section class="receipt">' + counters + body + start + cta + '</section>';
 }
 
 /* ---------- the conversation ----------
@@ -154,8 +166,15 @@ function receipt(numbers, eran) {
    answer is worse than no chat box, and the receipt's own CTA is still
    there either way. */
 
+/* the conversation renders only when there is a model to answer with,
+   and the receipt's start button only where the conversation exists to
+   receive it */
+function talkable(token) {
+  return !!(token && process.env.ANTHROPIC_API_KEY);
+}
+
 function talk(token) {
-  if (!token || !process.env.ANTHROPIC_API_KEY) return '';
+  if (!talkable(token)) return '';
   return '<section class="talk" id="talk" data-token="' + encodeURIComponent(token) + '">' +
     '<h2 class="section-head mono">Ask about this</h2>' +
     '<div class="thread" id="thread" role="log" aria-live="polite" aria-label="The conversation"></div>' +
@@ -340,6 +359,11 @@ rings_.CSS,
 '.counter-label{font-family:var(--ui);font-size:.75rem;line-height:1.3;',
 '  color:var(--on-navy-mute);max-width:14ch}',
 '.receipt-body{margin:0 0 18px;color:var(--on-navy)}',
+'.receipt-cta{appearance:none;border:0;border-radius:9px;cursor:pointer;',
+'  background:var(--on-navy);color:var(--navy);font:600 .92rem/1 var(--ui);',
+'  padding:13px 18px;margin:0 0 16px}',
+'.receipt-cta:hover{background:#fff}',
+'.receipt-cta:focus-visible{outline:2px solid var(--blue);outline-offset:3px}',
 '.cta{margin:0;font-family:var(--ui);font-size:.92rem}',
 '.cta a{color:var(--on-navy);text-decoration:none;',
 '  border-bottom:1px solid rgba(237,231,219,.45);padding-bottom:2px}',
@@ -644,6 +668,18 @@ var JS = [
 '      if(ui.provision)offerProvision(ui.provision);',
 '    }',
 '',
+'    /* Section 6.1. Eran never offers, so this is the thing that asks.',
+'       Pressing it is unambiguous, needs no reading of anybody\'s',
+'       intent, and carries its own consent. */',
+'    var startBtn=document.getElementById("start-trial");',
+'    if(startBtn){',
+'      startBtn.addEventListener("click",function(){',
+'        startBtn.disabled=true;',
+'        talk.scrollIntoView({block:"start"});',
+'        talkTo("Set it up for my team.",{consent:true});',
+'      });',
+'    }',
+'',
 '    function offerConsent(){',
 '      if(document.getElementById("consent-block"))return;',
 '      var box=document.createElement("div");',
@@ -761,7 +797,7 @@ function render(numbers, token) {
     readout(numbers, eran) + '\n' +
     cost(eran) + '\n' +
     changes(eran) + '\n' +
-    receipt(numbers, eran) + '\n' +
+    receipt(numbers, eran, token) + '\n' +
     talk(token) + '\n' +
     nextMove(eran, token) + '\n' +
     folded(numbers, eran) + '\n' +

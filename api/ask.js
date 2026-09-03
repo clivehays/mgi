@@ -105,9 +105,29 @@ module.exports = async function handler(req, res) {
      once it has engaged it stays engaged for everything after it. */
   var stop = stopped || out.meta.stop;
 
-  /* Section 6.1, decided here. The model may say a turn was consent; it
-     only counts if the previous reply asked the closed question and the
-     message was not a bare number. */
+  /* Section 6.1, decided here. Whether somebody is ready is not a
+     judgement the model gets to make, so the trial is only on the table
+     when the manager's own words put it there. */
+  var door = conversation.decideDoor({
+    meta: out.meta, pressed: pressed, message: message
+  });
+  if (door.ignored) {
+    console.error('MGI door refused on ' + token + ': ' + door.ignored);
+  }
+
+  /* And an offer stapled to an answer nobody asked for. The reply has
+     already streamed so it cannot be unsaid; it is recorded against the
+     turn, and the page is not given the affordance to go with it. */
+  var stapled = !door.open && conversation.OFFER_LANGUAGE.test(out.reply);
+  if (stapled) {
+    console.error('MGI offer made on ' + token + ' with no door open: ' +
+      JSON.stringify(message.slice(0, 80)));
+    out.faults.push('offered the trial where the manager had not asked. Section 6.1.');
+  }
+
+  /* The model may say a turn was consent; it only counts if the previous
+     reply asked the closed question and the message was not a bare
+     number. */
   var consent = conversation.decideConsent({
     meta: out.meta, wasAsked: wasAsked, already: already,
     pressed: pressed, message: message
@@ -128,7 +148,7 @@ module.exports = async function handler(req, res) {
   /* What the page may offer next. The client never reads the prose to
      work this out: that is how a typed number provisioned a trial. */
   var ui = {
-    consent_offer: !consent.given && out.meta.asked_consent === true,
+    consent_offer: door.open && !consent.given && out.meta.asked_consent === true,
     provision: (consent.given && out.meta.team_size) ? out.meta.team_size : null
   };
 
