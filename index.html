@@ -27,7 +27,7 @@
 <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
 
 <link rel="stylesheet" href="/assets/fonts.css?v=18f53730">
-<link rel="stylesheet" href="/assets/mgi.css?v=eab1c31b">
+<link rel="stylesheet" href="/assets/mgi.css?v=eb7f994f">
 </head>
 <body>
 
@@ -233,8 +233,14 @@
 
   <div class="wrap">
     <span class="mono eyebrow">Your reading</span>
-    <h2 id="sent-title">Your reading is being put together.</h2>
-    <p class="lede body-serif">It goes to <strong id="sent-email"></strong> in a minute or two, with a link that opens it. The link does not expire.</p>
+    <h2 id="sent-title">Your answers are being read.</h2>
+
+    <div class="teaser" id="teaser" hidden>
+      <div class="rings" id="teaser-rings" role="img" aria-label="The five areas of your reading, taking shape"></div>
+      <p class="teaser-note">Five areas. The blue is what still reaches you, the amber is what has gone quiet.</p>
+    </div>
+
+    <p class="lede body-serif">The full reading goes to <strong id="sent-email"></strong> in about two minutes, with a link that opens it. The link does not expire.</p>
     <p class="privacy-line" id="sent-note">Nothing else is needed from you.</p>
   </div>
 </section>
@@ -248,7 +254,8 @@
   </div>
 </footer>
 
+<script src="/assets/rings.js?v=dcdc1bb9"></script>
 <script src="/assets/scoring.js?v=8222899a"></script>
-<script src="/assets/mgi.js?v=91d7e1c3"></script>
+<script src="/assets/mgi.js?v=167e1b54"></script>
 </body>
 </html>

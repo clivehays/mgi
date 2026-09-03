@@ -138,7 +138,7 @@
       'btn-start', 'btn-back', 'btn-next', 'btn-submit',
       'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
       'contact-form', 'form-error', 'f-industry', 'field-industry-other', 'f-industry-other',
-      'f-consent', 'sent-email', 'sent-note'
+      'f-consent', 'sent-email', 'sent-note', 'teaser', 'teaser-rings'
     ].forEach(function (id) {
       el[id] = document.getElementById(id);
     });
@@ -467,10 +467,47 @@
 
          A failed notification is ours to chase and says nothing to
          them. Only their own copy decides this message. */
+      if (data && data.teaser) drawTeaser(data.teaser);
       if (data && data.sending === false) throw new Error('nothing to send');
     }).catch(function () {
       el['sent-note'].textContent = 'Something went wrong sending it. Your answers are safe. Write to clive@managergap.com and he will send it over.';
     });
+  }
+
+  /* ---------- the teaser ----------
+     The five rings while they wait, and nothing that would answer the
+     question the email is there to answer. The stylesheet comes from
+     rings.js too, so these are the same circles the reading draws.
+
+     The whole thing is optional. An older cached mgi.js, a submit that
+     could not compute, or a browser that never got rings.js all end up
+     with the page exactly as it was before. */
+  var ringCssDone = false;
+
+  function drawTeaser(teaser) {
+    var box = el['teaser'];
+    var row = el['teaser-rings'];
+    if (!box || !row || !teaser || !teaser.areas || !window.MGIRings) return;
+
+    if (!ringCssDone) {
+      var style = document.createElement('style');
+      style.textContent = window.MGIRings.CSS;
+      document.head.appendChild(style);
+      ringCssDone = true;
+    }
+
+    row.innerHTML = teaser.areas.map(function (a, i) {
+      return '<div class="ring">' + window.MGIRings.svg(a.items, i) +
+        '<span class="ring-name">' + escapeText(a.plain) + '</span>' +
+        '<span class="ring-count">' + a.fresh + '/3</span></div>';
+    }).join('');
+    box.hidden = false;
+  }
+
+  function escapeText(s) {
+    var d = document.createElement('div');
+    d.textContent = String(s == null ? '' : s);
+    return d.innerHTML;
   }
 
   /* HTML and JS are separate files with independent caches, so there is

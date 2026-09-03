@@ -998,3 +998,66 @@ fieldset.scale{
   margin: 22px 0 0;
   max-width: 36em;
 }
+
+/* =============================================================
+   The wait
+
+   Between submitting and the email landing there is a minute or two
+   with nothing in it. The five rings go here: the shape of the finding
+   without the finding. No state, no headline, no focus area. Anyone
+   who could read the answer off this page would have no reason to open
+   the link, and the link is where the reading is.
+
+   The ring stylesheet is injected by mgi.js from assets/rings.js, so
+   these are the same circles the reading draws.
+   ============================================================= */
+
+.sent-view{ padding: 72px 0 96px; }
+
+.sent-view .eyebrow{ display: block; margin-bottom: 20px; }
+
+.sent-view h2{
+  font-size: 34px;
+  line-height: 1.16;
+  letter-spacing: -0.015em;
+  font-weight: 400;
+  margin: 0 0 40px;
+  max-width: 14em;
+}
+
+.teaser{
+  margin: 0 0 44px;
+  padding: 40px 0 34px;
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.teaser[hidden]{ display: none; }
+
+.teaser .rings{ max-width: 520px; }
+
+.teaser-note{
+  margin: 30px 0 0;
+  font-family: var(--ui);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-mute);
+  max-width: 34em;
+}
+
+.sent-view .lede{
+  font-size: 19px;
+  line-height: 1.65;
+  margin: 0 0 32px;
+  max-width: 30em;
+}
+
+.sent-view .privacy-line{ margin: 0; }
+
+@media (max-width: 560px){
+  .sent-view{ padding: 44px 0 72px; }
+  .sent-view h2{ font-size: 27px; margin-bottom: 30px; }
+  .teaser{ margin-bottom: 34px; padding: 30px 0 26px; }
+  .teaser-note{ margin-top: 24px; }
+  .sent-view .lede{ font-size: 17px; }
+}

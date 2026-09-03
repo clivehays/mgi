@@ -254,9 +254,33 @@ module.exports = async function handler(req, res) {
     stored: stored,
     notified: notified,
     sending: !!(token && payload),
-    email: contact.email
+    email: contact.email,
+    teaser: teaser(payload)
   });
 };
+
+/* ---------- the teaser ----------
+   The five rings, and nothing else, for the wait between submitting and
+   the email landing. The shape of the finding without the finding: no
+   state, no headline, no focus. Someone who can read the answer off
+   this page has no reason to open the link, and the link is where the
+   reading is.
+
+   Built from the stored numbers rather than recomputed on the client,
+   so the circles on that page and the circles on the reading come from
+   one arithmetic. */
+function teaser(payload) {
+  if (!payload || !payload.areas) return null;
+  return {
+    areas: payload.areas.map(function (a) {
+      return {
+        plain: a.plain,
+        fresh: a.fresh,
+        items: a.items.map(function (it) { return { tier: it.tier }; })
+      };
+    })
+  };
+}
 
 /* Work that outlives the response. On the platform this runs on, the
    request would otherwise be frozen the moment the response goes; the

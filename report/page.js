@@ -17,32 +17,13 @@ function esc(s) {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-/* ---------- the ring ----------
-   Three 120 degree slots, one per evidence item. The drawn arc is
-   114.04 degrees, leaving a gap either side so the three segments read
-   as three rather than as a broken circle.
-
-   Paths rather than circles: a path takes pathLength="100", so one
-   dasharray places the segment and the dark tier can carry its own.
-
-   Rotation rides on a --rot custom property, never an SVG transform
-   attribute, because the stylesheet sets transform on the segment class
-   and a presentation attribute would lose to it and stack all three on
-   top of each other. */
-
-var SEG_PATH = 'M 92 50 A 42 42 0 0 1 32.89 88.36';
-var SEG_ROT = ['-90deg', '30deg', '150deg'];
+/* The ring itself lives in assets/rings.js, because the assessment
+   page draws the same five as a teaser while the reading is being
+   written. One definition, two pages. */
+var rings_ = require('../assets/rings.js');
 
 function ring(area, i) {
-  var segs = area.items.map(function (item, j) {
-    var delay = (i * 0.07 + j * 0.06).toFixed(2);
-    return '<path class="seg seg-' + item.tier + '" d="' + SEG_PATH +
-      '" pathLength="100" style="--rot:' + SEG_ROT[j] +
-      ';animation-delay:' + delay + 's"></path>';
-  }).join('');
-
-  return '<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">' +
-    '<circle class="track" cx="50" cy="50" r="42"></circle>' + segs + '</svg>';
+  return rings_.svg(area.items, i);
 }
 
 /* ---------- the computed status line ----------
@@ -294,26 +275,13 @@ var CSS = [
 '.chip-watch{border-color:color-mix(in srgb,var(--amber) 45%,transparent)}',
 
 /* rings */
-'.rings{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:0 0 26px}',
-'@media (max-width:540px){.rings{grid-template-columns:repeat(3,1fr);gap:10px 6px}}',
-'.ring{appearance:none;background:none;border:0;padding:8px 2px 10px;margin:0;',
-'  display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;',
-'  border-radius:10px;color:inherit;font:inherit}',
-'.ring svg{width:100%;max-width:74px;height:auto;display:block;overflow:visible}',
-'.ring .track{fill:none;stroke:var(--hair);stroke-width:1}',
-'.seg{fill:none;stroke-linecap:butt;transform:rotate(var(--rot));',
-'  transform-origin:50px 50px;stroke-dashoffset:var(--from,100);opacity:0;',
-'  animation:seg-in .6s cubic-bezier(.33,.9,.35,1) forwards}',
-'.seg-fresh{stroke:var(--blue);stroke-width:8;stroke-dasharray:100 100}',
-'.seg-stale{stroke:var(--amber);stroke-width:2.5;stroke-dasharray:100 100}',
-'.seg-dark{stroke:var(--amber);stroke-width:2.5;stroke-dasharray:3 6;--from:9}',
-'@keyframes seg-in{to{stroke-dashoffset:0;opacity:1}}',
-'@media (prefers-reduced-motion:reduce){.seg{animation-duration:1ms}}',
-'.ring-name{font-family:var(--ui);font-size:.68rem;line-height:1.25;',
-'  text-align:center;color:var(--ink-mute);max-width:9ch}',
-'.ring-count{font-size:.66rem;color:var(--ink-mute)}',
-'.ring[aria-selected="true"] .ring-name{color:var(--ink);font-weight:600}',
-'.ring[aria-selected="true"] .ring-count{color:var(--ink)}',
+/* the ring geometry and colours come from assets/rings.js, the same
+   stylesheet the assessment page injects for its teaser */
+rings_.CSS,
+'.rings{margin:0 0 26px}',
+'.ring{cursor:pointer}',
+'.ring[aria-selected="true"] .ring-name{color:var(--ring-lead);font-weight:600}',
+'.ring[aria-selected="true"] .ring-count{color:var(--ring-lead)}',
 '.ring:focus-visible{outline:2px solid var(--blue);outline-offset:2px}',
 
 '.headline{font-size:1.72rem;line-height:1.18;letter-spacing:-.015em;margin:0 0 10px}',
