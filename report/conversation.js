@@ -99,12 +99,24 @@ function CONSENT_NUMBER_ONLY(text) {
    says "how do I start" has agreed, and making them say it twice is
    worse than the bug this guards. What it does have to do is look like
    a yes to something other than the model. */
-var PLAIN_YES = new RegExp([
-  '^(yes|yep|yeah|yes please|ok|okay|sure|go on|please do)\\b',
-  '\\b(set it up|sign me up|let us do it|lets do it|let\'s do it)\\b',
-  '\\b(go ahead|do it|start it|get it started|i am in|i\'m in)\\b',
+/* Unambiguous whatever came before them. These say set it up and
+   nothing else, so they do not need the model to agree and they do not
+   need a question in front of them. */
+var STRONG_YES = new RegExp([
+  '\\bset (it|this) up\\b',
+  '\\bsign me up\\b',
+  '\\b(let us|lets|let\'s) do it\\b',
+  '\\bget (it|this) started\\b',
   '\\bhow do i (start|begin|set (it|this) up)\\b',
   '\\bi want (to|it|this)\\b.*\\b(start|set|try|do)\\b'
+].join('|'), 'i');
+
+/* Only a yes if something asked. "Yes, I have tried that" and "Yes,
+   three of us" are answers, and the second of those is how a manager
+   ends up inside a close they never agreed to. */
+var SOFT_YES = new RegExp([
+  '^(yes|yep|yeah|yes please|ok|okay|sure|go on|please do|go ahead|do it)\\b',
+  '\\bi am in\\b|\\bi\'m in\\b'
 ].join('|'), 'i');
 
 /* ---------- the door ----------
@@ -188,26 +200,33 @@ function decideConsent(opts) {
   /* the button. Nothing to interpret. */
   if (opts.pressed) return { given: true, why: 'pressed the button' };
 
-  if (!opts.meta.consent) return { given: false, why: null };
-
   var message = String(opts.message || '').trim();
 
   /* a number is never a yes, whatever it is answering. This is the
      turn that provisioned a live trial. */
   if (CONSENT_NUMBER_ONLY(message)) {
-    return { given: false, why: null, ignored:
-      'the model read a bare number as consent' };
+    return { given: false, why: null, ignored: opts.meta.consent
+      ? 'the model read a bare number as consent' : null };
   }
 
-  /* Two signals have to agree: the model calls it consent, and the
-     message itself reads as one. Either it answers the closed question,
-     or it plainly says yes on its own. The model alone is not enough,
-     because the model alone is what went wrong. */
+  /* Words that mean one thing. The model gets no veto over these: it
+     had one, and it used it on "Yes, set it up." */
+  if (STRONG_YES.test(message)) {
+    return { given: true, why: 'said set it up, in those words' };
+  }
+
+  /* A bare yes counts only where something asked. Otherwise it is an
+     answer to whatever else was on the table. */
+  if (opts.wasAsked && SOFT_YES.test(message)) {
+    return { given: true, why: 'a yes to the closed question' };
+  }
+
+  if (!opts.meta.consent) return { given: false, why: null };
+
+  /* the model says so and the gate was asked. It still does not get to
+     decide this on its own, because on its own is what went wrong. */
   if (opts.wasAsked) {
     return { given: true, why: 'a clear yes to the closed question' };
-  }
-  if (PLAIN_YES.test(message)) {
-    return { given: true, why: 'said yes without being asked' };
   }
   return { given: false, why: null, ignored:
     'the model read consent into a message that does not say yes' };
@@ -560,6 +579,10 @@ var SYSTEM = [
 '    tentative, approximate, best guess, low confidence. Saying an',
 '    answer rests on one thing is stating evidence, which is required.',
 '    Saying the reading is therefore shaky is hedging, which is not.',
+'14b. If they ask whether the worksheet needs everyone in a room, the',
+'    answer is that it needs everyone at the same time, wherever they',
+'    are. Do not name the medium. There is no call in this product, and',
+'    a word for one in a reply is a word that came from somewhere else.',
 '14a. The worksheet on their page has a title, and you are not given',
 '    it, deliberately. Two of the fifty-six are named after things that',
 '    do not exist here. Call it the worksheet. Describing what is in it',
@@ -844,13 +867,22 @@ async function teamMessage(payload) {
   }];
 
   var text = null;
-  for (var attempt = 0; attempt < 2; attempt++) {
-    var res = await client.messages.create({
-      model: MODEL,
-      max_tokens: 1200,
-      system: [{ type: 'text', text: TEAM_SYSTEM, cache_control: { type: 'ephemeral' } }],
-      messages: messages
-    });
+  /* Three passes rather than two, and an API failure spends one without
+     counting as a bad draft. A manager who has just pressed the button
+     and gets no message to send is worse than a message written twice. */
+  for (var attempt = 0; attempt < 3; attempt++) {
+    var res;
+    try {
+      res = await client.messages.create({
+        model: MODEL,
+        max_tokens: 1200,
+        system: [{ type: 'text', text: TEAM_SYSTEM, cache_control: { type: 'ephemeral' } }],
+        messages: messages
+      });
+    } catch (e) {
+      console.error('MGI team message attempt ' + (attempt + 1) + ' failed: ' + e.message);
+      continue;
+    }
     text = '';
     (res.content || []).forEach(function (b) { if (b.type === 'text') text += b.text; });
     text = sanitise(text).trim();
@@ -863,13 +895,13 @@ async function teamMessage(payload) {
        is no telling which from the fault alone. */
     console.error('MGI team message faults: ' + faults.join(' ') +
       '\n  --- ' + String(text).replace(/\s+/g, ' ') + ' ---');
-    if (attempt === 0) {
-      messages = messages.concat([
-        { role: 'assistant', content: text },
-        { role: 'user', content: 'That does not work, for these reasons. Write it ' +
-            'again from scratch rather than editing it.\n\n' + faults.join('\n') }
-      ]);
-    }
+    /* the faults go back every time, not only on the first pass */
+    messages = messages.concat([
+      { role: 'assistant', content: text },
+      { role: 'user', content: 'That does not work, for these reasons. Write it ' +
+          'again from scratch rather than editing it.\n\n' + faults.join('\n') }
+    ]);
+    text = null;
   }
   return null;
 }

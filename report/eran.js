@@ -193,8 +193,12 @@ var RULES = [
     'a name for something this product does not have. There is a reading, a worksheet, one question a day and a trial. Nothing else has a name.'],
   [/\b(an?|another|the) exercise\b/i,
     'an exercise. The manager has a worksheet, not an exercise.'],
-  [/\b(on|set up|book|jump on|hop on) a call\b|\ba (quick|short|thirty[- ]minute) call\b/i,
-    'a call. There is no call in this product.']
+  /* "a call" as a thing, not "your call" as a decision. A manager's own
+     video call is theirs rather than ours, but the spec is explicit
+     that the word does not appear, and there is a way to say it:
+     everyone at the same time, wherever they are. */
+  [/\ba call\b(?! (to make|on\b))/i,
+    'a call. There is no call in this product. Say everyone at the same time, wherever they are.']
 ];
 
 function countWords(s) {
