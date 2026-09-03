@@ -448,7 +448,16 @@ function brief(numbers, answers) {
   L.push('Gap width: ' + numbers.gap_width_label);
   L.push('Conditions still reading: ' + numbers.reading_count + ' of 15');
   L.push('Conditions gone quiet: ' + numbers.quiet_count + ' of 15');
-  L.push('Ranking, weakest first: ' + numbers.ranking.join(', '));
+  /* Readings written before the focus moved to Eran carry no ranking.
+     Six of them are live behind links that do not expire, and the route
+     calls Eran when one is opened without words on it, so this has to
+     work rather than throw into a catch and leave them numbers-only
+     forever. */
+  var ranking = numbers.ranking && numbers.ranking.length
+    ? numbers.ranking
+    : numbers.areas.map(function (a) { return a.key; });
+
+  L.push('Ranking, weakest first: ' + ranking.join(', '));
   L.push('That ordering is an input, not the answer. You choose the focus.');
   L.push('');
   L.push('THE FIVE AREAS. Each asked three things. The recency on each line');
@@ -457,7 +466,7 @@ function brief(numbers, answers) {
     L.push('');
     L.push(a.dimension + ' (' + a.plain + '): ' + a.fresh + ' reaching you, ' +
       a.stale + ' gone quiet, ' + a.dark + ' not recalled' +
-      (a.key === numbers.ranking[0] ? '   <- weakest by the ranking' : ''));
+      (a.key === ranking[0] ? '   <- weakest by the ranking' : ''));
     a.items.forEach(function (it) {
       L.push('  [' + it.label + '] ' + it.question);
     });
