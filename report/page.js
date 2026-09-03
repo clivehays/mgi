@@ -172,7 +172,7 @@ function talk(token) {
   if (!talkable(token)) return '';
   return '<section class="talk" id="talk" data-token="' + encodeURIComponent(token) + '"' +
     ' data-booking="' + esc(booking.link(token)) + '">' +
-    '<h2 class="section-head mono">Ask about this</h2>' +
+    '<h2 class="section-head mono">Talk it through with Eran</h2>' +
     '<div class="thread" id="thread" role="log" aria-live="polite" aria-label="The conversation"></div>' +
     '<form class="ask" id="ask-form">' +
     '<label class="visually-hidden" for="ask">Your message</label>' +
@@ -181,6 +181,8 @@ function talk(token) {
     '<button type="submit" class="ask-send" id="ask-send">Send</button>' +
     '</form>' +
     '<p class="disclosure">Clive reads these. That is rather the point.</p>' +
+    '<p class="ai-note">Eran is AI. It can be wrong, so check anything you plan '
+    + 'to act on.</p>' +
     '</section>';
 }
 
@@ -402,6 +404,10 @@ rings_.CSS,
 '.ask-send:focus-visible{outline:2px solid var(--blue);outline-offset:2px}',
 '.disclosure{margin:11px 0 0;font-family:var(--ui);font-size:.76rem;',
 '  color:var(--ink-mute)}',
+/* quieter than the line above it: what is answering matters, and it
+   is not the thing the reader came here to look at */
+'.ai-note{margin:5px 0 0;font-family:var(--ui);font-size:.72rem;',
+'  font-style:italic;color:var(--ink-mute);opacity:.85}',
 /* the two affordances. Nothing irreversible happens without one of
    these being pressed, so they look like something you press. */
 
