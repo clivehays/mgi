@@ -90,6 +90,8 @@ async function say(text) {
   else bad('the reply did not stream, ' + a.chunks + ' chunk(s)');
   if (a.body.indexOf('[[[META') === -1) ok('the control block never reached the client');
   else bad('the control block leaked to the client');
+  if (a.body.indexOf('[[[UI]]]') !== -1) ok('the affordance line is on the wire');
+  else bad('no affordance line was sent');
 
   /* 3. it was stored, with the objection classified */
   var turns = await store.history(token);
@@ -102,15 +104,35 @@ async function say(text) {
     ok('classified as surveillance, which is what section 10 counts');
   } else bad('classified as ' + JSON.stringify(rows[0] && rows[0].shape));
 
-  /* 4. the close */
-  var b = await say('Fair enough. There are nine of us. Set it up.');
-  console.log('\n  > there are nine of us');
-  console.log('  ' + b.body.replace(/\n/g, '\n  '));
+  /* 4. The bug, replayed. A number on its own, with no consenting turn
+     behind it, provisions nothing. */
+  var num = await say('9');
+  console.log('\n  > 9');
+  console.log('  ' + num.body.split('[[[UI]]]')[0].replace(/\n/g, '\n  '));
+
+  if (await store.hasConsent(token)) bad('a bare number recorded consent');
+  else ok('a bare number recorded no consent');
+
+  var blocked = res();
+  await trial({ method: 'POST', query: { token: token }, body: { team_size: 9 } }, blocked);
+  var bj = JSON.parse(blocked.body);
+  if (bj.blocked) ok('and the trial route refused to provision');
+  else bad('the trial route provisioned without consent: ' + blocked.body);
+  if (!bj.join_code) ok('no join code was minted');
+  else bad('a join code was minted anyway');
+
+  /* 5. the close, after a real yes */
+  var b = await say('Yes, set it up.');
+  console.log('\n  > yes, set it up');
+  console.log('  ' + b.body.split('[[[UI]]]')[0].replace(/\n/g, '\n  '));
+
+  if (await store.hasConsent(token)) ok('a clear yes recorded consent');
+  else bad('a clear yes did not record consent');
 
   var t = res();
   await trial({ method: 'POST', query: { token: token }, body: { team_size: 9 } }, t);
   var out = JSON.parse(t.body);
-  if (out.join_url) ok('provisioned, join link ' + out.join_url);
+  if (out.join_url) ok('provisioned once consent was on the record');
   else { bad('no join link: ' + t.body); }
 
   if (out.message) {
@@ -125,14 +147,14 @@ async function say(text) {
   if (out.first_report && out.ends_at) ok('both dates fixed: ' + out.first_report + ' and ' + out.ends_at);
   else bad('the dates are missing');
 
-  /* 5. a team of two is declined */
+  /* 6. a team of two is declined */
   var small = res();
   await trial({ method: 'POST', query: { token: token }, body: { team_size: 2 } }, small);
   var s = JSON.parse(small.body);
   if (s.declined || s.existing) ok('a team of two gets no new trial');
   else bad('a team of two was provisioned: ' + small.body);
 
-  /* 6. the join page */
+  /* 7. the join page */
   var code = out.join_code;
   var j = res();
   await join({ method: 'GET', query: { code: code } }, j);
@@ -147,7 +169,7 @@ async function say(text) {
   if (bogus.code === 404) ok('an unknown code is not live');
   else bad('an unknown code returned ' + bogus.code);
 
-  /* 7. the join was counted */
+  /* 8. the join was counted */
   var after = await store.trialByCode(code);
   if (after && after.joined >= 1) ok('the join was counted');
   else bad('the join was not counted');

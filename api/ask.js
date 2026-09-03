@@ -161,9 +161,16 @@ module.exports = async function handler(req, res) {
     console.error('MGI conversation faults on ' + token + ': ' + out.faults.join(' | '));
   }
 
-  /* Clive receives the transcript on every exit. That one can wait. */
+  /* Clive receives the transcript on every exit. That one can wait.
+
+     A trial is only an exit once there is a trial. Eran marks the exit
+     when it starts running the close, which is several turns before
+     anything is provisioned, and without this Clive gets a transcript
+     announcing a trial that does not exist yet. The other two exits are
+     complete the moment they are taken. */
   if (out.meta.exit) {
     send.background((async function () {
+      if (out.meta.exit === 'trial' && !(await store.trial(token))) return;
       var full = await store.history(token);
       await mail.transcript(row.payload, token, full, out.meta);
     })());

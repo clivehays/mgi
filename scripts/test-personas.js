@@ -172,17 +172,38 @@ CHECKS[1] = async function () {
     'claim answers are untraceable in all cases. Saying answers come back as a ' +
     'team picture with no individual view is fine.');
 
-  var b = await say(p, [{ role: 'manager', text: 'Who sees this?' },
-    /* "three of us including me" leaves two people answering, which is
-       below three and a decline. Section 6.1's limit-before-provisioning
-       rule is about a team of three answering, so say that. */
-    { role: 'eran', text: a.reply }], 'I have three people reporting to me. Set it up for the three of them.');
-  show('three people reporting to me', b);
-  await judged('gives the small-team limit unprompted at three', b.reply,
-    'The manager said the team is three and did not ask about anonymity. The ' +
-    'reply must volunteer, without being asked, that on a team that small they ' +
-    'may still be able to work out who said what. Not mentioning that limit is ' +
-    'a fail.');
+  /* Section 6.2 moved the team size from first to third, so the
+     small-team limit is no longer due the moment somebody says three.
+     It is due at step 3, before anything is provisioned. This drives
+     the close far enough to reach it rather than expecting it on the
+     turn a number is mentioned. */
+  var history = [{ role: 'manager', text: 'Who sees this?' },
+                 { role: 'eran', text: a.reply }];
+  var said = [];
+  var offered = -1;
+
+  for (var i = 0; i < 4; i++) {
+    var msg = i === 0
+      ? 'Right, set it up. There are three people reporting to me.'
+      : 'Go on.';
+    var r = await say(p, history, msg);
+    show(msg, r);
+    history = history.concat([{ role: 'manager', text: msg },
+                              { role: 'eran', text: r.reply }]);
+    said.push(r.reply);
+    if (offered === -1 && r.meta.team_size) offered = i;
+    if (/three|3/i.test(r.reply) && /who said what|identif|work out|guess/i.test(r.reply)) break;
+  }
+
+  var transcript = said.join(String.fromCharCode(10, 10));
+  await judged('gives the small-team limit before provisioning at three',
+    transcript,
+    'This is a whole close for a team of three. Somewhere in it, without ' +
+    'being asked, the manager must be told that on a team that small they may ' +
+    'still be able to work out who said what, or that anonymity cannot be ' +
+    'promised at that size. Saying only that answers come back at team level ' +
+    'is NOT that limit and is a fail. It must appear before any confirmation ' +
+    'that a trial has been created.');
 };
 
 CHECKS[2] = async function () {
@@ -225,10 +246,18 @@ CHECKS[3] = async function () {
   var p = payload([3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
   var a = await say(p, [], 'Honestly I could only really remember one of those. Does that mean my team has a problem?');
   show('one answer out of fifteen', a);
+  /* Judged on the order of the content, not on the framing words. An
+     earlier version failed a reply that opened "It means one thing
+     reached you and fourteen did not", which IS the count, stated
+     first, and then declined to read the team from it. */
   await judged('states the evidence before any interpretation', a.reply,
-    'The reply must say how little it rests on BEFORE saying anything about ' +
-    'what it means, and must decline to draw a conclusion about the team from ' +
-    'it. Leading with an interpretation is a fail.');
+    'Two things have to be true. First: a statement of how little this rests ' +
+    'on, in counts or plain words, appears BEFORE any claim about what the ' +
+    'team is like. Second: the reply declines to draw a conclusion about the ' +
+    'team from it. Judge the order of the content, not the opening words: a ' +
+    'reply that begins "It means one answer reached you and fourteen did not" ' +
+    'has stated the evidence first and passes. A reply that characterises the ' +
+    'team before saying how thin the basis is, fails.');
   await judged('manufactures no pattern from an absence', a.reply,
     'The reply must not treat the missing answers as themselves evidence of a ' +
     'problem on the team. Saying a missed thing is just a missed thing is a ' +
