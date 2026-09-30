@@ -1,0 +1,27 @@
+#!/bin/sh
+# Stop a push that would ship stale asset stamps.
+#
+# index.html names each asset by a hash of its contents, and vercel.json serves
+# /assets/ immutable for a year on the strength of that. Edit assets/mgi.js or
+# assets/mgi.css without re-stamping and the new markup goes on naming the old
+# hash, so every browser that holds the old script keeps using it.
+#
+# The reason this is a hook and not a note: the failure is silent. The page
+# renders correctly with the new markup and behaves like the previous release.
+# It shipped to production once already, on 2026-09-30, and was found by a
+# person hitting the symptom rather than by anything here.
+#
+# Installed by: npm run hooks
+
+if ! node scripts/stamp-assets.js --check; then
+  echo ""
+  echo "  Push stopped: index.html names asset files that no longer match."
+  echo ""
+  echo "  Fix it:"
+  echo "    npm run stamp"
+  echo "    git add index.html && git commit --amend --no-edit"
+  echo ""
+  echo "  (or commit the re-stamp separately, either is fine)"
+  echo ""
+  exit 1
+fi

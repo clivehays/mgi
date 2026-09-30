@@ -309,6 +309,25 @@ No build step. Serve the directory statically and open `/`. `/api/submit` needs 
 handler, so use `vercel dev`, or a small harness that requires `api/submit.js` and stubs
 `fetch`.
 
+**Run `npm run hooks` once after cloning.** It installs `scripts/hooks/pre-push`,
+which refuses a push whose asset stamps are stale.
+
+### Editing anything under `assets/`
+
+`index.html` names each asset by a hash of its contents (`mgi.js?v=3fbd8abc`) and
+`vercel.json` serves `/assets/` immutable for a year on the strength of it. Change a
+file there and you must re-stamp:
+
+```
+npm run stamp
+```
+
+`npm test` checks this first and the pre-push hook refuses to push without it, because
+the failure is silent: skip it and the new markup goes on naming the previous hash, so
+every browser holding the old script keeps using it. The page renders correctly and
+behaves like the last release. It reached production once this way, on 2026-09-30, and
+was found by someone hitting the symptom.
+
 ## Tests
 
 Three suites live in the scratchpad used to build this: the scoring against every
