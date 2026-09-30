@@ -1,0 +1,5 @@
+# core.autocrlf is true on the machine this is worked from, so a checkout
+# would give these CRLF line endings. A shell script with CRLF fails its
+# shebang on anything but Windows, and a git hook that cannot run is a gate
+# that silently is not there. Keep them LF whatever the platform.
+scripts/hooks/* text eol=lf
