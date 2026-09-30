@@ -108,7 +108,11 @@ module.exports = async function handler(req, res) {
   if (!contact.firstName || !contact.company || !contact.role) {
     return res.status(400).json({ ok: false, error: 'Missing contact fields' });
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
+  /* An address is optional: without one the reading is reached from the
+     confirmation page instead, and the link in that response is the only
+     copy of it that will exist. Something typed that is not an address is
+     still rejected, because a typo loses the report silently. */
+  if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
     return res.status(400).json({ ok: false, error: 'Invalid email' });
   }
 
@@ -130,7 +134,7 @@ module.exports = async function handler(req, res) {
 
     submitted_at: submittedAt,
     first_name: contact.firstName,
-    email: contact.email,
+    email: contact.email || null,
     company: contact.company,
     role: contact.role,
     industry: contact.industryLabel,
@@ -187,11 +191,12 @@ module.exports = async function handler(req, res) {
      lose one. */
 
   /* 1. Persist the raw submission. The only step allowed to fail. */
-  var stored = await store(record);
+  var submissionId = await store(record);
+  var stored = !!submissionId;
 
   /* 2. Mint the token and insert the reading with a null payload. */
   var token = mintToken();
-  var haveReading = await createReading(token, contact, submittedAt);
+  var haveReading = await createReading(token, submissionId);
   if (!haveReading) token = null;
 
   /* 3. Compute the numbers and store them. Fast, deterministic, and in
@@ -202,7 +207,7 @@ module.exports = async function handler(req, res) {
   if (token) {
     try {
       payload = numbersOf.compute(answers, contact, {
-        copy_to: contact.email,
+        copy_to: contact.email || null,
         generated_at: submittedAt.slice(0, 10)
       });
       await updateReading(token, payload);
@@ -214,7 +219,7 @@ module.exports = async function handler(req, res) {
 
   /* Clive's copy of the raw answers goes now, in the request. It is call
      prep and it does not depend on anything below. */
-  var notified = await sendEmail(notification(contact, result, submittedAt));
+  var notified = await sendEmail(notification(contact, result, submittedAt, token));
 
   /* 4 and 5. Eran, then the manager's email, after the response has gone.
      Eran takes the better part of a minute, and nobody should watch a
@@ -227,6 +232,9 @@ module.exports = async function handler(req, res) {
      notification above. */
   var finish = (async function () {
     if (!token || !payload) {
+      /* No address and nothing to point at. Clive still holds the lead from
+         the notification above, and it is his to chase. */
+      if (!contact.email) return false;
       return sendEmail(mail.pending(contact));
     }
     try {
@@ -235,6 +243,10 @@ module.exports = async function handler(req, res) {
     } catch (e) {
       console.error('MGI Eran failed at submit for ' + token + ': ' + e.message);
     }
+    /* Eran still runs without an address. The reading is written either way,
+       and the link on the confirmation page opens the finished page rather
+       than making the first visitor wait for it to be built. */
+    if (!contact.email) return false;
     return sendEmail(mail.reading(contact, payload, token));
   })();
 
@@ -249,12 +261,19 @@ module.exports = async function handler(req, res) {
 
   /* sending is what the client tells them about, not sent: the message
      goes out behind this response and cannot be reported on here. */
+  /* The token is withheld from anyone who gave an address: for them the email
+     is the destination, and it is sent once the reading is written so that its
+     arrival is the signal the page is ready. With no address there is no such
+     signal and no second chance, so the link goes back in this response. */
+  var readingUrl = (!contact.email && token) ? ORIGIN + '/r/' + token : null;
+
   return res.status(200).json({
     ok: true,
     stored: stored,
     notified: notified,
     sending: !!(token && payload),
-    email: contact.email,
+    email: contact.email || null,
+    readingUrl: readingUrl,
     teaser: teaser(payload)
   });
 };
@@ -314,30 +333,37 @@ function esc(s) {
 
 /* ---------- durable store ---------- */
 
+/* Returns the new row's id, or null if nothing was stored. The id is read
+   back from the insert rather than found afterwards: the lookup this
+   replaced matched on email, which is optional now, and an address that is
+   absent would have silently orphaned the reading from its answers. */
 async function store(record) {
   var url = process.env.SUPABASE_URL;
   var key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return false;
+  if (!url || !key) return null;
 
   try {
-    var res = await fetch(url.replace(/\/$/, '') + '/rest/v1/' + TABLE, {
+    var res = await fetch(url.replace(/\/$/, '') + '/rest/v1/' + TABLE + '?select=id', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         apikey: key,
         Authorization: 'Bearer ' + key,
-        Prefer: 'return=minimal'
+        Prefer: 'return=representation'
       },
       body: JSON.stringify(record)
     });
     if (!res.ok) {
       console.error('MGI store failed: ' + res.status + ' ' + (await res.text()));
-      return false;
+      return null;
     }
-    return true;
+    var rows = await res.json();
+    var id = rows && rows[0] && rows[0].id;
+    if (!id) console.error('MGI store returned no id');
+    return id || null;
   } catch (e) {
     console.error('MGI store threw: ' + e.message);
-    return false;
+    return null;
   }
 }
 
@@ -393,10 +419,11 @@ async function sendEmail(msg) {
 
 /* ---------- notification to Clive (call prep) ---------- */
 
-function notification(contact, result, submittedAt) {
+function notification(contact, result, submittedAt, token) {
   var lines = [];
   lines.push('Name: ' + contact.firstName);
-  lines.push('Email: ' + contact.email);
+  lines.push('Email: ' + (contact.email || 'not given, reading is on the link only'));
+  if (!contact.email && token) lines.push('Reading: ' + ORIGIN + '/r/' + token);
   lines.push('Company: ' + contact.company);
   lines.push('Role: ' + contact.role);
   lines.push('Industry: ' + contact.industryLabel);
@@ -439,15 +466,19 @@ function notification(contact, result, submittedAt) {
 
   var text = lines.join('\n');
 
-  return {
+  var msg = {
     from: NOTIFY_FROM,
     to: [NOTIFY_TO],
-    reply_to: contact.email,
     subject: 'MGI: ' + contact.firstName + ', ' + contact.company + ' · ' + result.state.name.toUpperCase() +
       ' (gap ' + result.gapWidth.label.toLowerCase() + ', signal ' + result.signal + '/' + SIGNAL_MAX + ')',
     text: text,
     html: '<pre style="font:13px/1.55 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;color:#17161A">' + esc(text) + '</pre>'
   };
+  /* Only set when there is somewhere to reply to. Replying to this message
+     is how Clive writes to a manager, so an empty header would be worse
+     than its absence. */
+  if (contact.email) msg.reply_to = contact.email;
+  return msg;
 }
 
 
@@ -459,6 +490,11 @@ var eran = require('../report/eran.js');
 var mail = require('../report/email.js');
 
 var READINGS = process.env.MGI_READINGS_TABLE || 'mgi_readings';
+
+/* The same origin the emailed link is built from. Taken from config rather
+   than the request, so a forwarded Host header cannot rewrite where a
+   manager is sent and preview never hands out a production link. */
+var ORIGIN = process.env.MGI_SITE_ORIGIN || 'https://managergap.com';
 
 /* 128 bits from a CSPRNG, base64url, 22 chars. Not sequential, not
    derived from the submission id or the email. No expiry: managers come
@@ -485,20 +521,16 @@ async function readingsRest(path, opts) {
 
 /* The submission id is read back from the row just written rather than
    guessed, because the route needs it to derive on view. */
-async function createReading(token, contact, submittedAt) {
+/* The submission id comes from the insert that wrote it, so a reading is
+   never guessed onto the wrong row and never orphaned from its answers.
+   api/reading.js rebuilds a missing payload from that link, which is what
+   makes a link opened seconds after submitting still work. */
+async function createReading(token, id) {
   try {
-    var find = await readingsRest(TABLE + '?email=eq.' +
-      encodeURIComponent(contact.email) + '&submitted_at=eq.' +
-      encodeURIComponent(submittedAt) + '&select=id&limit=1');
-    var id = null;
-    if (find && find.ok) {
-      var rows = await find.json();
-      id = rows && rows[0] && rows[0].id;
-    }
     var r = await readingsRest(READINGS, {
       method: 'POST',
       headers: { Prefer: 'return=minimal' },
-      body: JSON.stringify({ token: token, submission_id: id, payload: null })
+      body: JSON.stringify({ token: token, submission_id: id || null, payload: null })
     });
     if (!r || !r.ok) {
       console.error('MGI reading insert failed: ' +

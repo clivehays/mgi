@@ -114,8 +114,11 @@
       </div>
 
       <div class="field">
-        <label for="f-email">Work email</label>
-        <input type="email" id="f-email" name="email" autocomplete="email" inputmode="email" required>
+        <label for="f-email">Work email <span class="opt">optional</span></label>
+        <input type="email" id="f-email" name="email" autocomplete="email" inputmode="email">
+        <p class="field-note">If you would like to receive a copy of this via email, please provide
+          your address. You will receive one additional email once all results have been collated,
+          no spam.</p>
       </div>
 
       <div class="field">
@@ -240,7 +243,17 @@
       <p class="teaser-note">Five areas. The blue is what still reaches you, the amber is what has gone quiet.</p>
     </div>
 
-    <p class="lede body-serif">The full reading goes to <strong id="sent-email"></strong> in about two minutes, with a link that opens it. The link does not expire.</p>
+    <p class="lede body-serif" id="sent-by-email">The full reading goes to <strong id="sent-email"></strong> in about two minutes, with a link that opens it. The link does not expire.</p>
+
+    <div id="sent-by-link" hidden>
+      <p class="lede body-serif">You did not leave an address, so your reading lives at this link
+        and nowhere else. Keep it. It does not expire, and it is the only way back to this result.</p>
+      <p class="reading-link"><a id="sent-link" href="#" rel="noopener">Open your reading</a></p>
+      <p class="reading-url"><code id="sent-url"></code></p>
+      <p class="privacy-line">It takes a couple of minutes to finish writing. If you open it
+        straight away the page will take a little longer to load while it catches up.</p>
+    </div>
+
     <p class="privacy-line" id="sent-note">Nothing else is needed from you.</p>
   </div>
 </section>

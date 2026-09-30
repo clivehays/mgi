@@ -138,7 +138,8 @@
       'btn-start', 'btn-back', 'btn-next', 'btn-submit',
       'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
       'contact-form', 'form-error', 'f-industry', 'field-industry-other', 'f-industry-other',
-      'f-consent', 'sent-email', 'sent-note', 'teaser', 'teaser-rings'
+      'f-consent', 'sent-email', 'sent-note', 'teaser', 'teaser-rings',
+      'sent-by-email', 'sent-by-link', 'sent-link', 'sent-url'
     ].forEach(function (id) {
       el[id] = document.getElementById(id);
     });
@@ -161,10 +162,27 @@
     window.addEventListener('popstate', onPopState);
 
     if (state.view === 'sent' && state.contact && complete()) {
-      el['sent-email'].textContent = state.contact.email;
+      showDestination(state.contact.email, state.readingUrl);
       show('sent', false);
     } else {
       show('landing', false);
+    }
+  }
+
+  /* ---------- the confirmation, two ways ----------
+     With an address, the email is the destination and no link is handed
+     over before the reading is written. Without one, this page is the
+     only destination there is, so the link goes here and is said plainly
+     to be the only way back. */
+  function showDestination(email, url) {
+    var byEmail = !!email;
+    if (el['sent-by-email']) el['sent-by-email'].hidden = !byEmail;
+    if (el['sent-by-link']) el['sent-by-link'].hidden = byEmail;
+    if (byEmail) {
+      el['sent-email'].textContent = email;
+    } else if (url) {
+      el['sent-link'].href = url;
+      el['sent-url'].textContent = url;
     }
   }
 
@@ -201,6 +219,8 @@
         state.index = prev.index || 0;
         state.contact = prev.contact || null;
         state.view = prev.view || 'landing';
+        /* without an address this is the only record of where the reading is */
+        state.readingUrl = prev.readingUrl || null;
       }
     } catch (e) { /* ignore corrupt state */ }
   }
@@ -392,7 +412,10 @@
 
     var missing = [];
     if (!contact.firstName) missing.push('first name');
-    if (!contact.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) missing.push('a valid work email');
+    /* An address is optional. Someone who leaves it blank reads their reading
+       on the page instead. Something typed that is not an address is still an
+       error, because the likeliest cause is a typo in one they meant to give. */
+    if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) missing.push('a valid work email, or leave it blank');
     if (!contact.company) missing.push('company');
     if (!contact.role) missing.push('role');
     if (!contact.consent) missing.push('your consent to take part');
@@ -426,7 +449,7 @@
   function send(contact) {
     funnel.submitted = true;
     funnelSend(false);
-    el['sent-email'].textContent = contact.email;
+    showDestination(contact.email, null);
 
     var answers = toAnswers();
     var payload = {
@@ -468,6 +491,14 @@
          A failed notification is ours to chase and says nothing to
          them. Only their own copy decides this message. */
       if (data && data.teaser) drawTeaser(data.teaser);
+      /* No address means the link in this response is the only copy of it
+         that will ever exist. Store it before anything else can throw, so a
+         reload still finds it. */
+      if (data && data.readingUrl) {
+        state.readingUrl = data.readingUrl;
+        save();
+        showDestination(null, data.readingUrl);
+      }
       if (data && data.sending === false) throw new Error('nothing to send');
     }).catch(function () {
       el['sent-note'].textContent = 'Something went wrong sending it. Your answers are safe. Write to clive@managergap.com and he will send it over.';
