@@ -493,15 +493,22 @@
       if (data && data.teaser) drawTeaser(data.teaser);
       /* No address means the link in this response is the only copy of it
          that will ever exist. Store it before anything else can throw, so a
-         reload still finds it. */
+         reload still finds it.
+
+         This returns rather than falling through to the check below. A
+         reading whose numbers failed at submit is not a failure here: the
+         link still opens, because api/reading.js computes what is missing
+         on first view. Only the absence of a link is worth an apology. */
       if (data && data.readingUrl) {
         state.readingUrl = data.readingUrl;
         save();
         showDestination(null, data.readingUrl);
+        return;
       }
       if (data && data.sending === false) throw new Error('nothing to send');
     }).catch(function () {
-      el['sent-note'].textContent = 'Something went wrong sending it. Your answers are safe. Write to clive@managergap.com and he will send it over.';
+      el['sent-note'].textContent = 'Something went wrong at our end. Your answers are safe. Write to clive@managergap.com and he will send your reading over.';
+      el['sent-note'].hidden = false;
     });
   }
 

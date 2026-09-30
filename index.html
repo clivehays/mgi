@@ -65,7 +65,7 @@
     <section class="landing-note" aria-labelledby="privacy-heading">
       <h2 class="note-heading mono" id="privacy-heading">What happens to your answers</h2>
       <p>Your answers are stored so the cohort can be studied as a whole. Nothing individual is ever published. The research that comes out of this, including the Index and the book, reports patterns across everyone who takes part, never one person&rsquo;s answers.</p>
-      <p>Your name and email are used to send you your report, and Clive may write to you once about your result. That is the only contact. Nothing here is sold or passed to anyone else, and you can have your answers deleted at any time by replying to the report or writing to <a href="mailto:contact@cloverera.com">contact@cloverera.com</a>.</p>
+      <p>An email address is optional. Give one and your report is sent to you, and Clive may write to you once about your result. That is the only contact. Leave it blank and your report opens on a private link at the end instead, and nothing is sent to you at all. Nothing here is sold or passed to anyone else, and you can have your answers deleted at any time by writing to <a href="mailto:contact@cloverera.com">contact@cloverera.com</a>.</p>
       <p>This page sets no cookies and runs no third-party analytics. It does record how far each visit gets through the questions, under a random number that is discarded when you close the tab and is never attached to your answers, your name or your email. That is used for one thing: seeing where the questions lose people.</p>
     </section>
 
@@ -103,7 +103,7 @@
 <section class="view contact-view" id="view-contact" aria-labelledby="contact-title">
   <div class="wrap">
     <span class="mono eyebrow">Twenty of twenty</span>
-    <h2 id="contact-title">Your result is ready. Where should we send the full report?</h2>
+    <h2 id="contact-title">Your result is ready. A few details about you and the team first.</h2>
 
     <form id="contact-form" novalidate>
       <p class="form-error" id="form-error" role="alert" hidden></p>
@@ -226,7 +226,7 @@
       </div>
 
       <button type="submit" class="btn" id="btn-submit" disabled>Show my result</button>
-      <p class="form-note">Your answers stay on this page until you press the button. We use your details to send the report and, if the result warrants it, to get in touch about it once.</p>
+      <p class="form-note">Your answers stay on this page until you press the button. Your details are what place your answers in the cohort. If you leave an address it is also used to send the report, and Clive may write to you once about your result.</p>
     </form>
   </div>
 </section>
@@ -243,7 +243,10 @@
       <p class="teaser-note">Five areas. The blue is what still reaches you, the amber is what has gone quiet.</p>
     </div>
 
-    <p class="lede body-serif" id="sent-by-email">The full reading goes to <strong id="sent-email"></strong> in about two minutes, with a link that opens it. The link does not expire.</p>
+    <div id="sent-by-email">
+      <p class="lede body-serif">The full reading goes to <strong id="sent-email"></strong> in about two minutes, with a link that opens it. The link does not expire.</p>
+      <p class="privacy-line">Nothing else is needed from you.</p>
+    </div>
 
     <div id="sent-by-link" hidden>
       <p class="lede body-serif">You did not leave an address, so your reading lives at this link
@@ -254,7 +257,7 @@
         straight away the page will take a little longer to load while it catches up.</p>
     </div>
 
-    <p class="privacy-line" id="sent-note">Nothing else is needed from you.</p>
+    <p class="form-error" id="sent-note" role="alert" hidden></p>
   </div>
 </section>
 
