@@ -43,24 +43,40 @@
 <!-- ============ 1. LANDING ============ -->
 <section class="view is-active landing" id="view-landing" aria-labelledby="landing-title">
   <div class="wrap">
-    <span class="mono eyebrow">The Manager Gap Index</span>
-
-    <h1 id="landing-title">What state is your team actually in?</h1>
-
+    <h1 id="landing-title">Your team is in one of four states. Two of them look identical from where you sit.</h1>
     <div class="lede body-serif">
-      <p>Every team is in one of four states. Stable. Quietly slipping while the numbers still look fine. Fighting conditions outside its control. Or already stalling. Most managers can name the last one, because by then it has already cost them. The other three are harder to tell apart from the inside.</p>
-      <p>This diagnostic works out the most likely state of your team from things you have directly observed, then tells you how far your picture and your team’s reality are likely to sit apart. Twenty questions. About five minutes.</p>
+      <p>The difference is not in your output. It is in what still reaches you: the blocker raised before it bit, the disagreement said out loud.</p>
     </div>
 
-    <p class="audience-line">This is for anyone who leads a team directly: managers, heads of department, directors, and founders with people reporting to them. Company size does not matter. It asks about one team, the one you lead now.</p>
-
-    <p class="privacy-line">Your answers are private. Nothing individual is ever published. Anything this research reports is aggregated across everyone who takes part.</p>
-
-    <div class="instruction">
-      <p><strong>Before you start:</strong> answer from memory of actual events. There are no wrong answers. But a guessed answer makes the result meaningless. “Can’t recall” is a valid and useful answer.</p>
-    </div>
+    <ol class="states" aria-label="The four states">
+      <li><span class="state-name">Cruise</span> <span class="state-line">Output holding, and the behaviours of a healthy team still reach you.</span></li>
+      <li><span class="state-name">Drift</span> <span class="state-line">Output holding while the conditions underneath it slide. Nothing in the numbers says anything is wrong.</span></li>
+      <li><span class="state-name">Headwinds</span> <span class="state-line">Output under pressure, with a real force outside the team acting on it.</span></li>
+      <li><span class="state-name">Stall</span> <span class="state-line">Output has stopped moving, and the signals went quiet long before it did.</span></li>
+    </ol>
 
     <button type="button" class="btn" id="btn-start">Start the diagnostic</button>
+    <p class="start-note">Twenty questions, about five minutes. Nothing is sent to you unless you ask for it.</p>
+
+    <div class="instruction">
+      <p><strong>Before you start:</strong> answer from memory of actual events. There are no wrong answers. But a guessed answer makes the result meaningless. &ldquo;Can&rsquo;t recall&rdquo; is a valid and useful answer.</p>
+    </div>
+
+    <section class="landing-note" aria-labelledby="output-heading">
+      <h2 class="note-heading mono" id="output-heading">What you get</h2>
+      <p>A reading of about a page. It names the state your team is most likely in and says how confident that call is, given how much of the team&rsquo;s week actually reaches you.</p>
+      <p>It scores five areas on what has reached you recently, then picks the one worth your attention now and gives you something to do about it this week. There is no score out of ten and no league table.</p>
+    </section>
+
+    <section class="landing-note" aria-labelledby="cohort-heading">
+      <h2 class="note-heading mono" id="cohort-heading">What the first thirty found</h2>
+      <p>Thirty managers have run this so far. For nineteen of them, their instinct going in and their own evidence coming out did not agree. Nine were in Drift, with output holding while the conditions underneath it slid.</p>
+    </section>
+
+    <button type="button" class="btn" id="btn-start-2">Start the diagnostic</button>
+
+    <p class="audience-line">This is for anyone who leads a team directly: managers, heads of department, directors, and founders with people reporting to them. Company size does not matter. It asks about one team, the one you lead now.</p>
+    <p class="privacy-line">Your answers are private. Nothing individual is ever published. Anything this research reports is aggregated across everyone who takes part.</p>
 
     <section class="landing-note" aria-labelledby="privacy-heading">
       <h2 class="note-heading mono" id="privacy-heading">What happens to your answers</h2>

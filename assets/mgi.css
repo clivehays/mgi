@@ -179,6 +179,73 @@ p{ margin: 0 0 18px; }
 .landing h1{ margin-bottom: 30px; }
 .landing .lede{ max-width: 40em; }
 
+/* The four states, above the fold. The page used to describe them inside a
+   paragraph; naming them as four things is what lets a reader try to place
+   their own team before they have clicked anything. */
+/* On a phone the action has to be reachable without a scroll, so the landing
+   gives up some of its breathing room rather than pushing the button under
+   the fold. The header already carries the wordmark, which is why the
+   landing has no eyebrow of its own. */
+@media (max-width: 560px){
+  .landing{ padding-top: 30px; }
+  .landing h1{ margin-bottom: 20px; }
+  .landing .lede p{ margin-bottom: 20px; }
+  .states{ margin-bottom: 22px; }
+}
+
+.states{
+  list-style: none;
+  margin: 0 0 30px;
+  padding: 0;
+  max-width: 40em;
+  border-top: 1px solid var(--rule);
+}
+
+/* a real two column grid: an inline-block label lets the second line of a
+   long state wrap back underneath it, which read as a broken row */
+.states li{
+  display: grid;
+  grid-template-columns: 9em 1fr;
+  gap: 0 14px;
+  align-items: baseline;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.state-name{
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.state-line{
+  font-family: var(--ui);
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+@media (max-width: 560px){
+  .states li{ grid-template-columns: 1fr; gap: 3px; }
+}
+
+/* the second button, for the reader who scrolled to find out what this is.
+   It needs air on both sides or it reads as part of the note above it. */
+.landing-note + .btn{ margin-top: 30px; }
+.btn + .audience-line{ margin-top: 34px; }
+
+/* sits under the button, so the cost of entry is read after the ask */
+.start-note{
+  font-family: var(--ui);
+  font-size: 13px;
+  color: var(--ink-mute);
+  margin: 14px 0 0;
+  max-width: 44em;
+}
+
 .instruction{
   border-top: 1px solid var(--ink);
   border-bottom: 1px solid var(--ink);

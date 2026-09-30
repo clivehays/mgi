@@ -135,7 +135,7 @@
   function init() {
     [
       'view-landing', 'view-questions', 'view-contact', 'view-sent',
-      'btn-start', 'btn-back', 'btn-next', 'btn-submit',
+      'btn-start', 'btn-start-2', 'btn-back', 'btn-next', 'btn-submit',
       'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
       'contact-form', 'form-error', 'f-industry', 'field-industry-other', 'f-industry-other',
       'f-consent', 'sent-email', 'sent-note', 'teaser', 'teaser-rings',
@@ -152,6 +152,9 @@
     history.replaceState({ view: state.view === 'sent' ? 'sent' : 'landing', index: 0 }, '');
 
     el['btn-start'].addEventListener('click', function () { go(0); });
+    if (el['btn-start-2']) {
+      el['btn-start-2'].addEventListener('click', function () { go(0); });
+    }
     el['btn-back'].addEventListener('click', back);
     el['btn-next'].addEventListener('click', next);
     el['contact-form'].addEventListener('submit', onSubmit);
