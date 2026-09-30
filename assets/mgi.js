@@ -139,7 +139,7 @@
       'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
       'contact-form', 'form-error', 'f-industry', 'field-industry-other', 'f-industry-other',
       'f-consent', 'sent-email', 'sent-note', 'teaser', 'teaser-rings',
-      'sent-by-email', 'sent-by-link', 'sent-link', 'sent-url'
+      'sent-by-email', 'sent-by-link', 'sent-link', 'sent-url', 'sent-wait'
     ].forEach(function (id) {
       el[id] = document.getElementById(id);
     });
@@ -166,6 +166,7 @@
 
     if (state.view === 'sent' && state.contact && complete()) {
       showDestination(state.contact.email, state.readingUrl);
+      if (!state.contact.email && state.readingUrl) awaitReading(state.readingUrl);
       show('sent', false);
     } else {
       show('landing', false);
@@ -187,6 +188,46 @@
       el['sent-link'].href = url;
       el['sent-url'].textContent = url;
     }
+  }
+
+  /* ---------- waiting for the reading ----------
+     Someone who left no address has no email arriving to tell them the page
+     is ready, so this page waits on their behalf and then shows them the
+     reading itself. The status route answers from the stored row and never
+     computes, so polling it is cheap and cannot start Eran twice.
+
+     The link is on the page throughout. If the poll never succeeds, because
+     the tab slept or the network went, nothing is lost: they still hold the
+     only address their reading has. */
+  function awaitReading(url) {
+    if (!url) return;
+    var every = 4000;
+    var giveUpAt = Date.now() + 4 * 60 * 1000;
+
+    function tick() {
+      if (Date.now() > giveUpAt) return done(false);
+      fetch(url + '?status=1', { headers: { Accept: 'application/json' } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (d && d.ready) return done(true);
+          window.setTimeout(tick, every);
+        })
+        .catch(function () { window.setTimeout(tick, every); });
+    }
+
+    function done(ready) {
+      if (ready) {
+        /* replace, so Back from the reading does not land on a dead wait */
+        window.location.replace(url);
+        return;
+      }
+      if (el['sent-wait']) {
+        el['sent-wait'].textContent = 'Your reading is taking longer than usual. ' +
+          'It is not lost. Open it with the link below, and keep the link.';
+      }
+    }
+
+    window.setTimeout(tick, 6000);
   }
 
   function toAnswers() {
@@ -506,6 +547,7 @@
         state.readingUrl = data.readingUrl;
         save();
         showDestination(null, data.readingUrl);
+        awaitReading(data.readingUrl);
         return;
       }
       if (data && data.sending === false) throw new Error('nothing to send');

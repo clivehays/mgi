@@ -147,10 +147,17 @@ function receipt(numbers, eran, token) {
   /* The page's only ask, and the same link Eran offers, so there is one
      forward step and no second one to invent. The token rides along so
      Clive knows which reading a booking came from. */
+  /* The second line offered a reply to the email as an alternative. Someone
+     who left no address has no email to reply to, so they are told to reply
+     to nothing. Only the booking link is true for both. */
+  var alt = (numbers.meta && numbers.meta.copy_to)
+    ? 'Thirty minutes with Clive. Replying to the email that brought you here ' +
+      'works just as well.'
+    : 'Thirty minutes with Clive.';
+
   var cta = '<p class="cta"><a class="cta-link" href="' + esc(booking.link(token)) +
-    '" rel="noopener">Get the other half</a></p>' +
-    '<p class="cta-alt">Thirty minutes with Clive. Replying to the email ' +
-    'that brought you here works just as well.</p>';
+    '" rel="noopener">Book your 30 mins</a></p>' +
+    '<p class="cta-alt">' + esc(alt) + '</p>';
 
   return '<section class="receipt">' + counters + body + cta + '</section>';
 }

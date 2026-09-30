@@ -129,6 +129,16 @@ module.exports = async function handler(req, res) {
   if (!row || row.revoked_at) return holding(res, 404);
 
   var payload = row.payload;
+
+  /* A readiness check, for the confirmation page of someone who left no
+     address and is waiting to be shown their reading. It answers from the
+     stored row alone and returns before any compute below, so polling it
+     costs one select and can never start Eran. */
+  if (req.query && req.query.status) {
+    res.setHeader('Cache-Control', 'private, no-store');
+    return res.status(200).json({ ready: !!(payload && payload.eran) });
+  }
+
   var submission = null;
 
   async function loadSubmission() {
