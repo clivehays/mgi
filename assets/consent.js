@@ -118,10 +118,10 @@
     el.hidden = true;
     el.innerHTML =
       '<div class="cookie-banner-inner">' +
-        '<p class="cookie-copy" id="cookie-title">LinkedIn stays off until you accept. You can change this later.</p>' +
+        '<p class="cookie-copy" id="cookie-title">We use cookies to see which LinkedIn posts bring people here, so I can share more of what helps. Nothing about your answers is shared.</p>' +
         '<div class="cookie-actions">' +
-          '<button type="button" class="cookie-choice" id="cookie-accept">Accept</button>' +
-          '<button type="button" class="cookie-choice" id="cookie-reject">Reject</button>' +
+          '<button type="button" class="cookie-choice" id="cookie-accept">That\'s fine</button>' +
+          '<button type="button" class="cookie-choice" id="cookie-reject">No thanks</button>' +
         '</div>' +
       '</div>';
     document.body.appendChild(el);

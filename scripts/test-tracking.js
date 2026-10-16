@@ -132,9 +132,11 @@ if (/data-conversion="callBooked"/.test(booked)) ok('the booked page names its c
 else bad('the booked page has no conversion');
 
 var consent = read('assets/consent.js');
-if (consent.indexOf('>Accept</button>') !== -1 && consent.indexOf('>Reject</button>') !== -1) {
-  ok('Accept and Reject are both buttons');
-} else bad('Accept and Reject are not both buttons');
+if (consent.indexOf(">That\\'s fine</button>") !== -1 && consent.indexOf('>No thanks</button>') !== -1 &&
+    consent.indexOf('class="cookie-choice" id="cookie-accept"') !== -1 &&
+    consent.indexOf('class="cookie-choice" id="cookie-reject"') !== -1) {
+  ok("That's fine and No thanks are both the same kind of button");
+} else bad("That's fine and No thanks are not both the same kind of button");
 if (consent.indexOf('mgi-cookie-consent') !== -1) ok('the choice is stored');
 else bad('the choice is not stored');
 if (consent.indexOf('data-cookie-settings') !== -1) ok('the choice can be reopened');
