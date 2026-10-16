@@ -1,6 +1,7 @@
-/* Self-hosted so the page makes no third-party request. The privacy copy
-   promises no tracking, and loading these from Google would have sent every
-   visitor's IP address to Google on page load.
+/* Self-hosted so type is not fetched from Google. Loading these from
+   Google would have sent every visitor's IP address there on page load.
+   LinkedIn, when it loads, is a different script and only runs after
+   the visitor accepts cookies.
 
    Source Serif 4, Inter Tight and JetBrains Mono are all under the SIL Open
    Font License 1.1, which permits redistribution.

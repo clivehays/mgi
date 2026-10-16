@@ -17,6 +17,7 @@
 var numbersOf = require('../report/numbers.js');
 var eran = require('../report/eran.js');
 var page = require('../report/page.js');
+var trackingTags = require('../report/asset-url.js').trackingTags;
 
 var TABLE = process.env.MGI_TABLE || 'mgi_v5_submissions';
 var READINGS = process.env.MGI_READINGS_TABLE || 'mgi_readings';
@@ -81,7 +82,8 @@ function holding(res, code) {
     '<p>Write to ' +
     '<!--email_off--><a href="mailto:clive@managergap.com">clive@managergap.com</a><!--/email_off-->' +
     close + '</p>' +
-    '</div></body></html>');
+    '<p><button type="button" class="cookie-settings" data-cookie-settings>Cookie settings</button></p>' +
+    '</div>' + trackingTags() + '</body></html>');
 }
 
 function answersOf(sub) {

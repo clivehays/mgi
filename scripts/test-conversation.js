@@ -173,6 +173,39 @@ else bad('the token is not on the link');
 if (booking.link('') === booking.URL) ok('no token, no query junk');
 else bad('an empty token still appends something');
 
+if (!process.env.CALENDLY_URL) {
+  if (booking.URL === 'https://calendly.com/clive-hays-cloverera/new-meeting') {
+    ok('the default link is the new meeting');
+  } else bad('the default link is ' + booking.URL);
+} else ok('CALENDLY_URL is set, so the default is not what this process serves');
+
+/* The reading, the conversation and the email all go through booking.js.
+   A second calendly.com address anywhere else would be a second ask. */
+var root = require('path').join(__dirname, '..');
+var oldSlug = '30-mins-with-clive-clover-era';
+var calendlyElsewhere = [];
+function scanTree(dir) {
+  fs.readdirSync(dir).forEach(function (name) {
+    if (name === 'node_modules' || name === '.git') return;
+    var p = require('path').join(dir, name);
+    var st = fs.statSync(p);
+    if (st.isDirectory()) return scanTree(p);
+    if (!/\.(js|html|css|json|md|txt)$/.test(name)) return;
+    if (name === 'booking.js') return;
+    if (p.indexOf(require('path').sep + 'scripts' + require('path').sep) !== -1) return;
+    var text = fs.readFileSync(p, 'utf8');
+    if (/calendly\.com/i.test(text) || text.indexOf(oldSlug) !== -1) {
+      calendlyElsewhere.push(require('path').relative(root, p));
+    }
+  });
+}
+scanTree(root);
+if (!calendlyElsewhere.length) ok('no other file names a Calendly address');
+else bad('a Calendly address also lives in ' + calendlyElsewhere.join(', '));
+if (fs.readFileSync(require('path').join(root, 'report', 'booking.js'), 'utf8').indexOf(oldSlug) === -1) {
+  ok('the old event is gone');
+} else bad('the old event is still the default');
+
 /* A configured address is pasted, and pasting picks up characters nobody
    can see. A zero width one in front of the scheme is not a cosmetic
    problem: the browser stops reading the href as absolute and resolves it

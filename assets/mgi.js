@@ -86,6 +86,40 @@
     return 'desktop';
   }
 
+  /* Campaign labels from the landing URL. utm_* and s= only. Kept in
+     sessionStorage for the visit and sent with both posts. The server
+     writes them only when SAVE_SOURCE=1. */
+  var SOURCE_KEY = 'mgi-source';
+
+  function readSource() {
+    var stored = {};
+    try {
+      var raw = sessionStorage.getItem(SOURCE_KEY);
+      var parsed = raw ? JSON.parse(raw) : null;
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) stored = parsed;
+    } catch (e) { stored = {}; }
+
+    try {
+      var params = new URLSearchParams(window.location.search);
+      params.forEach(function (value, key) {
+        if (key !== 's' && key.indexOf('utm_') !== 0) return;
+        if (!value) return;
+        stored[key] = String(value).slice(0, 200);
+      });
+    } catch (e) { /* a broken query string is not a reason to drop the visit */ }
+
+    var clean = {};
+    Object.keys(stored).forEach(function (k) {
+      if (k !== 's' && k.indexOf('utm_') !== 0) return;
+      if (!/^[A-Za-z0-9_]{1,40}$/.test(k)) return;
+      if (typeof stored[k] !== 'string' || !stored[k]) return;
+      clean[k] = stored[k].slice(0, 200);
+    });
+
+    try { sessionStorage.setItem(SOURCE_KEY, JSON.stringify(clean)); } catch (e) {}
+    return clean;
+  }
+
   function funnelSend(useBeacon) {
     if (!funnel.sid) return;
     /* nothing new to report, and the leave-beacon is always worth sending */
@@ -97,7 +131,8 @@
       furthest: funnel.furthest,
       reachedContact: funnel.reachedContact,
       submitted: funnel.submitted,
-      device: device()
+      device: device(),
+      source: readSource()
     });
 
     try {
@@ -144,6 +179,7 @@
       el[id] = document.getElementById(id);
     });
 
+    readSource();
     restore();
     funnelInit();
 
@@ -517,7 +553,8 @@
       external: answers.external,
       energy: answers.energy,
       exposure: answers.exposure,
-      submittedAt: new Date().toISOString()
+      submittedAt: new Date().toISOString(),
+      source: readSource()
     };
 
     fetch('/api/submit', {
@@ -528,6 +565,10 @@
       if (!res.ok) throw new Error('bad status');
       return res.json();
     }).then(function (data) {
+      /* The tag queues the conversion only when its id is set and
+         cookies have been accepted. An empty id, or a refusal, does
+         nothing, and a missing script never blocks the reading. */
+      if (window.MGILinkedIn) window.MGILinkedIn.track('assessmentCompleted');
       /* The email is the destination. It is sent once the reading has
          been written, so its arrival is the signal that the page is
          ready, and there is no link to hand over before then.

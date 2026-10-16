@@ -15,13 +15,19 @@
    to the submission row, so an abandoned run can never be tied back to
    anyone, and a completed one cannot be joined to its answers.
 
+   `source` is the campaign labels from the landing URL (utm_* and s).
+   It is written only when SAVE_SOURCE=1. With that unset the field is
+   left off the row, so a table without the column does not error.
+
    Env:
      SUPABASE_URL
      SUPABASE_SERVICE_ROLE_KEY
      MGI_FUNNEL_TABLE   default mgi_funnel
+     SAVE_SOURCE        set to 1 once the source column exists
    ============================================================= */
 
 var TABLE = process.env.MGI_FUNNEL_TABLE || 'mgi_funnel';
+var applySource = require('./source.js').applySource;
 
 var DEVICES = { mobile: 1, tablet: 1, desktop: 1 };
 
@@ -56,6 +62,8 @@ module.exports = async function handler(req, res) {
     device: DEVICES[body.device] ? body.device : 'unknown',
     updated_at: new Date().toISOString()
   };
+
+  applySource(row, body);
 
   var ok = await upsert(row);
 

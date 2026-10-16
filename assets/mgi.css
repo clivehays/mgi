@@ -206,6 +206,14 @@ p{ margin: 0 0 18px; }
   }
   .landing .lede p{ margin-bottom: 16px; }
   .states{ margin-bottom: 18px; }
+  /* The banner sits on top of the fold until a choice is made. Pull the
+     landing in by the same amount, so the start button stays clear of it. */
+  body.has-cookie-banner .landing{ padding-top: 8px; }
+  body.has-cookie-banner .landing h1{ margin-bottom: 6px; }
+  body.has-cookie-banner .landing-subhead{ margin-bottom: 4px; }
+  body.has-cookie-banner .landing .lede p{ margin-bottom: 8px; }
+  body.has-cookie-banner .states{ margin-bottom: 8px; }
+  body.has-cookie-banner .states li{ padding: 4px 0; }
 }
 
 .states{

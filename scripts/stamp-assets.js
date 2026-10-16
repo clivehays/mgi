@@ -32,7 +32,7 @@ var path = require('path');
 var crypto = require('crypto');
 
 var ROOT = path.join(__dirname, '..');
-var HTML = path.join(ROOT, 'index.html');
+var PAGES = ['index.html', 'booked.html'];
 var check = process.argv.indexOf('--check') !== -1;
 
 /* Line endings are normalised before hashing. Git rewrites them on
@@ -51,46 +51,63 @@ function hashOf(rel) {
     .slice(0, 8);
 }
 
-var html = fs.readFileSync(HTML, 'utf8');
-var before = html;
-var seen = [];
-var stale = [];
-
 /* src="/assets/x.js" and href="/assets/x.css", with or without an
    existing ?v=. Fonts are excluded: see the note above. */
 var RE = /((?:src|href)=")(\/assets\/(?!fonts\/)[^"?]+)(\?v=[0-9a-f]+)?(")/g;
 
-html = html.replace(RE, function (m, lead, rel, existing, tail) {
-  var h = hashOf(rel);
-  if (!h) {
-    stale.push(rel + ' (file missing)');
-    return m;
+var failed = 0;
+
+PAGES.forEach(function (page) {
+  var file = path.join(ROOT, page);
+  if (!fs.existsSync(file)) {
+    console.log('  missing ' + page);
+    failed++;
+    return;
   }
-  var want = '?v=' + h;
-  seen.push({ rel: rel, hash: h, was: existing || '(none)' });
-  if (existing !== want) stale.push(rel);
-  return lead + rel + want + tail;
+
+  var html = fs.readFileSync(file, 'utf8');
+  var before = html;
+  var seen = [];
+  var stale = [];
+
+  html = html.replace(RE, function (m, lead, rel, existing, tail) {
+    var h = hashOf(rel);
+    if (!h) {
+      stale.push(rel + ' (file missing)');
+      return m;
+    }
+    var want = '?v=' + h;
+    seen.push({ rel: rel, hash: h, was: existing || '(none)' });
+    if (existing !== want) stale.push(rel);
+    return lead + rel + want + tail;
+  });
+
+  console.log(page);
+  if (check) {
+    seen.forEach(function (s) {
+      var ok = stale.indexOf(s.rel) === -1;
+      console.log('  ' + (ok ? 'ok    ' : 'STALE ') + s.rel + '  ' + s.hash);
+    });
+    if (stale.length) failed += stale.length;
+    return;
+  }
+
+  if (html === before) {
+    console.log('  no change, all ' + seen.length + ' stamps already current');
+  } else {
+    fs.writeFileSync(file, html, 'utf8');
+    seen.forEach(function (s) {
+      console.log('  ' + s.rel + '  ' + s.was + ' -> ?v=' + s.hash);
+    });
+    console.log('  ' + seen.length + ' reference(s) stamped');
+  }
 });
 
 if (check) {
-  seen.forEach(function (s) {
-    var ok = stale.indexOf(s.rel) === -1;
-    console.log('  ' + (ok ? 'ok    ' : 'STALE ') + s.rel + '  ' + s.hash);
-  });
-  if (stale.length) {
-    console.log('\n  ' + stale.length + ' stamp(s) out of date. Run: node scripts/stamp-assets.js');
+  if (failed) {
+    console.log('\n  ' + failed + ' stamp(s) out of date. Run: node scripts/stamp-assets.js');
     process.exit(1);
   }
   console.log('\n  every asset reference matches its file');
   process.exit(0);
-}
-
-if (html === before) {
-  console.log('  no change, all ' + seen.length + ' stamps already current');
-} else {
-  fs.writeFileSync(HTML, html, 'utf8');
-  seen.forEach(function (s) {
-    console.log('  ' + s.rel + '  ' + s.was + ' -> ?v=' + s.hash);
-  });
-  console.log('\n  ' + seen.length + ' reference(s) stamped');
 }
