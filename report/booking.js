@@ -9,7 +9,7 @@
    from before he opens the call.
    ============================================================= */
 
-var DEFAULT = 'https://calendly.com/clive-hays-cloverera/30-mins-with-clive-clover-era';
+var DEFAULT = 'https://calendly.com/clive-hays-cloverera/new-meeting';
 
 /* A configured address arrives by being pasted, and pasting picks things
    up. A zero width character in front of the scheme is invisible in the

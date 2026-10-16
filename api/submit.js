@@ -26,9 +26,13 @@
      SUPABASE_URL                optional, durable store
      SUPABASE_SERVICE_ROLE_KEY   optional, durable store
      MGI_TABLE                   default mgi_v5_submissions
+     SAVE_SOURCE                 set to 1 to store the posted source
+                                 object. Leave unset until the source
+                                 column exists. Anything else ignores it.
    ============================================================= */
 
 var MGI = require('../assets/scoring.js');
+var applySource = require('./source.js').applySource;
 
 var NOTIFY_TO = process.env.MGI_NOTIFY_EMAIL || 'contact@cloverera.com';
 var FROM = process.env.MGI_FROM_EMAIL || 'The Manager Gap Index <mgi@cloverera.com>';
@@ -170,6 +174,10 @@ module.exports = async function handler(req, res) {
 
     answers: answers
   };
+
+  /* Campaign labels. Omitted entirely unless SAVE_SOURCE=1, so a
+     database without the column is unchanged and does not error. */
+  applySource(record, body);
 
   // the evidence items, q1 through q15
   for (var q = 0; q < answers.evidence.length; q++) {

@@ -2,3 +2,4 @@ User-agent: *
 Disallow: /r/
 Disallow: /api/
 Disallow: /worksheets/
+Disallow: /booked

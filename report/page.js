@@ -6,7 +6,9 @@
    section, that section is absent: there is no placeholder text
    anywhere in this file.
 
-   Inline CSS and JS, no third-party request at render or at view.
+   The page's own CSS and JS are inline. LinkedIn is a separate script,
+   added by assets/linkedin.js only after cookie consent, and the
+   noscript pixel is not used.
 
    Spec section 5.
    ============================================================= */
@@ -23,6 +25,7 @@ function esc(s) {
 var rings_ = require('../assets/rings.js');
 var numbersOf = require('./numbers.js');
 var booking = require('./booking.js');
+var trackingTags = require('./asset-url.js').trackingTags;
 
 function ring(area, i) {
   return rings_.svg(area.items, i);
@@ -707,10 +710,12 @@ function render(numbers, token) {
     folded(numbers, eran) + '\n' +
 
     '<footer class="foot">' + copyTo +
-    ' Instrument ' + esc(numbers.meta.instrument) + '.</footer>\n' +
+    ' Instrument ' + esc(numbers.meta.instrument) + '. ' +
+    '<button type="button" class="cookie-settings" data-cookie-settings>Cookie settings</button></footer>\n' +
     '</main>\n' +
 
     '<script>\n' + JS + '\n</script>\n' +
+    trackingTags() + '\n' +
     '</body>\n</html>\n';
 }
 
