@@ -1,0 +1,18 @@
+# The Manager Gap assessment
+
+> A free, 20-question assessment (about five minutes) that tells a people manager which of four states their team is most likely in, Cruise, Drift, Headwinds or Stall, and how far that sits from their own instinct. Built by Clive Hays (Clover ERA) as the research for his next book, The Manager Gap.
+
+## Key facts
+- Questions ask when something last happened, not ratings or agreement. A behaviour that cannot be dated recently is the finding.
+- Output: the most likely team state, how confident that call is, five areas scored on recency, one focus area, one move to make this week, and a conversation with Eran.
+- Free. Email is optional; the reading opens on a private link.
+- Answers are used anonymised and in aggregate for the research. Names and companies never appear.
+- Cohort: 40 completed readings as at October 2026.
+- Not the same as the earlier "Manager Gap Index" (a 10-minute company-level score published by Clover ERA in early 2026). This 20-question assessment is the current instrument.
+
+## Author
+- Clive Hays, co-founder and CEO of Clover ERA Inc. Co-author with Neil Hays of The Trillion Dollar Problem (2024) and Already Gone: 78 Ways to Miss Someone Leaving (2026). LinkedIn: https://www.linkedin.com/in/clivehays
+
+## Related
+- [RRIDA](https://rrida.com/): the team health tool that tracks a team's state daily, from the same founders.
+- [Clover ERA books](https://cloverera.com/books/)

@@ -179,6 +179,16 @@ p{ margin: 0 0 18px; }
 .landing h1{ margin-bottom: 30px; }
 .landing .lede{ max-width: 40em; }
 
+/* Keyword line under the H1. A class, not a bare h2, so the note
+   headings keep their mono label size. */
+.landing-subhead{
+  font-size: clamp(18px, 3.2vw, 22px);
+  line-height: 1.3;
+  margin: 0 0 18px;
+  max-width: 28em;
+  color: var(--ink-2);
+}
+
 /* The four states, above the fold. The page used to describe them inside a
    paragraph; naming them as four things is what lets a reader try to place
    their own team before they have clicked anything. */
@@ -187,10 +197,15 @@ p{ margin: 0 0 18px; }
    the fold. The header already carries the wordmark, which is why the
    landing has no eyebrow of its own. */
 @media (max-width: 560px){
-  .landing{ padding-top: 30px; }
-  .landing h1{ margin-bottom: 20px; }
-  .landing .lede p{ margin-bottom: 20px; }
-  .states{ margin-bottom: 22px; }
+  .landing{ padding-top: 22px; }
+  .landing h1{ margin-bottom: 10px; }
+  .landing-subhead{
+    font-size: 16px;
+    line-height: 1.25;
+    margin: 0 0 8px;
+  }
+  .landing .lede p{ margin-bottom: 16px; }
+  .states{ margin-bottom: 18px; }
 }
 
 .states{
