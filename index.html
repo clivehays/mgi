@@ -89,8 +89,9 @@
 <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
 <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
 
+<link rel="preload" href="/assets/fonts/source-serif-4-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/fonts.css?v=1266817b">
-<link rel="stylesheet" href="/assets/mgi.css?v=e59a44fd">
+<link rel="stylesheet" href="/assets/mgi.css?v=eef71f44">
 </head>
 <body>
 
@@ -109,7 +110,7 @@
     <h1 id="landing-title">Your team is in one of four states. Two of them look identical from where you sit.</h1>
     <h2 class="landing-subhead">A free 5-minute Manager Gap assessment for people managers</h2>
     <div class="lede body-serif">
-      <p>The difference is not in your output. It is in what still reaches you: the blocker raised before it bit, the disagreement said out loud.</p>
+      <p>Twenty questions, about five minutes. You get a one-page reading of the state your team is most likely in, and one thing to do this week. Email is optional.</p>
     </div>
 
     <ol class="states" aria-label="The four states">
@@ -120,7 +121,7 @@
     </ol>
 
     <button type="button" class="btn" id="btn-start">Start the diagnostic</button>
-    <p class="start-note">Twenty questions, about five minutes. Nothing is sent to you unless you ask for it.</p>
+    <p class="start-note">Twenty questions, about five minutes. You get a one-page reading of the state your team is most likely in, and one thing to do this week. Email is optional, and nothing is sent to you unless you ask for it.</p>
 
     <div class="instruction">
       <p><strong>Before you start:</strong> answer from memory of actual events. There are no wrong answers. But a guessed answer makes the result meaningless. &ldquo;Can&rsquo;t recall&rdquo; is a valid and useful answer.</p>
@@ -128,7 +129,7 @@
 
     <section class="landing-note" aria-labelledby="output-heading">
       <h2 class="note-heading mono" id="output-heading">What you get</h2>
-      <p>A reading of about a page. It names the state your team is most likely in and says how confident that call is, given how much of the team&rsquo;s week actually reaches you.</p>
+      <p>A reading of about a page. It names the state your team is most likely in, and how much of the team&rsquo;s week actually reaches you.</p>
       <p>It scores five areas on what has reached you recently, then picks the one worth your attention now and gives you something to do about it this week. There is no score out of ten and no league table.</p>
     </section>
 
@@ -207,9 +208,7 @@
       <div class="field">
         <label for="f-email">Work email <span class="opt">optional</span></label>
         <input type="email" id="f-email" name="email" autocomplete="email" inputmode="email">
-        <p class="field-note">If you would like to receive a copy of this via email, please provide
-          your address. You will receive one additional email once all results have been collated,
-          no spam.</p>
+        <p class="field-note">Optional. Leave it blank and your reading opens on a private link. Give an address and the reading is emailed to you. Clive may write once about your result. That is the only contact.</p>
       </div>
 
       <div class="field">
@@ -335,7 +334,7 @@
     </div>
 
     <div id="sent-by-email">
-      <p class="lede body-serif">The full reading goes to <strong id="sent-email"></strong> in about two minutes, with a link that opens it. The link does not expire.</p>
+      <p class="lede body-serif">The full reading is emailed to <strong id="sent-email"></strong>, with a link that opens it. The link does not expire.</p>
       <p class="privacy-line">Nothing else is needed from you.</p>
     </div>
 
@@ -366,7 +365,7 @@
 <script src="/assets/consent.js?v=bb53501a"></script>
 <script src="/assets/linkedin.js?v=e6ea2832"></script>
 <script src="/assets/rings.js?v=5de45964"></script>
-<script src="/assets/scoring.js?v=8222899a"></script>
+<script src="/assets/scoring.js?v=d18296db"></script>
 <script src="/assets/mgi.js?v=64c50e3e"></script>
 </body>
 </html>

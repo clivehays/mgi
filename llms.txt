@@ -4,7 +4,7 @@
 
 ## Key facts
 - Questions ask when something last happened, not ratings or agreement. A behaviour that cannot be dated recently is the finding.
-- Output: the most likely team state, how confident that call is, five areas scored on recency, one focus area, one move to make this week, and a conversation with Eran.
+- Output: the most likely team state, how much of the team's week reaches you, five areas scored on recency, one focus area, one move to make this week, and a conversation with Eran.
 - Free. Email is optional; the reading opens on a private link.
 - Answers are used anonymised and in aggregate for the research. Names and companies never appear.
 - Cohort: 40 completed readings as at October 2026.

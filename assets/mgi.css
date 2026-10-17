@@ -196,24 +196,20 @@ p{ margin: 0 0 18px; }
    gives up some of its breathing room rather than pushing the button under
    the fold. The header already carries the wordmark, which is why the
    landing has no eyebrow of its own. */
+/* Tight from the first paint. The cookie banner is fixed to the bottom, and
+   these margins used to shrink only after it appeared, which jumped the
+   heading. The start button stays clear of the banner without that shift. */
 @media (max-width: 560px){
-  .landing{ padding-top: 22px; }
-  .landing h1{ margin-bottom: 10px; }
+  .landing{ padding-top: 8px; }
+  .landing h1{ margin-bottom: 6px; }
   .landing-subhead{
     font-size: 16px;
     line-height: 1.25;
-    margin: 0 0 8px;
+    margin: 0 0 4px;
   }
-  .landing .lede p{ margin-bottom: 16px; }
-  .states{ margin-bottom: 18px; }
-  /* The banner sits on top of the fold until a choice is made. Pull the
-     landing in by the same amount, so the start button stays clear of it. */
-  body.has-cookie-banner .landing{ padding-top: 8px; }
-  body.has-cookie-banner .landing h1{ margin-bottom: 6px; }
-  body.has-cookie-banner .landing-subhead{ margin-bottom: 4px; }
-  body.has-cookie-banner .landing .lede p{ margin-bottom: 8px; }
-  body.has-cookie-banner .states{ margin-bottom: 8px; }
-  body.has-cookie-banner .states li{ padding: 4px 0; }
+  .landing .lede p{ margin-bottom: 8px; }
+  .states{ margin-bottom: 8px; }
+  .states li{ padding: 4px 0; }
 }
 
 .states{

@@ -73,7 +73,7 @@ function draft() {
       'Estimates start meaning something again.',
       'You spend less of the week unblocking.'
     ],
-    receipt: 'You answered fifteen questions about what you have actually seen. The count above is what that produced. It is your own observation, put in one place, which is more than most managers ever get.',
+    receipt: 'You answered twenty questions about what you have actually seen. The count above is what that produced. It is your own observation, put in one place, which is more than most managers ever get.',
     next_move: {
       action: 'Take the area with the least reaching you and spend thirty minutes inside one live piece of work with the person doing it. Not a status conversation, the actual work. What you learn that was not in any update is the size of the distance.',
       question: 'What are you working around right now that you have stopped raising?',
