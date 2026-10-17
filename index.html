@@ -90,8 +90,27 @@
 <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
 
 <link rel="preload" href="/assets/fonts/source-serif-4-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/fonts.css?v=1266817b">
-<link rel="stylesheet" href="/assets/mgi.css?v=4f30c777">
+<style>
+/* The heading face only. The rest of the type loads with the page, so it
+   does not compete with this file on a slow phone. */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('/assets/fonts/source-serif-4-normal-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<link id="font-pack" rel="stylesheet" href="/assets/fonts.css?v=1266817b" disabled>
+<noscript><link rel="stylesheet" href="/assets/fonts.css?v=1266817b"></noscript>
+<script>
+window.addEventListener('load', function () {
+  var pack = document.getElementById('font-pack');
+  if (pack) pack.disabled = false;
+});
+</script>
+<link rel="stylesheet" href="/assets/mgi.css?v=375c19c2">
 </head>
 <body>
 
@@ -107,10 +126,12 @@
 <!-- ============ 1. LANDING ============ -->
 <section class="view is-active landing" id="view-landing" aria-labelledby="landing-title">
   <div class="wrap">
-    <h1 id="landing-title">You get a one-page reading of your team, and one thing to do this week.</h1>
-    <p class="landing-time">20 questions, about 5 minutes.</p>
-    <button type="button" class="btn" id="btn-start">Start the diagnostic</button>
-    <p class="proof">Output told them nothing: output improved or held for 31 of the first 40 teams. Twelve of those 31 were in Drift.</p>
+    <div class="hero">
+      <h1 id="landing-title">You get a one-page reading of your team, and one thing to do this week.</h1>
+      <p class="landing-time">20 questions, about 5 minutes.</p>
+      <button type="button" class="btn" id="btn-start">Start the diagnostic</button>
+      <p class="proof">Output told them nothing: output improved or held for 31 of the first 40 teams. Twelve of those 31 were in Drift.</p>
+    </div>
 
     <div class="below">
       <section class="findings" aria-labelledby="cohort-heading">

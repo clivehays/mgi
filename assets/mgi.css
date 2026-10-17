@@ -193,6 +193,13 @@ p{ margin: 0 0 18px; }
   margin: 0 0 16px;
 }
 .landing .btn{ margin: 0; }
+/* The four things on the first screen fill the view, so the findings and
+   the folded sections start on the next one. The masthead sits above this
+   block, which is why the height is a viewport minus that bar. */
+.hero{
+  min-height: calc(100vh - 96px);
+  min-height: calc(100dvh - 96px);
+}
 .proof{
   font-family: var(--serif);
   font-size: 16px;
