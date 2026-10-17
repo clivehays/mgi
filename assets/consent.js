@@ -159,9 +159,12 @@
     document.body.classList.toggle('has-cookie-banner', open);
     if (!open) {
       document.body.style.paddingBottom = '';
+      document.documentElement.style.removeProperty('--banner-h');
       return;
     }
-    document.body.style.paddingBottom = (el.offsetHeight + 8) + 'px';
+    var h = el.offsetHeight;
+    document.body.style.paddingBottom = (h + 8) + 'px';
+    document.documentElement.style.setProperty('--banner-h', h + 'px');
   }
 
   function render(forceOpen) {
