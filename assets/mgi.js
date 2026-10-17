@@ -492,20 +492,16 @@
 
     var missing = [];
     if (!contact.firstName) missing.push('first name');
-    /* An address is optional. Someone who leaves it blank reads their reading
-       on the page instead. Something typed that is not an address is still an
-       error, because the likeliest cause is a typo in one they meant to give. */
-    if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) missing.push('a valid work email, or leave it blank');
-    if (!contact.company) missing.push('company');
-    if (!contact.role) missing.push('role');
-    if (!contact.consent) missing.push('your consent to take part');
-    if (!contact.currentlyLeading) missing.push('whether you lead this team at the moment');
     if (!contact.teamSize) missing.push('team size');
-    if (!contact.tenure) missing.push('how long you have led this team');
-    if (!contact.left6m) missing.push('how many people have left');
-    if (!contact.joined6m) missing.push('how many have joined');
-    if (!contact.industry) missing.push('industry');
-    else if (contact.industry === 'Other' && !contact.industryOther) missing.push('which industry');
+    if (!contact.consent) missing.push('your consent to take part');
+    /* An address is optional, and so is the rest of the research step.
+       Someone who leaves the address blank reads their reading on the page
+       instead. Something typed that is not an address is still an error,
+       because the likeliest cause is a typo in one they meant to give.
+       Other is the only research answer that becomes required, and only
+       once they have chosen it. */
+    if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) missing.push('a valid work email, or leave it blank');
+    if (contact.industry === 'Other' && !contact.industryOther) missing.push('which industry');
 
     if (missing.length) {
       el['form-error'].textContent = 'Please add ' + listify(missing) + '.';

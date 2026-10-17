@@ -148,6 +148,10 @@ def main():
     ver, fp, _ = max(live, key=lambda g: g[2])
 
     qcols = ", ".join("q%d" % (i + 1) for i in range(n_items))
+    # team_size, tenure, left_6m, joined_6m and industry are null when the
+    # manager skips the optional research step. Null is absence, not zero
+    # and not a sentinel. The movement block below keeps only values that
+    # sit on the scale.
     cur.execute("""
         select %s, gut, state, gap, confidence, signal, behaviour,
                exposure, team_size, tenure, left_6m, joined_6m,
@@ -288,6 +292,8 @@ Everything here is self-reported and cross-sectional. Correlation only.
                       (k, c[k], c[k] / float(n) * 100, lo * 100, hi * 100))
         print()
 
+    # A skipped research step stores null. Membership in SCORE is false for
+    # null, so those rows stay out of the correlations and never raise.
     usable = [(SCORE[l], SCORE[j], mean([r[i - 1] for i in areas["truth"][1]]),
                r[at["signal"]])
               for r, l, j in zip(rows, left6, joined6)

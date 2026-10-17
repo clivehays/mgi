@@ -48,11 +48,14 @@ create table if not exists mgi_v5_submissions (
   instrument_fingerprint text,
   collected_under       text,
 
-  -- who answered
+  -- who answered. first_name is required to open the reading.
+  -- email, company and role are the optional research step: a blank is
+  -- stored as null. team_size is required by the application and is already
+  -- nullable here so older rows are left alone.
   first_name            text not null,
-  email                 text not null,
-  company               text not null,
-  role                  text not null,
+  email                 text,
+  company               text,
+  role                  text,
   industry              text,
   industry_option       text,
   -- whether this is a team they lead now. The recency items ask "when did
@@ -139,6 +142,13 @@ alter table mgi_v5_submissions add column if not exists mean_recency           n
 alter table mgi_v5_submissions add column if not exists gap_index              numeric(3,2);
 alter table mgi_v5_submissions add column if not exists gap_width              text;
 alter table mgi_v5_submissions add column if not exists collected_under        text;
+
+-- Optional contact fields. Dropping NOT NULL is a no-op when the column is
+-- already nullable, so this is safe to re-run. Apply before a build that
+-- inserts null company or role, or those inserts fail and the row is lost.
+alter table mgi_v5_submissions alter column email   drop not null;
+alter table mgi_v5_submissions alter column company drop not null;
+alter table mgi_v5_submissions alter column role    drop not null;
 
 comment on column mgi_v5_submissions.collected_under is
   'The instrument version live when this participant submitted, ie what they saw. Written once at submission and never changed by a backfill. instrument_version, by contrast, tracks the version that produced the derived columns as they now stand.';

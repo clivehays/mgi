@@ -208,11 +208,14 @@ state. Orange appears only inside the mark itself. The four state colours are un
 
 ## The contact form
 
-First name, work email, company, role and industry are required. Team size is optional.
-Industry is a dropdown of eighteen office and knowledge-work sectors plus Other; choosing
-Other reveals a free-text box, which is then required, and switching back to a listed
-sector clears whatever was typed. The server keeps both the chosen option and the free
-text, and shows the free text in the notification when Other was used.
+First name and team size are required. They are what open the reading. Email, company,
+role, industry, whether they lead this team now, tenure, leavers and joiners sit in an
+optional step labelled Help the research, which can be skipped. Consent stays required:
+nothing is stored without it. A blank optional field is stored as null. Industry is a
+dropdown of eighteen office and knowledge-work sectors plus Other; choosing Other reveals
+a free-text box, which is then required, and switching back to a listed sector clears
+whatever was typed. The server keeps both the chosen option and the free text, and shows
+the free text in the notification when Other was used.
 
 ## Environment variables
 

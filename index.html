@@ -91,7 +91,7 @@
 
 <link rel="preload" href="/assets/fonts/source-serif-4-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/fonts.css?v=1266817b">
-<link rel="stylesheet" href="/assets/mgi.css?v=eef71f44">
+<link rel="stylesheet" href="/assets/mgi.css?v=4f30c777">
 </head>
 <body>
 
@@ -107,64 +107,97 @@
 <!-- ============ 1. LANDING ============ -->
 <section class="view is-active landing" id="view-landing" aria-labelledby="landing-title">
   <div class="wrap">
-    <h1 id="landing-title">Your team is in one of four states. Two of them look identical from where you sit.</h1>
-    <h2 class="landing-subhead">A free 5-minute Manager Gap assessment for people managers</h2>
-    <div class="lede body-serif">
-      <p>Twenty questions, about five minutes. You get a one-page reading of the state your team is most likely in, and one thing to do this week. Email is optional.</p>
-    </div>
-
-    <ol class="states" aria-label="The four states">
-      <li><span class="state-name">Cruise</span> <span class="state-line">Output holding, and the behaviours of a healthy team still reach you.</span></li>
-      <li><span class="state-name">Drift</span> <span class="state-line">Output holding while the conditions underneath it slide. Nothing in the numbers says anything is wrong.</span></li>
-      <li><span class="state-name">Headwinds</span> <span class="state-line">Output under pressure, with a real force outside the team acting on it.</span></li>
-      <li><span class="state-name">Stall</span> <span class="state-line">Output has stopped moving, and the signals went quiet long before it did.</span></li>
-    </ol>
-
+    <h1 id="landing-title">You get a one-page reading of your team, and one thing to do this week.</h1>
+    <p class="landing-time">20 questions, about 5 minutes.</p>
     <button type="button" class="btn" id="btn-start">Start the diagnostic</button>
-    <p class="start-note">Twenty questions, about five minutes. You get a one-page reading of the state your team is most likely in, and one thing to do this week. Email is optional, and nothing is sent to you unless you ask for it.</p>
+    <p class="proof">Output told them nothing: output improved or held for 31 of the first 40 teams. Twelve of those 31 were in Drift.</p>
 
-    <div class="instruction">
-      <p><strong>Before you start:</strong> answer from memory of actual events. There are no wrong answers. But a guessed answer makes the result meaningless. &ldquo;Can&rsquo;t recall&rdquo; is a valid and useful answer.</p>
+    <div class="below">
+      <section class="findings" aria-labelledby="cohort-heading">
+        <h2 class="note-heading mono" id="cohort-heading">What the first forty found</h2>
+        <p>Forty managers have completed a reading, as at 15 October 2026.</p>
+        <ul class="findings-list">
+          <li>Instinct and reading disagreed for 25 of 40, and the lean is towards worry.</li>
+          <li>Challenge is the first thing to go quiet: 20 of 40 had not seen open disagreement in over a month. Nine could not recall it at all.</li>
+          <li>Output told them nothing: output improved or held for 31 of 40. Twelve of those 31 were in Drift.</li>
+        </ul>
+      </section>
+
+      <details class="fold">
+        <summary>The four states</summary>
+        <div class="fold-body">
+          <ol class="states" aria-label="The four states">
+            <li><span class="state-name">Cruise</span> <span class="state-line">Output holding, and the behaviours of a healthy team still reach you.</span></li>
+            <li><span class="state-name">Drift</span> <span class="state-line">Output holding while the conditions underneath it slide. Nothing in the numbers says anything is wrong.</span></li>
+            <li><span class="state-name">Headwinds</span> <span class="state-line">Output under pressure, with a real force outside the team acting on it.</span></li>
+            <li><span class="state-name">Stall</span> <span class="state-line">Output has stopped moving, and the signals went quiet long before it did.</span></li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="fold">
+        <summary>What you get</summary>
+        <div class="fold-body">
+          <section class="landing-note" aria-labelledby="output-heading">
+            <h2 class="visually-hidden" id="output-heading">What you get</h2>
+            <p>A reading of about a page. It names the state your team is most likely in, and how much of the team&rsquo;s week actually reaches you.</p>
+            <p>It scores five areas on what has reached you recently, then picks the one worth your attention now and gives you something to do about it this week. There is no score out of ten and no league table.</p>
+          </section>
+        </div>
+      </details>
+
+      <details class="fold">
+        <summary>Before you start</summary>
+        <div class="fold-body">
+          <div class="instruction">
+            <p>Answer from memory of actual events. There are no wrong answers. But a guessed answer makes the result meaningless. &ldquo;Can&rsquo;t recall&rdquo; is a valid and useful answer.</p>
+          </div>
+        </div>
+      </details>
+
+      <button type="button" class="btn" id="btn-start-2">Start the diagnostic</button>
+
+      <p class="audience-line">For anyone who leads a team directly. It asks about one team, the one you lead now.</p>
+      <p class="privacy-line">Your answers are private. Nothing individual is ever published.</p>
+
+      <details class="fold">
+        <summary>What happens to your answers</summary>
+        <div class="fold-body">
+          <section class="landing-note" aria-labelledby="privacy-heading">
+            <h2 class="visually-hidden" id="privacy-heading">What happens to your answers</h2>
+            <p>Your answers are stored so the cohort can be studied as a whole. Nothing individual is ever published. The research that comes out of this, including the Index and the book, reports patterns across everyone who takes part, never one person&rsquo;s answers.</p>
+            <p>An email address is optional. Give one and your report is sent to you, and Clive may write to you once about your result. That is the only contact. Leave it blank and your report opens on a private link at the end instead, and nothing is sent to you at all. Nothing here is sold or passed to anyone else, and you can have your answers deleted at any time by writing to <a href="mailto:contact@cloverera.com">contact@cloverera.com</a>.</p>
+            <p>Nothing from LinkedIn loads unless you accept the cookie banner. That tag is how a visit from an advert is counted, and you can change the choice at any time from Cookie settings in the footer. The page also records how far each visit gets through the questions, under a random number that is discarded when you close the tab and is never attached to your answers, your name or your email. That is used for one thing: seeing where the questions lose people.</p>
+          </section>
+        </div>
+      </details>
+
+      <details class="fold">
+        <summary>Who is behind this</summary>
+        <div class="fold-body">
+          <section class="landing-note" aria-labelledby="who-heading">
+            <h2 class="visually-hidden" id="who-heading">Who is behind this</h2>
+            <p>Clive Hays built this instrument. He is a co-founder of Clover ERA and co-wrote two books on why teams quietly stop performing: <a href="https://www.amazon.com/dp/B0CZJLW461" rel="noopener"><em>The Trillion Dollar Problem</em></a> (2024) and <a href="https://www.amazon.com/dp/B0GMPT3CYJ" rel="noopener"><em>Already Gone: 78 Ways to Miss Someone Leaving</em></a> (2026). He is on <a href="https://www.linkedin.com/in/clivehays" rel="noopener">LinkedIn</a>.</p>
+            <p>This assessment is the research behind his next book, <em>The Manager Gap</em>.</p>
+            <p>He also co-founded <a href="https://rrida.com/" rel="noopener">RRIDA</a>, the team health tool that tracks these four states day by day.</p>
+          </section>
+        </div>
+      </details>
+
+      <details class="fold">
+        <summary>Questions</summary>
+        <div class="fold-body">
+          <section class="landing-note" aria-labelledby="faq-heading">
+            <h2 class="visually-hidden" id="faq-heading">Questions</h2>
+            <p><strong>How long does the Manager Gap assessment take?</strong> About five minutes. Twenty questions.</p>
+            <p><strong>Is it free?</strong> Yes.</p>
+            <p><strong>Do I need to give my email?</strong> No. Your reading opens on a private link. Email is optional.</p>
+            <p><strong>What happens to my answers?</strong> They are stored for the research and used anonymised and in aggregate. Your name and company never appear.</p>
+            <p><strong>What are the four team states?</strong> Cruise: steady, nothing needs fixing. Drift: something is slipping though the work still looks fine. Headwinds: the team is sound and the pressure is coming from outside. Stall: output and team are both struggling.</p>
+          </section>
+        </div>
+      </details>
     </div>
-
-    <section class="landing-note" aria-labelledby="output-heading">
-      <h2 class="note-heading mono" id="output-heading">What you get</h2>
-      <p>A reading of about a page. It names the state your team is most likely in, and how much of the team&rsquo;s week actually reaches you.</p>
-      <p>It scores five areas on what has reached you recently, then picks the one worth your attention now and gives you something to do about it this week. There is no score out of ten and no league table.</p>
-    </section>
-
-    <section class="landing-note" aria-labelledby="cohort-heading">
-      <h2 class="note-heading mono" id="cohort-heading">What the first forty found</h2>
-      <p>Forty managers have completed a reading, as at 15 October 2026.</p>
-    </section>
-
-    <button type="button" class="btn" id="btn-start-2">Start the diagnostic</button>
-
-    <p class="audience-line">This is for anyone who leads a team directly: managers, heads of department, directors, and founders with people reporting to them. Company size does not matter. It asks about one team, the one you lead now.</p>
-    <p class="privacy-line">Your answers are private. Nothing individual is ever published. Anything this research reports is aggregated across everyone who takes part.</p>
-
-    <section class="landing-note" aria-labelledby="privacy-heading">
-      <h2 class="note-heading mono" id="privacy-heading">What happens to your answers</h2>
-      <p>Your answers are stored so the cohort can be studied as a whole. Nothing individual is ever published. The research that comes out of this, including the Index and the book, reports patterns across everyone who takes part, never one person&rsquo;s answers.</p>
-      <p>An email address is optional. Give one and your report is sent to you, and Clive may write to you once about your result. That is the only contact. Leave it blank and your report opens on a private link at the end instead, and nothing is sent to you at all. Nothing here is sold or passed to anyone else, and you can have your answers deleted at any time by writing to <a href="mailto:contact@cloverera.com">contact@cloverera.com</a>.</p>
-      <p>Nothing from LinkedIn loads unless you accept the cookie banner. That tag is how a visit from an advert is counted, and you can change the choice at any time from Cookie settings in the footer. The page also records how far each visit gets through the questions, under a random number that is discarded when you close the tab and is never attached to your answers, your name or your email. That is used for one thing: seeing where the questions lose people.</p>
-    </section>
-
-    <section class="landing-note" aria-labelledby="who-heading">
-      <h2 class="note-heading mono" id="who-heading">Who is behind this</h2>
-      <p>Clive Hays built this instrument. He is a co-founder of Clover ERA and co-wrote two books on why teams quietly stop performing: <a href="https://www.amazon.com/dp/B0CZJLW461" rel="noopener"><em>The Trillion Dollar Problem</em></a> (2024) and <a href="https://www.amazon.com/dp/B0GMPT3CYJ" rel="noopener"><em>Already Gone: 78 Ways to Miss Someone Leaving</em></a> (2026). He is on <a href="https://www.linkedin.com/in/clivehays" rel="noopener">LinkedIn</a>.</p>
-      <p>This assessment is the research behind his next book, <em>The Manager Gap</em>.</p>
-      <p>He also co-founded <a href="https://rrida.com/" rel="noopener">RRIDA</a>, the team health tool that tracks these four states day by day.</p>
-    </section>
-
-    <section class="landing-note" aria-labelledby="faq-heading">
-      <h2 class="note-heading mono" id="faq-heading">Questions</h2>
-      <p><strong>How long does the Manager Gap assessment take?</strong> About five minutes. Twenty questions.</p>
-      <p><strong>Is it free?</strong> Yes.</p>
-      <p><strong>Do I need to give my email?</strong> No. Your reading opens on a private link. Email is optional.</p>
-      <p><strong>What happens to my answers?</strong> They are stored for the research and used anonymised and in aggregate. Your name and company never appear.</p>
-      <p><strong>What are the four team states?</strong> Cruise: steady, nothing needs fixing. Drift: something is slipping though the work still looks fine. Headwinds: the team is sound and the pressure is coming from outside. Stall: output and team are both struggling.</p>
-    </section>
   </div>
 </section>
 
@@ -195,7 +228,8 @@
 <section class="view contact-view" id="view-contact" aria-labelledby="contact-title">
   <div class="wrap">
     <span class="mono eyebrow">Twenty of twenty</span>
-    <h2 id="contact-title">Your result is ready. A few details about you and the team first.</h2>
+    <h2 id="contact-title">Your first name opens the reading.</h2>
+    <p class="contact-lead">Team size is the other thing it needs. Everything after that is optional, and skipping it does not change the reading.</p>
 
     <form id="contact-form" novalidate>
       <p class="form-error" id="form-error" role="alert" hidden></p>
@@ -206,24 +240,39 @@
       </div>
 
       <div class="field">
+        <label for="f-team">Team size</label>
+        <select id="f-team" name="teamSize" required>
+          <option value="">Select</option>
+          <option value="2-5">2 to 5</option>
+          <option value="6-10">6 to 10</option>
+          <option value="11-20">11 to 20</option>
+          <option value="20+">20+</option>
+        </select>
+      </div>
+
+      <details class="research">
+        <summary>Help the research <span class="opt">optional, skip if you like</span></summary>
+        <p class="research-intro">None of this is needed to open the reading. It places your answers in the cohort. An email, if you leave one, is also where the reading is sent, and Clive may write once about your result. Leave it blank and the reading opens on a private link, and nothing is sent to you.</p>
+
+      <div class="field">
         <label for="f-email">Work email <span class="opt">optional</span></label>
         <input type="email" id="f-email" name="email" autocomplete="email" inputmode="email">
-        <p class="field-note">Optional. Leave it blank and your reading opens on a private link. Give an address and the reading is emailed to you. Clive may write once about your result. That is the only contact.</p>
+        <p class="field-note">Leave it blank and your reading opens on a private link. Give an address and the reading is emailed to you. That, plus one note from Clive about your result, is the only contact.</p>
       </div>
 
       <div class="field">
-        <label for="f-company">Company</label>
-        <input type="text" id="f-company" name="company" autocomplete="organization" required>
+        <label for="f-company">Company <span class="opt">optional</span></label>
+        <input type="text" id="f-company" name="company" autocomplete="organization">
       </div>
 
       <div class="field">
-        <label for="f-role">Role</label>
-        <input type="text" id="f-role" name="role" autocomplete="organization-title" required>
+        <label for="f-role">Role <span class="opt">optional</span></label>
+        <input type="text" id="f-role" name="role" autocomplete="organization-title">
       </div>
 
       <div class="field">
-        <label for="f-industry">Industry</label>
-        <select id="f-industry" name="industry" required>
+        <label for="f-industry">Industry <span class="opt">optional</span></label>
+        <select id="f-industry" name="industry">
           <option value="">Select</option>
           <option value="Software and technology">Software and technology</option>
           <option value="Financial services">Financial services</option>
@@ -253,8 +302,8 @@
       </div>
 
       <div class="field">
-        <label for="f-leading">Are you leading this team at the moment?</label>
-        <select id="f-leading" name="currentlyLeading" required>
+        <label for="f-leading">Are you leading this team at the moment? <span class="opt">optional</span></label>
+        <select id="f-leading" name="currentlyLeading">
           <option value="">Select</option>
           <option value="yes">Yes</option>
           <option value="previous">No, this is a team I led previously</option>
@@ -262,19 +311,8 @@
       </div>
 
       <div class="field">
-        <label for="f-team">Team size</label>
-        <select id="f-team" name="teamSize" required>
-          <option value="">Select</option>
-          <option value="2-5">2 to 5</option>
-          <option value="6-10">6 to 10</option>
-          <option value="11-20">11 to 20</option>
-          <option value="20+">20+</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="f-tenure">How long you have led this team</label>
-        <select id="f-tenure" name="tenure" required>
+        <label for="f-tenure">How long you have led this team <span class="opt">optional</span></label>
+        <select id="f-tenure" name="tenure">
           <option value="">Select</option>
           <option value="under-3m">Less than 3 months</option>
           <option value="3-12m">3 to 12 months</option>
@@ -284,8 +322,8 @@
       </div>
 
       <div class="field">
-        <label for="f-left">In the last 6 months, how many people have left this team?</label>
-        <select id="f-left" name="left6m" required>
+        <label for="f-left">In the last 6 months, how many people have left this team? <span class="opt">optional</span></label>
+        <select id="f-left" name="left6m">
           <option value="">Select</option>
           <option value="none">Nobody</option>
           <option value="one">1</option>
@@ -295,8 +333,8 @@
       </div>
 
       <div class="field">
-        <label for="f-joined">And how many have joined it?</label>
-        <select id="f-joined" name="joined6m" required>
+        <label for="f-joined">And how many have joined it? <span class="opt">optional</span></label>
+        <select id="f-joined" name="joined6m">
           <option value="">Select</option>
           <option value="none">Nobody</option>
           <option value="one">1</option>
@@ -304,6 +342,7 @@
           <option value="four-plus">4 or more</option>
         </select>
       </div>
+      </details>
 
       <div class="hp" aria-hidden="true">
         <label for="f-website">Website</label>
@@ -316,7 +355,7 @@
       </div>
 
       <button type="submit" class="btn" id="btn-submit" disabled>Show my result</button>
-      <p class="form-note">Your answers stay on this page until you press the button. Your details are what place your answers in the cohort. If you leave an address it is also used to send the report, and Clive may write to you once about your result.</p>
+      <p class="form-note">Your answers stay on this page until you press the button. The consent box is what allows them to be stored. The research step is separate: skip it and the reading is the same.</p>
     </form>
   </div>
 </section>
@@ -366,6 +405,6 @@
 <script src="/assets/linkedin.js?v=e6ea2832"></script>
 <script src="/assets/rings.js?v=5de45964"></script>
 <script src="/assets/scoring.js?v=d18296db"></script>
-<script src="/assets/mgi.js?v=64c50e3e"></script>
+<script src="/assets/mgi.js?v=a3c4db38"></script>
 </body>
 </html>
