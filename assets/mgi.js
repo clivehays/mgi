@@ -550,7 +550,8 @@
       energy: answers.energy,
       exposure: answers.exposure,
       submittedAt: new Date().toISOString(),
-      source: readSource()
+      source: readSource(),
+      sid: funnel.sid
     };
 
     fetch('/api/submit', {

@@ -163,6 +163,10 @@ module.exports = async function handler(req, res) {
     consent: true,
     consent_at: clean(body.consentAt, 40) || submittedAt,
 
+    /* join to the funnel visit. Null when sid is missing or not a short
+       string, so a visit id can never fail the insert. */
+    visit_id: visitIdOf(body.sid) || null,
+
     gut: answers.gut,
     output: answers.output,
     external_pressure: answers.external,
@@ -341,6 +345,15 @@ function background(promise) {
 function clean(v, max) {
   if (typeof v !== 'string') return '';
   return v.trim().slice(0, max);
+}
+
+/* Funnel visit id. A short string, at most 64 characters. Anything else
+   is ignored and the submission is stored without one. */
+function visitIdOf(v) {
+  if (typeof v !== 'string') return '';
+  var s = v.trim();
+  if (!s || s.length > 64) return '';
+  return s;
 }
 
 function esc(s) {
