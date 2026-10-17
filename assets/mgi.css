@@ -174,46 +174,67 @@ p{ margin: 0 0 18px; }
 
 /* ---------- landing ---------- */
 
-.landing{ padding: 52px 0 72px; }
-.landing .eyebrow{ margin-bottom: 26px; display: block; }
-.landing h1{ margin-bottom: 30px; }
-.landing .lede{ max-width: 40em; }
-
-/* Keyword line under the H1. A class, not a bare h2, so the note
-   headings keep their mono label size. */
-.landing-subhead{
-  font-size: clamp(18px, 3.2vw, 22px);
+/* Mobile first. The first screen is the return, the time, the button and
+   one finding. Everything else sits below that, in short sections.
+   Spacing is tight from the first paint: the cookie banner is fixed to the
+   bottom, and margins that shrink only after it appears jump the heading. */
+.landing{ padding: 18px 0 56px; }
+.landing h1{
+  margin-bottom: 12px;
+  max-width: 14em;
+  font-size: clamp(28px, 7.2vw, 44px);
+}
+.landing-time{
+  font-family: var(--ui);
+  font-size: 16px;
+  font-weight: 600;
   line-height: 1.3;
-  margin: 0 0 18px;
-  max-width: 28em;
+  color: var(--ink);
+  margin: 0 0 16px;
+}
+.landing .btn{ margin: 0; }
+/* The four things on the first screen fill the view, so the findings and
+   the folded sections start on the next one. On a phone the block stays
+   at the top: the cookie banner already takes the bottom. */
+.hero{
+  min-height: calc(100vh - 96px);
+  min-height: calc(100dvh - 96px);
+}
+.proof{
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.45;
   color: var(--ink-2);
+  margin: 16px 0 0;
+  max-width: 28em;
+}
+.below{ margin-top: 36px; }
+
+@media (min-width: 561px){
+  /* The hero is the first screen under the masthead. 78px is that
+     bar. 100vh is the fallback where svh is missing. The content sits
+     in the vertical middle of that screen, still left aligned. */
+  .landing{ padding: 0 0 72px; }
+  .hero{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: calc(100vh - 78px);
+    min-height: calc(100svh - 78px);
+  }
+  .landing h1{ margin-bottom: 14px; }
+  .landing-time{ margin-bottom: 20px; }
+  .proof{ margin-top: 20px; font-size: 18px; max-width: 32em; }
+  .below{ margin-top: 48px; }
 }
 
-/* The four states, above the fold. The page used to describe them inside a
-   paragraph; naming them as four things is what lets a reader try to place
-   their own team before they have clicked anything. */
-/* On a phone the action has to be reachable without a scroll, so the landing
-   gives up some of its breathing room rather than pushing the button under
-   the fold. The header already carries the wordmark, which is why the
-   landing has no eyebrow of its own. */
 @media (max-width: 560px){
-  .landing{ padding-top: 22px; }
-  .landing h1{ margin-bottom: 10px; }
-  .landing-subhead{
-    font-size: 16px;
-    line-height: 1.25;
-    margin: 0 0 8px;
-  }
-  .landing .lede p{ margin-bottom: 16px; }
-  .states{ margin-bottom: 18px; }
-  /* The banner sits on top of the fold until a choice is made. Pull the
-     landing in by the same amount, so the start button stays clear of it. */
-  body.has-cookie-banner .landing{ padding-top: 8px; }
-  body.has-cookie-banner .landing h1{ margin-bottom: 6px; }
-  body.has-cookie-banner .landing-subhead{ margin-bottom: 4px; }
-  body.has-cookie-banner .landing .lede p{ margin-bottom: 8px; }
-  body.has-cookie-banner .states{ margin-bottom: 8px; }
-  body.has-cookie-banner .states li{ padding: 4px 0; }
+  .landing{ padding-top: 10px; }
+  .landing h1{ margin-bottom: 8px; }
+  .landing-time{ font-size: 15px; margin-bottom: 14px; }
+  .proof{ font-size: 15px; margin-top: 14px; }
+  .states li{ padding: 4px 0; }
 }
 
 .states{
@@ -255,18 +276,64 @@ p{ margin: 0 0 18px; }
   .states li{ grid-template-columns: 1fr; gap: 3px; }
 }
 
-/* the second button, for the reader who scrolled to find out what this is.
-   It needs air on both sides or it reads as part of the note above it. */
-.landing-note + .btn{ margin-top: 30px; }
-.btn + .audience-line{ margin-top: 34px; }
+/* the second button, after the short sections */
+.below > .btn{ margin: 28px 0 8px; }
+.btn + .audience-line{ margin-top: 28px; }
 
-/* sits under the button, so the cost of entry is read after the ask */
-.start-note{
+.findings{
+  border-top: 1px solid var(--ink);
+  padding-top: 18px;
+  margin: 0 0 8px;
+  max-width: 40em;
+}
+.findings p{
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 0 0 8px;
+}
+.findings-list{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.findings-list li{
+  font-family: var(--serif);
+  font-size: 16.5px;
+  line-height: 1.45;
+  color: var(--ink);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.fold{
+  border-bottom: 1px solid var(--rule);
+  max-width: 40em;
+}
+.fold summary{
+  cursor: pointer;
+  padding: 14px 0;
   font-family: var(--ui);
-  font-size: 13px;
-  color: var(--ink-mute);
-  margin: 14px 0 0;
-  max-width: 44em;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+}
+.fold summary:focus-visible{
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.fold-body{ padding: 0 0 8px; }
+.fold .landing-note{
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.fold .states{ margin-bottom: 4px; }
+.fold .instruction{
+  margin: 0 0 12px;
+  border: 0;
+  padding: 0;
 }
 
 .instruction{
@@ -514,8 +581,49 @@ fieldset.scale{
 
 /* ---------- contact ---------- */
 
-.contact-view{ padding: 46px 0 72px; }
-.contact-view h2{ margin-bottom: 30px; max-width: 16em; }
+.contact-view{ padding: 28px 0 72px; }
+.contact-view h2{ margin-bottom: 10px; max-width: 16em; }
+.contact-lead{
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 0 0 22px;
+  max-width: 28em;
+}
+.research{
+  border-top: 1px solid var(--rule);
+  margin: 6px 0 8px;
+  max-width: 40em;
+}
+.research summary{
+  cursor: pointer;
+  padding: 14px 0;
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+}
+.research summary .opt{
+  font-weight: 400;
+  color: var(--ink-mute);
+  font-size: 13px;
+}
+.research summary:focus-visible{
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.research-intro{
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 0 0 18px;
+  max-width: 36em;
+}
+@media (min-width: 561px){
+  .contact-view{ padding-top: 46px; }
+}
 
 .field{ margin-bottom: 22px; }
 .field[hidden]{ display: none; }

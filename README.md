@@ -1,8 +1,8 @@
 # Manager Gap Index (MGI) v5
 
-A single-purpose diagnostic at **mgi.cloverera.com**. Seventeen questions, about four
-minutes, then a report on screen naming the state the team is most likely in, with a
-confidence level. Clive gets an email with the raw answers the moment a submission lands.
+A single-purpose diagnostic at **managergap.com**. Twenty questions, about five
+minutes, then a reading naming the state the team is most likely in. Clive gets
+an email with the raw answers when a submission lands.
 
 ## What it does
 
@@ -13,7 +13,7 @@ the output).
 
 The instrument works out the likely state from things the manager has directly observed:
 whether output is holding or slipping, whether an external cause is acting on the team,
-and whether the behaviours of a healthy team have been visible recently. Twelve evidence
+and whether the behaviours of a healthy team have been visible recently. Fifteen evidence
 items capture that last input. The absence of those behaviours is not a scoring trick; it
 is what Drift and Stall look like from the manager's seat.
 
@@ -26,7 +26,7 @@ is what Drift and Stall look like from the manager's seat.
    most days is genuinely not happening. The same absence reported by a manager who sees
    the team less than weekly might be distance, not decline. Exposure never changes the
    state call, only how firmly the report stands behind it.
-3. **The signal score** (sum of the twelve evidence items, 0 to 36) is reported as what
+3. **The signal score** (sum of the fifteen evidence items, 0 to 45) is reported as what
    it honestly is: how much recent first-hand evidence the manager's picture rests on. It
    is never called confidence.
 
@@ -37,13 +37,12 @@ own words at the end.
 Three rules hold everywhere in the code and copy:
 
 1. **The state call is always "likely", never certain.** Copy says "most likely in" and
-   "the evidence points to". Seventeen questions from one perspective earn a strong
+   "the evidence points to". Twenty questions from one perspective earn a strong
    estimate, not a verdict. A lint enforces this.
-2. **No product pitch.** No trial, pricing, worksheets or booking links, and the sales
-   conversation happens later, by phone, off this page. Clover ERA appears in exactly
-   three places: the footer attribution, the report's closing block, and the credibility
-   block on the landing page (Clive's call, 2026-08-20, so managers can see who is behind
-   the instrument before they answer anything). A lint fails on a fourth.
+2. **No product pitch on the assessment.** No trial, pricing or demo. The reading's
+   only ask is one conversation, thirty minutes with Clive, and the only booking
+   link lives in `report/booking.js`. Clover ERA appears in the footer, the
+   credibility block on the landing page, and that closing ask.
 3. **No framework vocabulary in the questions**, and no invented label vocabularies on
    the report. There is no Stale/Fading/Current scale. Where a summary is needed, the
    report states the underlying recency fact instead.
@@ -64,7 +63,12 @@ vercel.json         clean URLs, cache and security headers
 gap from the raw answers, so the emails can never disagree with the page the manager saw.
 Change the instrument in one place only.
 
-## The seventeen questions
+The live assessment is twenty questions, about five minutes: one gut check, fifteen
+evidence items, three trajectory items and one exposure question. The items are in
+`assets/scoring.js`. The table below is the earlier seventeen-question instrument,
+kept as a record. It is not what the site asks today.
+
+## The earlier seventeen questions
 
 | # | Item | Scale |
 |---|---|---|
@@ -76,6 +80,9 @@ Change the instrument in one place only.
 | Q16 | Exposure, drives confidence | Most days / A few times a week / About weekly / Less than weekly |
 
 ## Scoring
+
+The notes in this section describe the earlier seventeen-question instrument. The live
+rules, including the fifteen evidence items, are in `assets/scoring.js`.
 
 **Inputs.** B is the mean of evidence items 1, 2, 5, 6, 9, 10, 11, 12 (healthy-team
 behaviours) and feeds the state tree. S is the sum of all twelve evidence items, 0 to 36,
@@ -201,11 +208,14 @@ state. Orange appears only inside the mark itself. The four state colours are un
 
 ## The contact form
 
-First name, work email, company, role and industry are required. Team size is optional.
-Industry is a dropdown of eighteen office and knowledge-work sectors plus Other; choosing
-Other reveals a free-text box, which is then required, and switching back to a listed
-sector clears whatever was typed. The server keeps both the chosen option and the free
-text, and shows the free text in the notification when Other was used.
+First name and team size are required. They are what open the reading. Email, company,
+role, industry, whether they lead this team now, tenure, leavers and joiners sit in an
+optional step labelled Help the research, which can be skipped. Consent stays required:
+nothing is stored without it. A blank optional field is stored as null. Industry is a
+dropdown of eighteen office and knowledge-work sectors plus Other; choosing Other reveals
+a free-text box, which is then required, and switching back to a listed sector clears
+whatever was typed. The server keeps both the chosen option and the free text, and shows
+the free text in the notification when Other was used.
 
 ## Environment variables
 
@@ -291,7 +301,7 @@ Two go out per submission.
 **Notification to Clive.** Subject `MGI: [First name], [Company] · [STATE] ([confidence],
 signal [S]/36)`. Reply-to is the manager. Body carries the contact details, the computed
 state with the decision rule that fired, the confidence, the exposure answer, the gap and
-the gut read, the area ranking with each area's recency fact, then all seventeen
+the gut read, the area ranking with each area's recency fact, then all twenty
 questions with the exact answers given. This is call prep: the raw answers matter more
 than the scores.
 

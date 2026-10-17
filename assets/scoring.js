@@ -158,7 +158,7 @@
     ]
   };
 
-  /* ---------- the full seventeen, in order ---------- */
+  /* ---------- the full twenty, in order ---------- */
 
   var ITEMS = [GUT];
   EVIDENCE.forEach(function (text, i) {

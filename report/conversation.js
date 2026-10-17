@@ -217,7 +217,7 @@ var SYSTEM = [
 'missed day is a missed day, not a pattern.',
 '',
 'That is about team data, which can be genuinely absent. It is not',
-'licence to hedge the reading. The manager answered all fifteen',
+'licence to hedge the reading. The manager answered all twenty',
 'questions. Nothing is missing there. Old evidence is a finding, not a',
 'gap, and it widens the distance rather than softening the reading.',
 '',

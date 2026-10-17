@@ -88,6 +88,8 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ ok: false, error: 'Invalid answers' });
   }
 
+  /* Blank optional fields stay blank. A sentinel such as "Not given" would
+     land in the cohort as if the manager had answered. Null is the absence. */
   var contact = {
     firstName: clean(body.firstName, 80),
     email: clean(body.email, 160),
@@ -95,21 +97,31 @@ module.exports = async function handler(req, res) {
     role: clean(body.role, 120),
     industry: clean(body.industry, 60),
     industryOther: clean(body.industryOther, 80),
-    teamSize: clean(body.teamSize, 20) || 'Not given',
-    currentlyLeading: clean(body.currentlyLeading, 20) || 'Not given',
-    tenure: clean(body.tenure, 20) || 'Not given',
+    teamSize: clean(body.teamSize, 20),
+    currentlyLeading: clean(body.currentlyLeading, 20),
+    tenure: clean(body.tenure, 20),
     /* research only: never reaches the report or the scoring */
-    left6m: clean(body.left6m, 20) || 'Not given',
-    joined6m: clean(body.joined6m, 20) || 'Not given',
+    left6m: clean(body.left6m, 20),
+    joined6m: clean(body.joined6m, 20),
     consentAt: clean(body.consentAt, 40)
   };
 
-  /* what to show a human: the free text when they chose Other, the option otherwise */
-  contact.industryLabel = (contact.industry === 'Other' && contact.industryOther)
-    ? contact.industryOther
-    : (contact.industry || 'Not given');
+  /* what to show a human: the free text when they chose Other, the option otherwise.
+     Skipped entirely is null, not a label. */
+  if (contact.industry === 'Other') {
+    if (!contact.industryOther) {
+      return res.status(400).json({ ok: false, error: 'Missing industry' });
+    }
+    contact.industryLabel = contact.industryOther;
+  } else if (contact.industry) {
+    contact.industryLabel = contact.industry;
+  } else {
+    contact.industryLabel = null;
+  }
 
-  if (!contact.firstName || !contact.company || !contact.role) {
+  /* The reading needs a name to open with and a team size. Everything else
+     on the form is the optional research step. */
+  if (!contact.firstName || !contact.teamSize) {
     return res.status(400).json({ ok: false, error: 'Missing contact fields' });
   }
   /* An address is optional: without one the reading is reached from the
@@ -139,15 +151,15 @@ module.exports = async function handler(req, res) {
     submitted_at: submittedAt,
     first_name: contact.firstName,
     email: contact.email || null,
-    company: contact.company,
-    role: contact.role,
+    company: contact.company || null,
+    role: contact.role || null,
     industry: contact.industryLabel,
     industry_option: contact.industry || null,
-    currently_leading: contact.currentlyLeading,
+    currently_leading: contact.currentlyLeading || null,
     team_size: contact.teamSize,
-    tenure: contact.tenure,
-    left_6m: contact.left6m,
-    joined_6m: contact.joined6m,
+    tenure: contact.tenure || null,
+    left_6m: contact.left6m || null,
+    joined_6m: contact.joined6m || null,
     consent: true,
     consent_at: clean(body.consentAt, 40) || submittedAt,
 
@@ -432,13 +444,13 @@ function notification(contact, result, submittedAt, token) {
   lines.push('Name: ' + contact.firstName);
   lines.push('Email: ' + (contact.email || 'not given, reading is on the link only'));
   if (!contact.email && token) lines.push('Reading: ' + ORIGIN + '/r/' + token);
-  lines.push('Company: ' + contact.company);
-  lines.push('Role: ' + contact.role);
-  lines.push('Industry: ' + contact.industryLabel);
-  lines.push('Leading this team now: ' + contact.currentlyLeading);
+  lines.push('Company: ' + (contact.company || 'not given'));
+  lines.push('Role: ' + (contact.role || 'not given'));
+  lines.push('Industry: ' + (contact.industryLabel || 'not given'));
+  lines.push('Leading this team now: ' + (contact.currentlyLeading || 'not given'));
   lines.push('Team size: ' + contact.teamSize);
-  lines.push('Leading this team: ' + contact.tenure);
-  lines.push('Left in 6 months: ' + contact.left6m + '   Joined: ' + contact.joined6m);
+  lines.push('Leading this team: ' + (contact.tenure || 'not given'));
+  lines.push('Left in 6 months: ' + (contact.left6m || 'not given') + '   Joined: ' + (contact.joined6m || 'not given'));
   lines.push('Consent: given at ' + (contact.consentAt || submittedAt));
   lines.push('Submitted: ' + submittedAt);
   lines.push('');
@@ -477,7 +489,7 @@ function notification(contact, result, submittedAt, token) {
   var msg = {
     from: NOTIFY_FROM,
     to: [NOTIFY_TO],
-    subject: 'MGI: ' + contact.firstName + ', ' + contact.company + ' · ' + result.state.name.toUpperCase() +
+    subject: 'MGI: ' + contact.firstName + (contact.company ? ', ' + contact.company : '') + ' · ' + result.state.name.toUpperCase() +
       ' (gap ' + result.gapWidth.label.toLowerCase() + ', signal ' + result.signal + '/' + SIGNAL_MAX + ')',
     text: text,
     html: '<pre style="font:13px/1.55 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;color:#17161A">' + esc(text) + '</pre>'

@@ -136,7 +136,7 @@ function changes(eran) {
     '<ul class="change-list">' + rows + '</ul></section>';
 }
 
-function receipt(numbers, eran, token) {
+function receipt(numbers, eran) {
   var counters = '<div class="counters">' +
     '<div class="counter"><span class="counter-n mono">' + numbers.reading_count + '</span>' +
     '<span class="counter-label">conditions still reading</span></div>' +
@@ -147,33 +147,35 @@ function receipt(numbers, eran, token) {
   var body = eran && eran.receipt
     ? '<p class="receipt-body">' + esc(eran.receipt) + '</p>' : '';
 
-  /* The page's only ask, and the same link Eran offers, so there is one
-     forward step and no second one to invent. The token rides along so
-     Clive knows which reading a booking came from. */
-  /* The second line offered a reply to the email as an alternative. Someone
-     who left no address has no email to reply to, so they are told to reply
-     to nothing. Only the booking link is true for both. */
+  return '<section class="receipt">' + counters + body + '</section>';
+}
+
+/* The page's only ask, at the end of the reading. The same link Eran
+   offers, so there is one forward step. The token rides along so Clive
+   knows which reading a booking came from. Someone who left no address
+   has no email to reply to, so that alternative is omitted. */
+function closingAsk(numbers, token) {
   var alt = (numbers.meta && numbers.meta.copy_to)
-    ? 'Thirty minutes with Clive. Replying to the email that brought you here ' +
-      'works just as well.'
-    : 'Thirty minutes with Clive.';
+    ? '<p class="cta-alt">Replying to the email that brought you here works just as well.</p>'
+    : '';
 
-  var cta = '<p class="cta"><a class="cta-link" href="' + esc(booking.link(token)) +
-    '" rel="noopener">Book your 30 mins</a></p>' +
-    '<p class="cta-alt">' + esc(alt) + '</p>';
-
-  return '<section class="receipt">' + counters + body + cta + '</section>';
+  return '<section class="closing-ask" aria-labelledby="next-step-heading">' +
+    '<h2 class="section-head mono" id="next-step-heading">The next step</h2>' +
+    '<p class="closing-ask-line">The reading is yours. If you want to talk it through, Clive has thirty minutes.</p>' +
+    '<p class="cta"><a class="cta-link" href="' + esc(booking.link(token)) +
+    '" rel="noopener">Talk your reading through with Clive (30 min)</a></p>' +
+    alt +
+    '</section>';
 }
 
 /* ---------- the conversation ----------
    Below the receipt, in the voice that wrote the report. It renders
    only when there is a model to answer with: a chat box that cannot
-   answer is worse than no chat box, and the receipt's own CTA is still
+   answer is worse than no chat box, and the closing ask is still
    there either way. */
 
-/* the conversation renders only when there is a model to answer with,
-   and the receipt's start button only where the conversation exists to
-   receive it */
+/* the conversation renders only when there is a model to answer with.
+   The closing ask is on the page either way. */
 function talkable(token) {
   return !!(token && process.env.ANTHROPIC_API_KEY);
 }
@@ -381,6 +383,13 @@ rings_.CSS,
 '.cta-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px}',
 '.cta-alt{margin:14px 0 0;font-family:var(--ui);font-size:.8rem;line-height:1.5;',
 '  color:var(--on-navy-mute);max-width:30em}',
+'.closing-ask{margin:42px 0 8px;padding:28px 0 0;border-top:1px solid var(--hair)}',
+'.closing-ask-line{margin:0 0 16px;max-width:34em}',
+'.closing-ask .cta-link{background:var(--navy);color:var(--on-navy);line-height:1.3;',
+'  max-width:100%}',
+'.closing-ask .cta-link:hover{background:color-mix(in srgb,var(--navy) 88%,var(--blue));',
+'  color:var(--on-navy)}',
+'.closing-ask .cta-alt{color:var(--ink-mute)}',
 
 /* the conversation */
 '.visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;',
@@ -573,7 +582,7 @@ var JS = [
 '        a.href=href;a.target="_blank";a.rel="noopener noreferrer";',
 '        /* the booking link gets a name. Anything else shows itself. */',
 '        a.textContent=(booking&&href.indexOf(booking.split("?")[0])===0)',
-'          ?"Book thirty minutes with Clive":href;',
+'          ?"Talk your reading through with Clive (30 min)":href;',
 '        el.appendChild(a);',
 '        last=m.index+href.length;',
 '      }',
@@ -704,10 +713,11 @@ function render(numbers, token) {
     readout(numbers, eran) + '\n' +
     cost(eran) + '\n' +
     changes(eran) + '\n' +
-    receipt(numbers, eran, token) + '\n' +
+    receipt(numbers, eran) + '\n' +
     talk(token) + '\n' +
     nextMove(eran, token) + '\n' +
     folded(numbers, eran) + '\n' +
+    closingAsk(numbers, token) + '\n' +
 
     '<footer class="foot">' + copyTo +
     ' Instrument ' + esc(numbers.meta.instrument) + '. ' +
