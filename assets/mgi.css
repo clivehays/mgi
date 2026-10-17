@@ -194,8 +194,8 @@ p{ margin: 0 0 18px; }
 }
 .landing .btn{ margin: 0; }
 /* The four things on the first screen fill the view, so the findings and
-   the folded sections start on the next one. The masthead sits above this
-   block, which is why the height is a viewport minus that bar. */
+   the folded sections start on the next one. On a phone the block stays
+   at the top: the cookie banner already takes the bottom. */
 .hero{
   min-height: calc(100vh - 96px);
   min-height: calc(100dvh - 96px);
@@ -211,7 +211,18 @@ p{ margin: 0 0 18px; }
 .below{ margin-top: 36px; }
 
 @media (min-width: 561px){
-  .landing{ padding: 48px 0 72px; }
+  /* The hero is the first screen under the masthead. 78px is that
+     bar. 100vh is the fallback where svh is missing. The content sits
+     in the vertical middle of that screen, still left aligned. */
+  .landing{ padding: 0 0 72px; }
+  .hero{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: calc(100vh - 78px);
+    min-height: calc(100svh - 78px);
+  }
   .landing h1{ margin-bottom: 14px; }
   .landing-time{ margin-bottom: 20px; }
   .proof{ margin-top: 20px; font-size: 18px; max-width: 32em; }
