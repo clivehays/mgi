@@ -312,6 +312,18 @@
 
   /* ---------- view switching ---------- */
 
+  /* The finish bar is fixed above the cookie banner, so on a short
+     phone it can sit on top of the two fields. Nudge the page until
+     team size is just above that bar. The tick and the button stay put. */
+  function revealFieldsAboveFinish() {
+    var bar = document.querySelector('.contact-finish');
+    var team = document.getElementById('f-team');
+    if (!bar || !team) return;
+    var gap = 12;
+    var overlap = team.getBoundingClientRect().bottom - (bar.getBoundingClientRect().top - gap);
+    if (overlap > 0) window.scrollBy(0, overlap);
+  }
+
   function show(view, push) {
     state.view = view;
     ['landing', 'questions', 'contact', 'sent'].forEach(function (v) {
@@ -420,6 +432,7 @@
       funnelMark(TOTAL);
       funnelSend(false);
       show('contact');
+      revealFieldsAboveFinish();
       var first = document.getElementById('f-first');
       if (first) first.focus({ preventScroll: true });
     }

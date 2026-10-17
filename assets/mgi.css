@@ -784,11 +784,8 @@ fieldset.scale{
     width: 100%;
     text-align: center;
   }
-  body.has-cookie-banner .contact-finish .form-note{
-    margin: 10px 0 0;
-  }
   body.has-cookie-banner .contact-view{
-    padding-bottom: calc(var(--banner-h, 0px) + 340px);
+    padding-bottom: calc(var(--banner-h, 0px) + 280px);
   }
 }
 
