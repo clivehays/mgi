@@ -252,5 +252,61 @@ CASES.forEach(function (c) {
   else ok('the email is delivered with no Eran');
 });
 
+/* The share block. s=p<crm id> when the stored source came from a DM
+   link, otherwise s=r<12 hex of visit_id>, otherwise no s=. The link
+   never carries the report token or an address. */
+console.log('\nShare with a fellow manager');
+var SHARE_BASE = 'https://managergap.com/?utm_source=referral&utm_medium=share&utm_campaign=referral';
+var VISIT = '0123456789abcdef0123456789abcdef';
+
+function expectLink(label, source, visitId, want) {
+  var got = page.shareLink(page.shareCode(source, visitId));
+  if (got === want) ok(label);
+  else bad(label + ' -> ' + got);
+}
+
+expectLink('a DM link passes on the CRM id',
+  { utm_source: 'dm', s: 'p1042' }, VISIT, SHARE_BASE + '&s=p1042');
+expectLink('leading zeros in the CRM id are kept',
+  { s: '  p0042  ' }, VISIT, SHARE_BASE + '&s=p0042');
+expectLink('a JSON string source is read the same way',
+  '{"s":"p99","utm_campaign":"spring"}', null, SHARE_BASE + '&s=p99');
+expectLink('anything other than p<digits> falls back to the visit id',
+  { s: 'spring' }, VISIT, SHARE_BASE + '&s=r0123456789ab');
+expectLink('an address in s= is not reused',
+  { s: 'ada@example.com' }, VISIT, SHARE_BASE + '&s=r0123456789ab');
+expectLink('a stored r= value is not passed on',
+  { s: 'rdeadbeef000' }, VISIT, SHARE_BASE + '&s=r0123456789ab');
+expectLink('no source still uses the visit id',
+  null, VISIT, SHARE_BASE + '&s=r0123456789ab');
+expectLink('neither id omits s=',
+  {}, 'nope', SHARE_BASE);
+if (page.shareLink('ada@example.com') === SHARE_BASE) ok('a code that is not p<digits> or r<12 hex> is dropped');
+else bad('shareLink echoed a value that is not an id');
+
+var shareNumbers = numbersOf.compute(ans(all(2)), { email: 'test@example.com', firstName: 'Test' },
+  { generated_at: '2026-09-02' });
+shareNumbers.eran = draft();
+var htmlShare = page.render(shareNumbers, TOKEN, page.shareCode({ s: 'p1042' }, VISIT));
+var shareSlice = (htmlShare.split('id="share-heading"')[1] || '').split('</section>')[0];
+var copied = 'data-share-copy="' + SHARE_BASE.replace(/&/g, '&amp;') + '&amp;s=p1042"';
+if (htmlShare.indexOf('Share with a fellow manager') === -1) bad('the share block is missing');
+else ok('the share block is on the page');
+if (shareSlice.indexOf('Copy link') === -1 || shareSlice.indexOf('Share on LinkedIn') === -1 ||
+    shareSlice.indexOf('Email it') === -1) bad('a share action is missing');
+else ok('copy, LinkedIn and email are all there');
+if (htmlShare.indexOf(copied) === -1) bad('the copy button does not carry s=p1042');
+else ok('the copy button carries s=p1042');
+if (shareSlice.indexOf(TOKEN) !== -1) bad('the share block contains the report token');
+else ok('the share block does not contain the report token');
+if (/test@example\.com|Test/.test(shareSlice)) bad('the share block contains a name or an address');
+else ok('the share block contains no name and no address');
+if (htmlShare.indexOf('.share{display:none}') === -1) bad('print does not hide the share block');
+else ok('the share block is hidden in print');
+
+var htmlBare = page.render(shareNumbers, TOKEN, '');
+if (htmlBare.indexOf('s=p') !== -1 || htmlBare.indexOf('s=r') !== -1) bad('an empty code still wrote s=');
+else ok('no s= when there is nothing to attribute');
+
 console.log('\n' + pass + ' passed, ' + fail + ' failed\n');
 process.exit(fail ? 1 : 0);

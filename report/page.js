@@ -168,6 +168,69 @@ function closingAsk(numbers, token) {
     '</section>';
 }
 
+/* ---------- share with a fellow manager ----------
+   Give-first: the reader passes the free assessment on. The link carries
+   campaign labels and, when known, one s= value. A DM link stores the
+   person's CRM id as source.s = p<digits>, and that id is passed on.
+   Otherwise s=r<id>, a 12-hex prefix of the submission's random visit_id.
+   No name, email, company or report token. */
+var SHARE_BASE = 'https://managergap.com/?utm_source=referral&utm_medium=share&utm_campaign=referral';
+
+function referrerId(visitId) {
+  var v = String(visitId || '').toLowerCase();
+  return /^[0-9a-f]{12,}$/.test(v) ? v.slice(0, 12) : '';
+}
+
+/* source.s from a stored submission. JSON text is accepted because a
+   text column comes back as a string; a jsonb column comes back as an
+   object. Anything that is not that shape yields ''. */
+function sourceS(source) {
+  var obj = source;
+  if (typeof obj === 'string') {
+    try { obj = JSON.parse(obj); } catch (e) { return ''; }
+  }
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return '';
+  if (typeof obj.s !== 'string') return '';
+  return obj.s.trim();
+}
+
+/* Digits only, from an s value that is exactly p<digits>. A longer or
+   mixed value is not a CRM id and is not reused. */
+function crmId(source) {
+  var m = /^p(\d{1,40})$/.exec(sourceS(source));
+  return m ? m[1] : '';
+}
+
+/* The s= value, without the key. p<crm id> wins. Otherwise r<visit
+   prefix>. Empty when neither is available. */
+function shareCode(source, visitId) {
+  var id = crmId(source);
+  if (id) return 'p' + id;
+  var ref = referrerId(visitId);
+  return ref ? 'r' + ref : '';
+}
+
+function shareLink(code) {
+  var c = String(code || '');
+  if (!/^(?:p\d{1,40}|r[0-9a-f]{12})$/.test(c)) c = '';
+  return SHARE_BASE + (c ? '&s=' + c : '');
+}
+
+function share(code) {
+  var url = shareLink(code);
+  var li = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url);
+  var mail = 'mailto:?subject=' + encodeURIComponent('A 5-minute read on your team') +
+    '&body=' + encodeURIComponent('I took this and found it useful. It shows how much of your team\u2019s week you actually see. Free, five minutes:\n\n' + url);
+  return '<section class="share" aria-labelledby="share-heading">' +
+    '<h2 class="section-head mono" id="share-heading">Share with a fellow manager</h2>' +
+    '<p class="share-line">Know a manager who would want to see their own gap? Pass it on. It is free and takes five minutes.</p>' +
+    '<p class="share-actions">' +
+    '<button type="button" class="share-btn" data-share-copy="' + esc(url) + '">Copy link</button>' +
+    '<a class="share-btn" href="' + esc(li) + '" target="_blank" rel="noopener">Share on LinkedIn</a>' +
+    '<a class="share-btn" href="' + esc(mail) + '">Email it</a>' +
+    '</p></section>';
+}
+
 /* ---------- the conversation ----------
    Below the receipt, in the voice that wrote the report. It renders
    only when there is a model to answer with: a chat box that cannot
@@ -478,7 +541,13 @@ rings_.CSS,
 '  .cta{display:none}',
 '  .sheet-link{border:1px solid #000}',
 '  .sheet-icon{background:#000;color:#fff}',
-'}'
+'  .share{display:none}',
+'}',
+'.share{margin:40px 0 0;padding-top:24px;border-top:1px solid var(--hair)}',
+'.share-line{margin:0 0 14px}',
+'.share-actions{display:flex;flex-wrap:wrap;gap:10px;margin:0;font-family:var(--ui);font-size:.85rem}',
+'.share-btn{display:inline-block;padding:8px 14px;border:1px solid currentColor;border-radius:4px;background:none;color:inherit;font:inherit;text-decoration:none;cursor:pointer}',
+'.share-btn:focus-visible{outline:2px solid var(--blue);outline-offset:3px}'
 ].join('\n');
 
 /* ---------- the behaviour ---------- */
@@ -674,12 +743,17 @@ var JS = [
 '    }',
 '',
 '  }',
-'})();'
+'})();',
+'(function(){var b=document.querySelector("[data-share-copy]");if(!b)return;',
+'b.addEventListener("click",function(){var u=b.getAttribute("data-share-copy");',
+'function ok(){b.textContent="Link copied";setTimeout(function(){b.textContent="Copy link";},2000);}',
+'if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(u).then(ok,function(){window.prompt("Copy this link",u);});}',
+'else{window.prompt("Copy this link",u);}});})();'
 ].join('\n');
 
 /* ---------- render ---------- */
 
-function render(numbers, token) {
+function render(numbers, token, code) {
   var eran = numbers.eran || null;
 
   var head = eran && eran.headline
@@ -718,6 +792,7 @@ function render(numbers, token) {
     nextMove(eran, token) + '\n' +
     folded(numbers, eran) + '\n' +
     closingAsk(numbers, token) + '\n' +
+    share(code) + '\n' +
 
     '<footer class="foot">' + copyTo +
     ' Instrument ' + esc(numbers.meta.instrument) + '. ' +
@@ -729,4 +804,13 @@ function render(numbers, token) {
     '</body>\n</html>\n';
 }
 
-module.exports = { render: render, statusLine: statusLine, CSS: CSS, JS: JS };
+module.exports = {
+  render: render,
+  referrerId: referrerId,
+  crmId: crmId,
+  shareCode: shareCode,
+  shareLink: shareLink,
+  statusLine: statusLine,
+  CSS: CSS,
+  JS: JS
+};
