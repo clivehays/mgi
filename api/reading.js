@@ -184,9 +184,29 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  /* s= for the share block. A DM link stores the person's CRM id as
+     source.s = p<digits>, and that id is passed on. Otherwise the first
+     12 hex characters of the random visit_id. Never the report token
+     and never anything personal. Best effort: a missing source column
+     still yields the visit id, and any failure omits s=. */
+  var code = '';
+  try {
+    var vs = submission || null;
+    if (!vs) {
+      var vr = await rest(TABLE + '?id=eq.' + row.submission_id + '&select=visit_id,source');
+      if (vr && vr.ok) {
+        vs = (await vr.json())[0];
+      } else {
+        var vrOnly = await rest(TABLE + '?id=eq.' + row.submission_id + '&select=visit_id');
+        vs = vrOnly && vrOnly.ok ? (await vrOnly.json())[0] : null;
+      }
+    }
+    code = page.shareCode(vs && vs.source, vs && vs.visit_id);
+  } catch (e) { code = ''; }
+
   try {
     headers(res);
-    res.status(200).send(page.render(payload, token));
+    res.status(200).send(page.render(payload, token, code));
   } catch (e) {
     console.error('MGI render failed for ' + token + ': ' + e.message);
     return holding(res, 500);
