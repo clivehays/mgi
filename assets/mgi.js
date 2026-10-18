@@ -121,7 +121,29 @@
     return clean;
   }
 
+  /* The owner's own browser. Set by assets/internal.js from
+     ?internal=1, remembered in localStorage and a first-party
+     cookie. Read here as well, so a missing script cannot fail
+     open and start counting him again. */
+  function isInternalVisitor() {
+    try {
+      if (window.MGIInternal && typeof window.MGIInternal.on === 'function' && window.MGIInternal.on()) {
+        return true;
+      }
+    } catch (e) {}
+    try {
+      if (localStorage.getItem('mgi-internal') === '1') return true;
+    } catch (e) {}
+    try {
+      return /(?:^|;\s*)mgi-internal=1(?:;|$)/.test(document.cookie || '');
+    } catch (e) {
+      return false;
+    }
+  }
+
   function funnelSend(useBeacon) {
+    /* no visit id, no beacon, no fetch. The assessment itself is unchanged. */
+    if (isInternalVisitor()) return;
     if (!funnel.sid) return;
     /* nothing new to report, and the leave-beacon is always worth sending.
        Reaching the contact step is news even though furthest stays at 20:
@@ -571,6 +593,9 @@
       source: readSource(),
       sid: funnel.sid
     };
+    /* The page still submits. The server drops the row, and the
+       emails, unless the table already has a column for the flag. */
+    if (isInternalVisitor()) payload.internal = true;
 
     fetch('/api/submit', {
       method: 'POST',
@@ -583,7 +608,7 @@
       /* The tag queues the conversion only when its id is set and
          cookies have been accepted. An empty id, or a refusal, does
          nothing, and a missing script never blocks the reading. */
-      if (window.MGILinkedIn) window.MGILinkedIn.track('assessmentCompleted');
+      if (!isInternalVisitor() && window.MGILinkedIn) window.MGILinkedIn.track('assessmentCompleted');
       /* The email is the destination. It is sent once the reading has
          been written, so its arrival is the signal that the page is
          ready, and there is no link to hand over before then.
@@ -606,7 +631,10 @@
         awaitReading(data.readingUrl);
         return;
       }
-      if (data && data.sending === false) throw new Error('nothing to send');
+      /* An internal run is a success even when nothing was stored
+         and nothing was sent. A normal visitor still hears about a
+         reading that could not be sent. */
+      if (!isInternalVisitor() && data && data.sending === false) throw new Error('nothing to send');
     }).catch(function () {
       el['sent-note'].textContent = 'Something went wrong at our end. Your answers are safe. Write to clive@managergap.com and he will send your reading over.';
       el['sent-note'].hidden = false;

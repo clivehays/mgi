@@ -14,6 +14,7 @@ var cache = {};
 
 var TRACKING = [
   'assets/tracking-config.js',
+  'assets/internal.js',
   'assets/consent.js',
   'assets/linkedin.js'
 ];

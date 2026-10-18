@@ -38,10 +38,28 @@
     return !!(window.MGIConsent && window.MGIConsent.get() === 'accepted');
   }
 
+  /* Same flag as the funnel. An internal browser loads no tag and
+     fires no conversion, including the one /booked sends on its own. */
+  function internalVisitor() {
+    try {
+      if (window.MGIInternal && typeof window.MGIInternal.on === 'function' && window.MGIInternal.on()) {
+        return true;
+      }
+    } catch (e) {}
+    try {
+      if (localStorage.getItem('mgi-internal') === '1') return true;
+    } catch (e) {}
+    try {
+      return /(?:^|;\s*)mgi-internal=1(?:;|$)/.test(document.cookie || '');
+    } catch (e) {
+      return false;
+    }
+  }
+
   /* The snippet Campaign Manager gives you, held until consent. */
   function load() {
     var id = partnerId();
-    if (!id || !consented() || loaded) return;
+    if (!id || !consented() || loaded || internalVisitor()) return;
     loaded = true;
 
     window._linkedin_partner_id = id;
@@ -64,6 +82,7 @@
 
   /* Returns true only when a call was actually queued. */
   function track(name) {
+    if (internalVisitor()) return false;
     var id = conversionId(name);
     if (id == null || !consented()) return false;
     load();

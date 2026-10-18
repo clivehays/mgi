@@ -29,6 +29,12 @@
      SAVE_SOURCE                 set to 1 to store the posted source
                                  object. Leave unset until the source
                                  column exists. Anything else ignores it.
+
+   An internal submission is the owner's own run (internal: true).
+   It is not stored and no email is sent, unless the table already
+   has an internal column, in which case the row is kept with that
+   flag set and the rest of the path runs as usual. This file does
+   not change the schema, and it does not read an IP.
    ============================================================= */
 
 var MGI = require('../assets/scoring.js');
@@ -206,6 +212,29 @@ module.exports = async function handler(req, res) {
     record['area_' + a.key + '_recency'] = a.best;
   });
 
+  /* The owner's own completion. Drop it on the floor unless the table
+     can already tell an internal row from a real one. Probing keeps a
+     missing column from failing the insert, and it keeps this file
+     from adding one. No IP is read off the request. */
+  if (body.internal === true) {
+    if (!(await internalColumnExists())) {
+      console.log('MGI_INTERNAL skipped');
+      /* sending stays true so the page does not tell him it failed.
+         Nothing is stored and nothing is emailed. */
+      return res.status(200).json({
+        ok: true,
+        stored: false,
+        internal: true,
+        notified: false,
+        sending: true,
+        email: contact.email || null,
+        readingUrl: null,
+        teaser: null
+      });
+    }
+    record.internal = true;
+  }
+
   // always leave a durable trace in the platform log, whatever else fails
   console.log('MGI_SUBMISSION ' + JSON.stringify(record));
 
@@ -365,6 +394,29 @@ function esc(s) {
 }
 
 /* ---------- durable store ---------- */
+
+/* True only when PostgREST will accept an `internal` column. A 400
+   (the column is not there) and a store that is not configured are
+   both false, which is the production case: skip the insert. */
+async function internalColumnExists() {
+  var url = process.env.SUPABASE_URL;
+  var key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return false;
+
+  try {
+    var res = await fetch(url.replace(/\/$/, '') + '/rest/v1/' + TABLE + '?select=internal&limit=1', {
+      method: 'GET',
+      headers: {
+        apikey: key,
+        Authorization: 'Bearer ' + key,
+        Accept: 'application/json'
+      }
+    });
+    return !!res.ok;
+  } catch (e) {
+    return false;
+  }
+}
 
 /* Returns the new row's id, or null if nothing was stored. The id is read
    back from the insert rather than found afterwards: the lookup this
