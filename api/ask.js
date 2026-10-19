@@ -50,14 +50,13 @@ module.exports = async function handler(req, res) {
     return json(res, 429, { error: 'busy' });
   }
 
-  /* On the limit, offer Clive. No countdown is ever shown: a number
-     counting down turns a conversation into a metered thing. */
+  /* On the limit, offer the company inbox. No countdown is ever shown: a
+     number counting down turns a conversation into a metered thing. */
   var n = await store.counts(token);
   if (n.total >= PER_TOKEN || n.today >= PER_DAY) {
     return json(res, 200, {
       done: true,
-      reply: 'We have covered a lot here. Write to contact@cloverera.com ' +
-        'and take it up with him directly. He reads these anyway.'
+      reply: 'We have covered a lot here. Write to us at contact@cloverera.com.'
     });
   }
 
