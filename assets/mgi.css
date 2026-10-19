@@ -286,10 +286,6 @@ p{ margin: 0 0 18px; }
   margin: 0 0 8px;
   max-width: 40em;
 }
-.findings-tag{
-  display: block;
-  margin: 0 0 8px;
-}
 .findings p{
   font-family: var(--serif);
   font-size: 16px;
