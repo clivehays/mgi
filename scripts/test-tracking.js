@@ -65,15 +65,34 @@ if (long.source.utm_source.length === 200) ok('a value is capped at 200 characte
 else bad('value length ' + long.source.utm_source.length);
 
 var li = {};
-source.applySource(li, { source: {
-  s: 'li-adA', utm_content: 'adA', li_fat_id: ' abc-123 ',
-  first_seen: '2026-10-19T06:00:00.000Z', restored: '1', li_other: 'no'
-} });
+source.applySource(li, {
+  cookieConsent: true,
+  source: {
+    s: 'li-adA', utm_content: 'adA', li_fat_id: ' abc-123 ',
+    first_seen: '2026-10-19T06:00:00.000Z', restored: '1', li_other: 'no'
+  }
+});
 if (JSON.stringify(li.source) === JSON.stringify({
   s: 'li-adA', utm_content: 'adA', li_fat_id: 'abc-123',
   first_seen: '2026-10-19T06:00:00.000Z', restored: '1'
-})) ok('li_fat_id, first_seen and restored are kept');
+})) ok('li_fat_id is stored once the cookie banner is accepted');
 else bad('li_fat_id source was ' + JSON.stringify(li.source));
+
+var held = {};
+source.applySource(held, { source: {
+  s: 'li-adA', utm_content: 'adA', li_fat_id: 'abc-123',
+  first_seen: '2026-10-19T06:00:00.000Z', restored: '1'
+} });
+if (JSON.stringify(held.source) === JSON.stringify({
+  s: 'li-adA', utm_content: 'adA',
+  first_seen: '2026-10-19T06:00:00.000Z', restored: '1'
+})) ok('without cookie consent, s and utm_* stay and li_fat_id is dropped');
+else bad('unconsented source was ' + JSON.stringify(held.source));
+
+var soft = {};
+source.applySource(soft, { cookieConsent: 'accepted', source: { s: 'x', li_fat_id: 'abc' } });
+if (JSON.stringify(soft.source) === JSON.stringify({ s: 'x' })) ok('only a boolean acceptance stores li_fat_id');
+else bad('a non-boolean consent stored ' + JSON.stringify(soft.source));
 
 var badMeta = {};
 source.applySource(badMeta, { source: { s: 'x', first_seen: 'yesterday', restored: 'yes' } });
@@ -170,8 +189,12 @@ if (/tracking-config\.js\?v=[0-9a-f]{8}/.test(tags) &&
 var client = read('assets/mgi.js');
 if (client.indexOf("track('assessmentCompleted')") !== -1) ok('submit fires the assessment conversion');
 else bad('submit does not fire the assessment conversion');
-if (client.indexOf('source: readSource()') !== -1) ok('both posts can carry source');
+if ((client.match(/source: sourceForPost\(\)/g) || []).length === 2) ok('both posts can carry source');
 else bad('source is not attached in the client');
+if ((client.match(/cookieConsent: consentAccepted\(\)/g) || []).length === 2 &&
+    /function sourceForPost\(\) \{[\s\S]*?if \(consentAccepted\(\) \|\| !src\.li_fat_id\) return src;[\s\S]*?k !== 'li_fat_id'/.test(client)) {
+  ok('li_fat_id is sent only after the cookie banner is accepted');
+} else bad('li_fat_id can be sent without cookie consent');
 
 if (/funnelStart\(\); go\(0\)/.test(client) && client.indexOf("return funnel.started ? 'start' : 'landing'") !== -1) {
   ok('pressing Start writes its own step');

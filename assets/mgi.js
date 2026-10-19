@@ -95,9 +95,11 @@
   }
 
   /* Campaign labels from the landing URL: utm_*, s= and li_fat_id. Kept
-     in sessionStorage for the visit and sent with both posts, with the
-     time they were first seen. The server writes them only when
-     SAVE_SOURCE=1.
+     in sessionStorage for the visit, with the time they were first seen.
+     s and utm_* are sent with both posts. li_fat_id stays in the tab so
+     a later acceptance can include it, and is sent only once the cookie
+     banner has been accepted. The server writes them only when
+     SAVE_SOURCE=1, and stores li_fat_id only when that post says so.
 
      Only after the visitor accepts cookies (the same choice that loads
      the LinkedIn tag) is the first-touch copy also kept in localStorage,
@@ -220,6 +222,19 @@
     return clean;
   }
 
+  /* What actually leaves the browser. The session copy can already hold
+     li_fat_id; this drops it until the banner is accepted, then includes
+     it from the next post on. s and utm_* go either way. */
+  function sourceForPost() {
+    var src = readSource();
+    if (consentAccepted() || !src.li_fat_id) return src;
+    var out = {};
+    Object.keys(src).forEach(function (k) {
+      if (k !== 'li_fat_id') out[k] = src[k];
+    });
+    return out;
+  }
+
   function funnelSend(useBeacon) {
     if (!funnel.sid) return;
     /* nothing new to report, and the leave-beacon is always worth sending.
@@ -242,7 +257,8 @@
       step: funnelStep(),
       device: device(),
       client: clientSignals(),
-      source: readSource()
+      source: sourceForPost(),
+      cookieConsent: consentAccepted()
     });
 
     try {
@@ -743,7 +759,8 @@
       energy: answers.energy,
       exposure: answers.exposure,
       submittedAt: new Date().toISOString(),
-      source: readSource(),
+      source: sourceForPost(),
+      cookieConsent: consentAccepted(),
       sid: funnel.sid
     };
 

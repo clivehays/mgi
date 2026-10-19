@@ -1,12 +1,14 @@
 /* =============================================================
    Campaign source.
 
-   The browser sends every utm_* parameter, s= and li_fat_id from the
-   landing URL, kept for the visit and posted as `source`, with the
+   The browser sends every utm_* parameter and s= from the landing
+   URL, kept for the visit and posted as `source`, with the
    first-seen time and a restored flag when it came from the
-   consent-gated first-touch store. The column is not
-   on the table yet. SAVE_SOURCE=1 is the switch that starts writing
-   it, and it stays off until the column exists.
+   consent-gated first-touch store. li_fat_id, LinkedIn's click id,
+   is posted and stored only when the same request says the cookie
+   banner was accepted. The column is not on the table yet.
+   SAVE_SOURCE=1 is the switch that starts writing it, and it stays
+   off until the column exists.
 
    With the switch off the field is left off the row, so an insert
    never names a column the database does not have and never errors
@@ -15,18 +17,22 @@
 
 function applySource(row, body) {
   if (process.env.SAVE_SOURCE !== '1') return row;
-  var clean = cleanSource(body && body.source);
+  /* cookieConsent is the banner, not the research checkbox. A later
+     acceptance in the same visit sends true from then on. */
+  var allowClickId = !!(body && body.cookieConsent === true);
+  var clean = cleanSource(body && body.source, allowClickId);
   if (clean) row.source = clean;
   return row;
 }
 
 /* Keys besides utm_* that may be stored. li_fat_id is LinkedIn's click
-   id from the ad URL. first_seen is when this browser first saw the
-   campaign labels, and restored='1' marks labels brought back from the
-   30-day first-touch store (only ever written after cookie consent). */
+   id from the ad URL, kept only when allowClickId is set. first_seen
+   is when this browser first saw the campaign labels, and restored='1'
+   marks labels brought back from the 30-day first-touch store (only
+   ever written after cookie consent). */
 var EXTRA = { s: 1, li_fat_id: 1, first_seen: 1, restored: 1 };
 
-function cleanSource(src) {
+function cleanSource(src, allowClickId) {
   if (!src || typeof src !== 'object' || Array.isArray(src)) return null;
   var out = {};
   var n = 0;
@@ -35,6 +41,7 @@ function cleanSource(src) {
     if (n >= 20) break;
     var k = keys[i];
     if (!EXTRA[k] && k.indexOf('utm_') !== 0) continue;
+    if (k === 'li_fat_id' && !allowClickId) continue;
     if (!/^[A-Za-z0-9_]{1,40}$/.test(k)) continue;
     var v = src[k];
     if (typeof v !== 'string') continue;
