@@ -1,29 +1,21 @@
 /* =============================================================
-   Content-address the asset URLs in index.html.
+   Content-address the asset URLs in index.html and booked.html.
 
-   The bug this removes: index.html is served max-age=0 and is never
-   edge-cached, so a visitor always gets fresh markup. /assets/ is a
-   different story. vercel.json asks for max-age=0 there too, but the
-   proxy in front of the site rewrites it to max-age=14400, so a browser
-   can hold a four-hour-old script against markup from a minute ago.
-   The first element the old script does not recognise used to throw and
-   abandon the rest of the render.
+   Markup is always fresh. A versioned asset URL (?v=<hash>) is cached
+   for a year as immutable, which is safe because the hash is the
+   contents: new markup names a new URL, and old markup keeps its pair.
 
-   Stamping each reference with a hash of that file's contents makes the
-   pair inseparable. Markup from a given deploy names exactly the script
-   from that deploy, so:
+   The bare path is a different cache key. It used to carry the same
+   immutable year-long header, so a browser or edge that had fetched
+   /assets/mgi.js once kept that body for a year after the file changed.
+   vercel.json now sends max-age=0 on any /assets file that has no ?v=,
+   and this script writes a temporary redirect from each bare stamped
+   path to its current hash. The redirect is temporary so a later stamp
+   cannot be pinned by a cached permanent redirect. Fonts under
+   /assets/fonts/ stay immutable and unstamped: they are referenced from
+   CSS and they do not change.
 
-     new markup  -> new hash -> new URL -> cache miss -> new script
-     old markup  -> old hash -> old URL -> old script, consistent
-
-   A mismatch stops being possible rather than being made less likely,
-   and it no longer depends on anything the proxy chooses to do. It also
-   means the long asset cache becomes a benefit instead of a hazard.
-
-   Fonts under /assets/fonts/ are left alone: they are already immutable,
-   referenced from CSS rather than markup, and they do not change.
-
-     node scripts/stamp-assets.js          rewrite index.html
+     node scripts/stamp-assets.js          rewrite the pages and vercel.json
      node scripts/stamp-assets.js --check  exit 1 if any stamp is stale
    ============================================================= */
 
@@ -56,6 +48,7 @@ function hashOf(rel) {
 var RE = /((?:src|href)=")(\/assets\/(?!fonts\/)[^"?]+)(\?v=[0-9a-f]+)?(")/g;
 
 var failed = 0;
+var stamped = {};
 
 PAGES.forEach(function (page) {
   var file = path.join(ROOT, page);
@@ -77,6 +70,7 @@ PAGES.forEach(function (page) {
       return m;
     }
     var want = '?v=' + h;
+    stamped[rel] = h;
     seen.push({ rel: rel, hash: h, was: existing || '(none)' });
     if (existing !== want) stale.push(rel);
     return lead + rel + want + tail;
@@ -102,6 +96,56 @@ PAGES.forEach(function (page) {
     console.log('  ' + seen.length + ' reference(s) stamped');
   }
 });
+
+/* Bare /assets/<file> must follow the hash the pages name. A permanent
+   redirect would itself be cacheable and would pin the previous hash,
+   so these stay temporary and the script rewrites them on every stamp. */
+function isAssetRedirect(r) {
+  return r && typeof r.source === 'string' &&
+    /^\/assets\/[^/]+$/.test(r.source) &&
+    Array.isArray(r.missing) &&
+    r.missing.some(function (m) { return m && m.type === 'query' && m.key === 'v'; });
+}
+
+function wantedRedirects() {
+  return Object.keys(stamped).sort().map(function (rel) {
+    return {
+      source: rel,
+      missing: [{ type: 'query', key: 'v' }],
+      destination: rel + '?v=' + stamped[rel],
+      permanent: false
+    };
+  });
+}
+
+function syncRedirects() {
+  var vfile = path.join(ROOT, 'vercel.json');
+  var cfg = JSON.parse(fs.readFileSync(vfile, 'utf8'));
+  var want = wantedRedirects();
+  var current = (cfg.redirects || []).filter(isAssetRedirect);
+  var same = JSON.stringify(current) === JSON.stringify(want);
+
+  if (check) {
+    if (same) console.log('\nvercel.json asset redirects match');
+    else {
+      console.log('\nvercel.json asset redirects are stale. Run: node scripts/stamp-assets.js');
+      failed++;
+    }
+    return;
+  }
+
+  if (same) {
+    console.log('\nvercel.json asset redirects already current');
+    return;
+  }
+
+  var rest = (cfg.redirects || []).filter(function (r) { return !isAssetRedirect(r); });
+  cfg.redirects = want.concat(rest);
+  fs.writeFileSync(vfile, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
+  console.log('\nvercel.json  ' + want.length + ' asset redirect(s) written');
+}
+
+syncRedirects();
 
 if (check) {
   if (failed) {

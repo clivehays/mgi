@@ -324,9 +324,10 @@ which refuses a push whose asset stamps are stale.
 
 ### Editing anything under `assets/`
 
-`index.html` names each asset by a hash of its contents (`mgi.js?v=3fbd8abc`) and
-`vercel.json` serves `/assets/` immutable for a year on the strength of it. Change a
-file there and you must re-stamp:
+`index.html` names each asset by a hash of its contents (`mgi.js?v=3fbd8abc`).
+`vercel.json` serves that versioned URL immutable for a year. A request for the
+same file with no `?v=` redirects to the current hash and is not cached, so the
+bare path cannot keep an old copy. Change a file there and you must re-stamp:
 
 ```
 npm run stamp

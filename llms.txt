@@ -11,8 +11,8 @@
 - Not the same as the earlier "Manager Gap Index" (a 10-minute company-level score published by Clover ERA in early 2026). This 20-question assessment is the current instrument.
 
 ## Author
-- Clive Hays, co-founder and CEO of Clover ERA Inc. Co-author with Neil Hays of The Trillion Dollar Problem and Already Gone: 78 Ways to Miss Someone Leaving (2026). LinkedIn: https://www.linkedin.com/in/clivehays
+- Clive Hays, co-founder and CEO of Clover ERA Inc. Co-author with Neil Hays of The Trillion Dollar Problem and Already Gone (2026). LinkedIn: https://www.linkedin.com/in/clivehays
 
 ## Related
-- [RRIDA](https://rrida.com/): the team health tool that tracks a team's state daily, from the same founders.
+- [RRIDA](https://rrida.com/): RRIDA is a manager enablement and coaching tool that helps managers understand their teams, improve the outcomes they get and close the manager gap. It pairs a daily anonymous team pulse, which takes each team member 30 seconds a day, with Eran, an AI coach for managers.
 - [Clover ERA books](https://cloverera.com/books/)
