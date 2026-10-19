@@ -608,7 +608,7 @@
       }
       if (data && data.sending === false) throw new Error('nothing to send');
     }).catch(function () {
-      el['sent-note'].textContent = 'Something went wrong at our end. Your answers are safe. Write to clive@managergap.com and he will send your reading over.';
+      el['sent-note'].textContent = 'Something went wrong at our end. Your answers are safe. Write to contact@cloverera.com and he will send your reading over.';
       el['sent-note'].hidden = false;
     });
   }
