@@ -219,11 +219,11 @@ function shareLink(code) {
 function share(code) {
   var url = shareLink(code);
   var li = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url);
-  var mail = 'mailto:?subject=' + encodeURIComponent('A 5-minute read on your team') +
-    '&body=' + encodeURIComponent('I took this and found it useful. It shows how much of your team\u2019s week you actually see. Free, five minutes:\n\n' + url);
+  var mail = 'mailto:?subject=' + encodeURIComponent('20 questions, about 5 minutes, on your team') +
+    '&body=' + encodeURIComponent('I took this and found it useful. It shows how much of your team\u2019s week you actually see. Free. 20 questions, about 5 minutes:\n\n' + url);
   return '<section class="share" aria-labelledby="share-heading">' +
     '<h2 class="section-head mono" id="share-heading">Share with a fellow manager</h2>' +
-    '<p class="share-line">Know a manager who would want to see their own gap? Pass it on. It is free and takes five minutes.</p>' +
+    '<p class="share-line">Know a manager who would want to see their own gap? Pass it on. It is free: 20 questions, about 5 minutes.</p>' +
     '<p class="share-actions">' +
     '<button type="button" class="share-btn" data-share-copy="' + esc(url) + '">Copy link</button>' +
     '<a class="share-btn" href="' + esc(li) + '" target="_blank" rel="noopener">Share on LinkedIn</a>' +

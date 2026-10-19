@@ -56,7 +56,7 @@ module.exports = async function handler(req, res) {
   if (n.total >= PER_TOKEN || n.today >= PER_DAY) {
     return json(res, 200, {
       done: true,
-      reply: 'We have covered a lot here. Write to clive@managergap.com ' +
+      reply: 'We have covered a lot here. Write to contact@cloverera.com ' +
         'and take it up with him directly. He reads these anyway.'
     });
   }

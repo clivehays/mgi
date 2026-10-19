@@ -80,7 +80,7 @@ function holding(res, code) {
     '<h1>' + head + '</h1>' +
     '<p>' + body + '</p>' +
     '<p>Write to ' +
-    '<!--email_off--><a href="mailto:clive@managergap.com">clive@managergap.com</a><!--/email_off-->' +
+    '<!--email_off--><a href="mailto:contact@cloverera.com">contact@cloverera.com</a><!--/email_off-->' +
     close + '</p>' +
     '<p><button type="button" class="cookie-settings" data-cookie-settings>Cookie settings</button></p>' +
     '</div>' + trackingTags() + '</body></html>');
