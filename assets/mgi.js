@@ -55,8 +55,15 @@
     reachedContact: false,
     submitted: false,
     lastSent: -1,
-    sentContact: false
+    sentContact: false,
+    started: false,
+    sentStart: false
   };
+
+  /* Sends go out one at a time, so the Start event cannot land after
+     the question 1 event and roll the row back. */
+  var funnelQueue = Promise.resolve();
+  var beaconCount = 0;
 
   function funnelId() {
     try {
@@ -87,10 +94,95 @@
     return 'desktop';
   }
 
-  /* Campaign labels from the landing URL. utm_* and s= only. Kept in
-     sessionStorage for the visit and sent with both posts. The server
-     writes them only when SAVE_SOURCE=1. */
+  /* Campaign labels from the landing URL: utm_*, s= and li_fat_id. Kept
+     in sessionStorage for the visit and sent with both posts, with the
+     time they were first seen. The server writes them only when
+     SAVE_SOURCE=1.
+
+     Only after the visitor accepts cookies (the same choice that loads
+     the LinkedIn tag) is the first-touch copy also kept in localStorage,
+     for 30 days, and brought back on a later visit that arrives with no
+     labels. Without that consent nothing outlives the tab, and a
+     withdrawal deletes the stored copy. */
   var SOURCE_KEY = 'mgi-source';
+  var FIRST_TOUCH_KEY = 'mgi-first-touch';
+  var FIRST_TOUCH_DAYS = 30;
+  var ATTR_KEYS = { s: 1, li_fat_id: 1 };
+
+  function isAttrKey(k) {
+    return !!ATTR_KEYS[k] || k.indexOf('utm_') === 0;
+  }
+
+  function hasAttr(src) {
+    return Object.keys(src || {}).some(isAttrKey);
+  }
+
+  function consentAccepted() {
+    return !!(window.MGIConsent && window.MGIConsent.get && window.MGIConsent.get() === 'accepted');
+  }
+
+  function readFirstTouch() {
+    try {
+      var raw = localStorage.getItem(FIRST_TOUCH_KEY);
+      if (!raw) return null;
+      var v = JSON.parse(raw);
+      if (!v || typeof v !== 'object' || !v.source || !(Number(v.expires) > Date.now())) {
+        localStorage.removeItem(FIRST_TOUCH_KEY);
+        return null;
+      }
+      return v.source;
+    } catch (e) { return null; }
+  }
+
+  function clearFirstTouch() {
+    try { localStorage.removeItem(FIRST_TOUCH_KEY); } catch (e) {}
+  }
+
+  /* First touch wins: an unexpired copy is never overwritten. */
+  function persistFirstTouch() {
+    if (!consentAccepted()) return;
+    if (readFirstTouch()) return;
+    var src = readSource();
+    if (!hasAttr(src) || src.restored) return;
+    var keep = {};
+    Object.keys(src).forEach(function (k) {
+      if (isAttrKey(k) || k === 'first_seen') keep[k] = src[k];
+    });
+    try {
+      localStorage.setItem(FIRST_TOUCH_KEY, JSON.stringify({
+        source: keep,
+        expires: Date.now() + FIRST_TOUCH_DAYS * 24 * 60 * 60 * 1000
+      }));
+    } catch (e) { /* storage blocked: the session copy still works */ }
+  }
+
+  /* A return visit with no labels of its own, and none yet this tab. */
+  function restoreFirstTouch() {
+    if (!consentAccepted()) return;
+    var current = readSource();
+    if (hasAttr(current)) return;
+    var stored = readFirstTouch();
+    if (!stored || !hasAttr(stored)) return;
+    var out = {};
+    Object.keys(stored).forEach(function (k) {
+      if ((isAttrKey(k) || k === 'first_seen') && typeof stored[k] === 'string') out[k] = stored[k];
+    });
+    out.restored = '1';
+    try { sessionStorage.setItem(SOURCE_KEY, JSON.stringify(out)); } catch (e) {}
+  }
+
+  function sourceInit() {
+    readSource();
+    if (window.MGIConsent && window.MGIConsent.get && window.MGIConsent.get() === 'rejected') clearFirstTouch();
+    restoreFirstTouch();
+    persistFirstTouch();
+    if (window.MGIConsent && window.MGIConsent.onChange) {
+      window.MGIConsent.onChange(function (choice) {
+        if (choice === 'accepted') persistFirstTouch();
+        else clearFirstTouch();
+      });
+    }
+  }
 
   function readSource() {
     var stored = {};
@@ -102,16 +194,23 @@
 
     try {
       var params = new URLSearchParams(window.location.search);
+      var fresh = false;
       params.forEach(function (value, key) {
-        if (key !== 's' && key.indexOf('utm_') !== 0) return;
+        if (!isAttrKey(key)) return;
         if (!value) return;
+        if (!fresh) {
+          /* labels in the URL replace a restored first touch for this tab */
+          if (stored.restored) stored = {};
+          fresh = true;
+        }
         stored[key] = String(value).slice(0, 200);
       });
+      if (fresh && !stored.first_seen) stored.first_seen = new Date().toISOString();
     } catch (e) { /* a broken query string is not a reason to drop the visit */ }
 
     var clean = {};
     Object.keys(stored).forEach(function (k) {
-      if (k !== 's' && k.indexOf('utm_') !== 0) return;
+      if (!isAttrKey(k) && k !== 'first_seen' && k !== 'restored') return;
       if (!/^[A-Za-z0-9_]{1,40}$/.test(k)) return;
       if (typeof stored[k] !== 'string' || !stored[k]) return;
       clean[k] = stored[k].slice(0, 200);
@@ -127,43 +226,119 @@
        Reaching the contact step is news even though furthest stays at 20:
        that question was already posted when it opened. */
     var contactNews = funnel.reachedContact && !funnel.sentContact;
-    if (!useBeacon && funnel.furthest <= funnel.lastSent && !funnel.submitted && !contactNews) return;
+    var startNews = funnel.started && !funnel.sentStart;
+    if (!useBeacon && funnel.furthest <= funnel.lastSent && !funnel.submitted && !contactNews && !startNews) return;
     funnel.lastSent = funnel.furthest;
     funnel.sentContact = funnel.reachedContact;
+
+    if (funnel.started) funnel.sentStart = true;
+    funnelSave();
 
     var payload = JSON.stringify({
       sid: funnel.sid,
       furthest: funnel.furthest,
       reachedContact: funnel.reachedContact,
       submitted: funnel.submitted,
+      step: funnelStep(),
       device: device(),
+      client: clientSignals(),
       source: readSource()
     });
 
     try {
       if (useBeacon && navigator.sendBeacon) {
+        beaconCount++;
         navigator.sendBeacon('/api/funnel', new Blob([payload], { type: 'application/json' }));
         return;
       }
-      fetch('/api/funnel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: payload,
-        keepalive: true
-      }).catch(function () {});
+      /* one at a time and in order, so the Start write cannot land after
+         the question 1 write. A send still waiting when a leave-beacon
+         goes out is dropped: the beacon already carries newer state. */
+      var beaconsAtQueue = beaconCount;
+      funnelQueue = funnelQueue.then(function () {
+        if (beaconCount !== beaconsAtQueue) return;
+        return fetch('/api/funnel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          keepalive: true
+        }).catch(function () {});
+      });
     } catch (e) { /* telemetry never interrupts the assessment */ }
+  }
+
+  /* The furthest milestone as a word, for the report. */
+  function funnelStep() {
+    if (funnel.submitted) return 'submitted';
+    if (funnel.reachedContact) return 'contact';
+    var f = funnel.furthest;
+    if (f >= 20) return 'q20';
+    if (f >= 15) return 'q15';
+    if (f >= 10) return 'q10';
+    if (f >= 5) return 'q5';
+    if (f >= 1) return 'q1';
+    return funnel.started ? 'start' : 'landing';
+  }
+
+  /* Sizes only, so the server can flag a window larger than its own
+     screen. The server keeps the flag, not the numbers. */
+  function clientSignals() {
+    var scr = window.screen || {};
+    return {
+      wd: navigator.webdriver === true,
+      sw: scr.width || 0,
+      sh: scr.height || 0,
+      vw: window.innerWidth || 0,
+      vh: window.innerHeight || 0
+    };
+  }
+
+  /* Pressing Start is its own event, written before question 1 shows. */
+  function funnelStart() {
+    funnel.started = true;
+    if (!funnel.sentStart) funnelSend(false);
   }
 
   function funnelMark(n) {
     if (n > funnel.furthest) funnel.furthest = n;
-    /* checkpoint every fifth question, so a lost leave-beacon still
+    /* question 1, then every fifth question, so a lost leave-beacon still
        leaves a usable trace of roughly how far someone got */
-    if (funnel.furthest % 5 === 0) funnelSend(false);
+    if (funnel.furthest === 1 || funnel.furthest % 5 === 0) funnelSend(false);
+  }
+
+  /* The visit id outlives a reload, so its progress must too, or the
+     reloaded page's leave-beacon would step the row back to landing. */
+  var FUNNEL_KEY = 'mgi-visit-progress';
+
+  function funnelSave() {
+    try {
+      sessionStorage.setItem(FUNNEL_KEY, JSON.stringify({
+        furthest: funnel.furthest,
+        reachedContact: funnel.reachedContact,
+        submitted: funnel.submitted,
+        started: funnel.started
+      }));
+    } catch (e) {}
+  }
+
+  function funnelRestore() {
+    try {
+      var v = JSON.parse(sessionStorage.getItem(FUNNEL_KEY) || 'null');
+      if (!v || typeof v !== 'object') return;
+      var f = Number(v.furthest);
+      if (isFinite(f) && f > funnel.furthest) funnel.furthest = Math.min(Math.floor(f), TOTAL);
+      if (v.reachedContact === true) funnel.reachedContact = true;
+      if (v.submitted === true) funnel.submitted = true;
+      if (v.started === true) funnel.started = funnel.sentStart = true;
+      funnel.lastSent = funnel.furthest;
+      funnel.sentContact = funnel.reachedContact;
+    } catch (e) {}
   }
 
   function funnelInit() {
     funnel.sid = funnelId();
     if (!funnel.sid) return;
+    funnelRestore();
     window.addEventListener('pagehide', function () { funnelSend(true); });
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'hidden') funnelSend(true);
@@ -184,7 +359,7 @@
       el[id] = document.getElementById(id);
     });
 
-    readSource();
+    sourceInit();
     restore();
     funnelInit();
 
@@ -192,9 +367,9 @@
        history without ever stepping off the site */
     history.replaceState({ view: state.view === 'sent' ? 'sent' : 'landing', index: 0 }, '');
 
-    el['btn-start'].addEventListener('click', function () { go(0); });
+    el['btn-start'].addEventListener('click', function () { funnelStart(); go(0); });
     if (el['btn-start-2']) {
-      el['btn-start-2'].addEventListener('click', function () { go(0); });
+      el['btn-start-2'].addEventListener('click', function () { funnelStart(); go(0); });
     }
     el['btn-back'].addEventListener('click', back);
     el['btn-next'].addEventListener('click', next);

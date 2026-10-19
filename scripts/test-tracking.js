@@ -64,8 +64,54 @@ source.applySource(long, { source: { utm_source: new Array(250).join('a') } });
 if (long.source.utm_source.length === 200) ok('a value is capped at 200 characters');
 else bad('value length ' + long.source.utm_source.length);
 
+var li = {};
+source.applySource(li, { source: {
+  s: 'li-adA', utm_content: 'adA', li_fat_id: ' abc-123 ',
+  first_seen: '2026-10-19T06:00:00.000Z', restored: '1', li_other: 'no'
+} });
+if (JSON.stringify(li.source) === JSON.stringify({
+  s: 'li-adA', utm_content: 'adA', li_fat_id: 'abc-123',
+  first_seen: '2026-10-19T06:00:00.000Z', restored: '1'
+})) ok('li_fat_id, first_seen and restored are kept');
+else bad('li_fat_id source was ' + JSON.stringify(li.source));
+
+var badMeta = {};
+source.applySource(badMeta, { source: { s: 'x', first_seen: 'yesterday', restored: 'yes' } });
+if (JSON.stringify(badMeta.source) === JSON.stringify({ s: 'x' })) ok('a malformed first_seen or restored is dropped');
+else bad('malformed meta was ' + JSON.stringify(badMeta.source));
+
 if (was === undefined) delete process.env.SAVE_SOURCE;
 else process.env.SAVE_SOURCE = was;
+
+console.log('\nFunnel bot signals are coarse');
+
+var funnel = require('../api/funnel.js');
+var CHROME = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36';
+var IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
+[
+  [CHROME, 'human'],
+  [IPHONE, 'human'],
+  [CHROME.replace('Chrome/', 'HeadlessChrome/'), 'headless'],
+  ['LinkedInBot/1.0 (compatible; Mozilla/5.0; Apache-HttpClient +http://www.linkedin.com)', 'linkedinbot'],
+  ['Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', 'bot'],
+  ['curl/8.4.0', 'bot'],
+  ['', 'bot']
+].forEach(function (c) {
+  var got = funnel.uaClass(c[0]);
+  if (got === c[1]) ok('user agent class ' + c[1] + (c[0] ? '' : ' (empty)'));
+  else bad('user agent ' + c[0].slice(0, 40) + ' was ' + got);
+});
+if (funnel.screenFlag({ sw: 1920, sh: 1080, vw: 1903, vh: 960 }, CHROME) === 'ok') ok('a normal window is ok');
+else bad('a normal window was flagged');
+if (funnel.screenFlag({ sw: 800, sh: 600, vw: 1920, vh: 1080 }, CHROME) === 'mismatch') ok('a window larger than its screen is flagged');
+else bad('a window larger than its screen passed');
+if (funnel.screenFlag({ sw: 0, sh: 0, vw: 800, vh: 600 }, CHROME) === 'mismatch') ok('a zero screen is flagged');
+else bad('a zero screen passed');
+if (funnel.screenFlag({ sw: 1920, sh: 1080, vw: 1920, vh: 1080 }, IPHONE) === 'mismatch') ok('a phone on a desktop screen is flagged');
+else bad('a phone on a desktop screen passed');
+var info = funnel.clientInfo({ client: { wd: true, sw: 1, sh: 1, vw: 1, vh: 1, extra: 'x' } }, CHROME);
+if (JSON.stringify(info) === JSON.stringify({ ua: 'human', wd: true, scr: 'ok' })) ok('only the three flags are kept, never the sizes');
+else bad('client info was ' + JSON.stringify(info));
 
 console.log('\nThe Insight Tag waits for consent and an id');
 
@@ -126,6 +172,24 @@ if (client.indexOf("track('assessmentCompleted')") !== -1) ok('submit fires the 
 else bad('submit does not fire the assessment conversion');
 if (client.indexOf('source: readSource()') !== -1) ok('both posts can carry source');
 else bad('source is not attached in the client');
+
+if (/funnelStart\(\); go\(0\)/.test(client) && client.indexOf("return funnel.started ? 'start' : 'landing'") !== -1) {
+  ok('pressing Start writes its own step');
+} else bad('Start does not write a step');
+if (/funnel\.furthest === 1 \|\| funnel\.furthest % 5 === 0/.test(client)) ok('question 1 is a checkpoint');
+else bad('question 1 is not a checkpoint');
+if (client.indexOf('keepalive: true') !== -1 && client.indexOf('navigator.sendBeacon') !== -1) ok('sends use keepalive or a beacon');
+else bad('a send can be lost on leave');
+if (/li_fat_id: 1/.test(client)) ok('li_fat_id is captured');
+else bad('li_fat_id is not captured');
+if (/function persistFirstTouch\(\) \{\s*if \(!consentAccepted\(\)\) return;/.test(client) &&
+    /function restoreFirstTouch\(\) \{\s*if \(!consentAccepted\(\)\) return;/.test(client)) {
+  ok('the first-touch store waits for cookie consent');
+} else bad('the first-touch store does not wait for consent');
+if (/FIRST_TOUCH_DAYS = 30/.test(client)) ok('first touch expires after 30 days');
+else bad('first-touch expiry is not 30 days');
+if (/else clearFirstTouch\(\)/.test(client)) ok('a withdrawal deletes the first touch');
+else bad('a withdrawal leaves the first touch');
 
 var booked = read('booked.html');
 if (/data-conversion="callBooked"/.test(booked)) ok('the booked page names its conversion');
