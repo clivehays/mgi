@@ -210,6 +210,31 @@ p{ margin: 0 0 18px; }
 }
 .below{ margin-top: 36px; }
 
+/* First screen, option A (20 Oct 2026): a two-weight sub-line, the
+   finding set off by a rule, and the four states named with their dots. */
+.landing-time{ font-weight: 400; color: var(--ink-2); line-height: 1.45; max-width: 34em; }
+.landing-time .sub-strong{ font-weight: 600; color: var(--ink); }
+.landing-time em{ font-family: var(--serif); font-style: italic; font-size: 1.04em; }
+.hero .proof{ padding-left: 14px; border-left: 2px solid var(--rule); }
+.proof-later{ margin: 28px 0 0; }
+.state-row{
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.state-row li{ display: flex; align-items: center; gap: 8px; }
+.state-dot{ width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
 @media (min-width: 561px){
   /* The hero is the first screen under the masthead. 78px is that
      bar. 100vh is the fallback where svh is missing. The content sits
@@ -226,6 +251,11 @@ p{ margin: 0 0 18px; }
   .landing h1{ margin-bottom: 14px; }
   .landing-time{ margin-bottom: 20px; }
   .proof{ margin-top: 20px; font-size: 18px; max-width: 32em; }
+  .landing h1{ font-size: clamp(30px, 7.4vw, 48px); max-width: 13.5em; text-wrap: balance; }
+  .landing-time{ font-size: 17px; margin-bottom: 24px; }
+  .btn-hero{ font-size: 16px; padding: 16px 30px; }
+  .hero .proof{ margin-top: 24px; }
+  .state-row{ margin-top: 26px; gap: 8px 22px; font-size: 11px; }
   .below{ margin-top: 48px; }
 }
 
@@ -234,6 +264,9 @@ p{ margin: 0 0 18px; }
   .landing h1{ margin-bottom: 8px; }
   .landing-time{ font-size: 15px; margin-bottom: 14px; }
   .proof{ font-size: 15px; margin-top: 14px; }
+  .landing-time{ font-size: 15.5px; }
+  .btn-hero{ display: block; width: 100%; text-align: center; padding: 16px 20px; font-size: 16px; }
+  .hero .proof{ font-size: 16px; }
   .states li{ padding: 4px 0; }
 }
 
