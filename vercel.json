@@ -124,6 +124,17 @@
       "permanent": false
     },
     {
+      "source": "/assets/internal.js",
+      "missing": [
+        {
+          "type": "query",
+          "key": "v"
+        }
+      ],
+      "destination": "/assets/internal.js?v=522aabb0",
+      "permanent": false
+    },
+    {
       "source": "/assets/linkedin.js",
       "missing": [
         {
@@ -131,7 +142,7 @@
           "key": "v"
         }
       ],
-      "destination": "/assets/linkedin.js?v=e6ea2832",
+      "destination": "/assets/linkedin.js?v=932b943b",
       "permanent": false
     },
     {
@@ -153,7 +164,7 @@
           "key": "v"
         }
       ],
-      "destination": "/assets/mgi.js?v=8b51f34d",
+      "destination": "/assets/mgi.js?v=02ef7864",
       "permanent": false
     },
     {
