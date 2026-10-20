@@ -63,8 +63,8 @@ function holding(res, code) {
       'wrong with your answers and there is nothing to do again.'
     : 'Something went wrong building this page and Clive has been told. ' +
       'Your answers are safe and nothing needs doing again.';
-  var close = lost ? ' and he will send you the current one.'
-                   : ' and he will send it over.';
+  var close = lost ? ' and we will send you the current one.'
+                   : ' and we will send it over.';
 
   headers(res);
   res.status(code);
@@ -80,7 +80,7 @@ function holding(res, code) {
     '<h1>' + head + '</h1>' +
     '<p>' + body + '</p>' +
     '<p>Write to ' +
-    '<!--email_off--><a href="mailto:clive@managergap.com">clive@managergap.com</a><!--/email_off-->' +
+    '<!--email_off--><a href="mailto:contact@cloverera.com">contact@cloverera.com</a><!--/email_off-->' +
     close + '</p>' +
     '<p><button type="button" class="cookie-settings" data-cookie-settings>Cookie settings</button></p>' +
     '</div>' + trackingTags() + '</body></html>');
@@ -184,9 +184,29 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  /* s= for the share block. A DM link stores the person's CRM id as
+     source.s = p<digits>, and that id is passed on. Otherwise the first
+     12 hex characters of the random visit_id. Never the report token
+     and never anything personal. Best effort: a missing source column
+     still yields the visit id, and any failure omits s=. */
+  var code = '';
+  try {
+    var vs = submission || null;
+    if (!vs) {
+      var vr = await rest(TABLE + '?id=eq.' + row.submission_id + '&select=visit_id,source');
+      if (vr && vr.ok) {
+        vs = (await vr.json())[0];
+      } else {
+        var vrOnly = await rest(TABLE + '?id=eq.' + row.submission_id + '&select=visit_id');
+        vs = vrOnly && vrOnly.ok ? (await vrOnly.json())[0] : null;
+      }
+    }
+    code = page.shareCode(vs && vs.source, vs && vs.visit_id);
+  } catch (e) { code = ''; }
+
   try {
     headers(res);
-    res.status(200).send(page.render(payload, token));
+    res.status(200).send(page.render(payload, token, code));
   } catch (e) {
     console.error('MGI render failed for ' + token + ': ' + e.message);
     return holding(res, 500);
