@@ -110,7 +110,7 @@ window.addEventListener('load', function () {
   if (pack) pack.disabled = false;
 });
 </script>
-<link rel="stylesheet" href="/assets/mgi.css?v=9fd68395">
+<link rel="stylesheet" href="/assets/mgi.css?v=7057c143">
 </head>
 <body>
 
@@ -127,10 +127,16 @@ window.addEventListener('load', function () {
 <section class="view is-active landing" id="view-landing" aria-labelledby="landing-title">
   <div class="wrap">
     <div class="hero">
-      <h1 id="landing-title">You get a one-page reading of your team, and one thing to do this week.</h1>
-      <p class="landing-time">20 questions, about 5 minutes.</p>
-      <button type="button" class="btn" id="btn-start">Start the diagnostic</button>
-      <p class="proof">Output told them nothing. Output improved or held for 31 of the first 40 teams. 12 of those 31 were in Drift.</p>
+      <h1 id="landing-title">Cruise or Drift? Find out which state your team is really in.</h1>
+      <p class="landing-time"><strong class="sub-strong">20 questions, about 5 minutes. Free, no email needed.</strong> <span class="sub-quiet">Research for Clive Hays&rsquo;s next book, <em>The Manager Gap</em>.</span></p>
+      <button type="button" class="btn btn-hero" id="btn-start">Start the assessment</button>
+      <p class="proof">Early data: for 25 of 40 managers, their gut feel disagreed with what the assessment showed.</p>
+      <ul class="state-row" aria-label="The four team states">
+        <li><i class="state-dot" style="background:var(--cruise)" aria-hidden="true"></i>Cruise</li>
+        <li><i class="state-dot" style="background:var(--drift)" aria-hidden="true"></i>Drift</li>
+        <li><i class="state-dot" style="background:var(--headwinds)" aria-hidden="true"></i>Headwinds</li>
+        <li><i class="state-dot" style="background:var(--stall)" aria-hidden="true"></i>Stall</li>
+      </ul>
     </div>
 
     <div class="below">
@@ -175,6 +181,8 @@ window.addEventListener('load', function () {
           </div>
         </div>
       </details>
+
+      <p class="proof proof-later">Output told them nothing. Output improved or held for 31 of the first 40 teams. 12 of those 31 were in Drift.</p>
 
       <button type="button" class="btn" id="btn-start-2">Start the diagnostic</button>
 
@@ -424,7 +432,7 @@ window.addEventListener('load', function () {
 </footer>
 
 <script src="/assets/tracking-config.js?v=60da3861"></script>
-<script src="/assets/consent.js?v=4f6b63ac"></script>
+<script src="/assets/consent.js?v=07fe16c7"></script>
 <script src="/assets/linkedin.js?v=e6ea2832"></script>
 <script src="/assets/rings.js?v=5de45964"></script>
 <script src="/assets/scoring.js?v=d18296db"></script>
