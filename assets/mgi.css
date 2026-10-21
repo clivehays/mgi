@@ -1,31 +1,37 @@
 /* =============================================================
-   Manager Gap Index v5 - Clover ERA Editorial system (System A)
+   Manager Gap Index
+   Near-black field, condensed display type, one red accent.
+   --accent is the headline red sampled from the ads (#FF2B2A).
    ============================================================= */
 
 :root{
-  --paper: #F1ECE3;
-  --paper-2: #E8E2D6;
-  --ink: #17161A;
-  --ink-2: #2B2926;
-  --ink-mute: #6F6A60;
-  --rule: #C9C2B4;
-  --rule-soft: #D9D3C5;
-  /* the wordmark navy from the logo */
-  --accent: #1A3565;
-  /* the rising arrow blue, used for hover so the button lifts rather than darkens */
-  --accent-lift: #225A8D;
+  --paper: #070B12;
+  --paper-2: #101722;
+  --ink: #F4F7FB;
+  --ink-2: #D5DCE6;
+  --ink-mute: #A8B4C4;
+  --rule: rgba(244, 247, 251, 0.22);
+  --rule-soft: rgba(244, 247, 251, 0.12);
+  /* mode pixel of the graphic ad headline */
+  --accent: #FF2B2A;
+  /* near-black on the red, so button labels clear 4.5:1 */
+  --accent-ink: #14080A;
+  --accent-lift: #FF514C;
 
-  --cruise: #1B7A4A;
-  --drift: #C2842F;
-  --headwinds: #6B5BD2;
-  --stall: #B03A2E;
+  --cruise: #5ECAA0;
+  --drift: #E0A45A;
+  --headwinds: #9AA6FF;
+  --stall: #FF2B2A;
 
+  --display: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
   --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
   --ui: "Inter Tight", system-ui, -apple-system, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
 }
 
 *{ box-sizing: border-box; }
+
+html{ color-scheme: dark; }
 
 html, body{
   margin: 0;
@@ -36,24 +42,27 @@ html, body{
 
 body{
   font-family: var(--ui);
-  line-height: 1.45;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  background:
+    radial-gradient(1100px 640px at 88% -8%, rgba(255, 43, 42, 0.11), transparent 58%),
+    radial-gradient(820px 540px at -12% 110%, rgba(24, 58, 110, 0.42), transparent 55%),
+    var(--paper);
 }
 
-/* paper grain, matches the rest of the editorial system */
+/* edge vignette, so the field feels lit rather than flat */
 body::before{
   content: "";
   position: fixed; inset: 0;
-  background-image:
-    radial-gradient(rgba(0,0,0,0.025) 1px, transparent 1px),
-    radial-gradient(rgba(0,0,0,0.018) 1px, transparent 1px);
-  background-size: 3px 3px, 7px 7px;
-  background-position: 0 0, 1px 2px;
+  background: radial-gradient(ellipse at center, transparent 42%, rgba(0, 0, 0, 0.38) 100%);
   pointer-events: none;
-  mix-blend-mode: multiply;
-  opacity: 0.7;
   z-index: 0;
+}
+
+::selection{
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 a{ color: inherit; }
@@ -78,26 +87,28 @@ a{ color: inherit; }
 }
 
 h1, h2, h3{
-  font-family: var(--serif);
-  font-weight: 500;
-  letter-spacing: -0.018em;
+  font-family: var(--display);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  line-height: 0.95;
   margin: 0;
 }
 
 h1{
-  font-size: clamp(31px, 6.2vw, 46px);
-  line-height: 1.08;
+  font-size: clamp(36px, 8vw, 58px);
+  line-height: 0.92;
 }
 
 h2{
-  font-size: clamp(23px, 4.4vw, 30px);
-  line-height: 1.18;
+  font-size: clamp(28px, 5vw, 40px);
+  line-height: 0.96;
 }
 
 p{ margin: 0 0 18px; }
 
 .body-serif{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(17px, 3.6vw, 19px);
   line-height: 1.62;
   color: var(--ink-2);
@@ -128,31 +139,31 @@ p{ margin: 0 0 18px; }
 }
 
 .masthead .wrap{
-  padding-top: 20px;
-  padding-bottom: 16px;
+  padding-top: 16px;
+  padding-bottom: 14px;
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 20px;
 }
 
 .wordmark{
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 500;
-  font-size: 18px;
-  letter-spacing: -0.01em;
+  font-family: var(--ui);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.01em;
   color: var(--ink);
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 
-/* the mark stays inline rather than flex, so the wordmark and its full
-   stop keep normal text flow */
 .wordmark-mark{
-  width: 30px;
-  height: 30px;
-  vertical-align: -8px;
-  margin-right: 9px;
+  width: 62px;
+  height: 32px;
+  margin-right: 10px;
+  flex: 0 0 auto;
 }
 
 .wordmark .dot{ color: var(--accent); }
@@ -180,18 +191,18 @@ p{ margin: 0 0 18px; }
    bottom, and margins that shrink only after it appears jump the heading. */
 .landing{ padding: 18px 0 56px; }
 .landing h1{
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   max-width: 100%;
-  /* Each question is its own line. The size tracks the column so the
-     first question stays on one line wherever the column can hold it,
-     and never grows past the point where that line would break. */
-  font-size: clamp(28px, 7.2vw, 39px);
-  font-size: clamp(28px, calc(100cqw / 17.7), 39px);
+  font-size: clamp(40px, 11vw, 72px);
+  line-height: 0.88;
+  letter-spacing: 0.005em;
 }
 .landing h1 .hero-line{
   display: block;
   text-wrap: balance;
 }
+.landing h1 .hero-line + .hero-line{ margin-top: 0.16em; }
+.hero-hot{ color: var(--accent); }
 .landing-time{
   font-family: var(--ui);
   font-size: 16px;
@@ -210,7 +221,7 @@ p{ margin: 0 0 18px; }
   container-type: inline-size;
 }
 .proof{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: 16px;
   line-height: 1.45;
   color: var(--ink-2);
@@ -223,7 +234,7 @@ p{ margin: 0 0 18px; }
    finding set off by a rule, and the four states named with their dots. */
 .landing-time{ font-weight: 400; color: var(--ink-2); line-height: 1.45; max-width: 34em; }
 .landing-time .sub-strong{ font-weight: 600; color: var(--ink); }
-.landing-time em{ font-family: var(--serif); font-style: italic; font-size: 1.04em; }
+.landing-time em{ font-family: var(--ui); font-style: italic; font-size: 1.04em; }
 .hero .proof{ padding-left: 14px; border-left: 2px solid var(--rule); }
 .proof-later{ margin: 28px 0 0; }
 .state-row{
@@ -303,8 +314,11 @@ p{ margin: 0 0 18px; }
   letter-spacing: 0.16em;
   text-transform: uppercase;
   font-weight: 600;
-  color: var(--accent);
+  font-style: normal;
+  color: var(--ink);
 }
+.states li:last-child .state-name,
+.state-row li:last-child{ color: var(--accent); }
 
 .state-line{
   font-family: var(--ui);
@@ -328,7 +342,7 @@ p{ margin: 0 0 18px; }
   max-width: 40em;
 }
 .findings p{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: 16px;
   line-height: 1.5;
   color: var(--ink-2);
@@ -340,7 +354,7 @@ p{ margin: 0 0 18px; }
   padding: 0;
 }
 .findings-list li{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: 16.5px;
   line-height: 1.45;
   color: var(--ink);
@@ -385,7 +399,7 @@ p{ margin: 0 0 18px; }
 }
 
 .instruction p{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(16px, 3.4vw, 18px);
   line-height: 1.58;
   margin: 0;
@@ -424,7 +438,7 @@ p{ margin: 0 0 18px; }
 }
 
 .landing-note p{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: 16px;
   line-height: 1.6;
   color: var(--ink-2);
@@ -434,36 +448,38 @@ p{ margin: 0 0 18px; }
 .landing-note p:last-child{ margin-bottom: 0; }
 
 .landing-note a{
-  color: var(--ink);
+  color: var(--accent);
   text-decoration: none;
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 1px solid rgba(255, 43, 42, 0.45);
 }
 
-.landing-note a:hover{ border-bottom-color: var(--ink); }
+.landing-note a:hover{ border-bottom-color: var(--accent); }
 
 .landing-note em{ font-style: italic; }
 
 /* ---------- buttons ---------- */
 
 .btn{
-  font-family: var(--ui);
-  font-weight: 600;
-  font-size: 15px;
-  letter-spacing: 0.01em;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   background: var(--accent);
-  color: #FFFFFF;
-  border: 1px solid var(--accent);
+  color: var(--accent-ink);
+  border: 0;
   border-radius: 0;
-  padding: 14px 26px;
+  padding: 16px 28px;
   cursor: pointer;
   display: inline-block;
   text-decoration: none;
-  transition: background 120ms ease, border-color 120ms ease;
+  line-height: 1;
+  transition: background 120ms ease;
 }
 
-.btn:hover{ background: var(--accent-lift); border-color: var(--accent-lift); }
-.btn:disabled{ opacity: 0.35; cursor: not-allowed; }
-.btn:disabled:hover{ background: var(--accent); border-color: var(--accent); }
+.btn:hover{ background: var(--accent-lift); }
+.btn:disabled{ opacity: 0.4; cursor: not-allowed; }
+.btn:disabled:hover{ background: var(--accent); }
 
 .btn-quiet{
   font-family: var(--mono);
@@ -511,7 +527,7 @@ p{ margin: 0 0 18px; }
 
 .q-bar{
   flex: 1;
-  height: 1px;
+  height: 2px;
   background: var(--rule);
   position: relative;
 }
@@ -519,7 +535,7 @@ p{ margin: 0 0 18px; }
 .q-bar span{
   position: absolute;
   inset: 0 auto 0 0;
-  background: var(--ink);
+  background: var(--accent);
   transition: width 220ms ease;
 }
 
@@ -534,12 +550,13 @@ p{ margin: 0 0 18px; }
 }
 
 .q-text{
-  font-family: var(--serif);
-  font-weight: 500;
-  font-size: clamp(22px, 4.8vw, 30px);
-  line-height: 1.26;
-  letter-spacing: -0.015em;
-  margin: 0 0 34px;
+  font-family: var(--display);
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: clamp(28px, 5.6vw, 40px);
+  line-height: 1.08;
+  margin: 0 0 28px;
 }
 
 fieldset.scale{
@@ -587,8 +604,12 @@ fieldset.scale{
   text-align: left;
 }
 
-.scale-option:hover .face{ color: var(--ink); background: rgba(0,0,0,0.018); }
-.scale-option input:checked ~ .face{ color: var(--ink); font-weight: 600; }
+.scale-option:hover .face{ color: var(--ink); background: rgba(255,255,255,0.04); }
+.scale-option input:checked ~ .face{
+  color: var(--ink);
+  font-weight: 600;
+  background: rgba(255, 43, 42, 0.12);
+}
 
 .scale-option input:checked ~ .face::after{
   content: "";
@@ -625,7 +646,7 @@ fieldset.scale{
 .contact-view{ padding: 28px 0 72px; }
 .contact-view h2{ margin-bottom: 10px; max-width: 16em; }
 .contact-lead{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: 17px;
   line-height: 1.5;
   color: var(--ink-2);
@@ -655,7 +676,7 @@ fieldset.scale{
   outline-offset: 3px;
 }
 .research-intro{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: 16px;
   line-height: 1.5;
   color: var(--ink-2);
@@ -703,10 +724,21 @@ fieldset.scale{
   padding-right: 26px;
 }
 
+.field input::placeholder{ color: var(--ink-mute); opacity: 1; }
+
 .field input:focus,
 .field select:focus{
   outline: none;
-  border-bottom-color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+.field input:-webkit-autofill,
+.field input:-webkit-autofill:hover,
+.field input:-webkit-autofill:focus{
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--ink);
+  box-shadow: 0 0 0 1000px var(--paper) inset;
+  transition: background-color 9999s ease-out;
 }
 
 .field input:focus-visible,
@@ -850,7 +882,7 @@ fieldset.scale{
 .report .eyebrow{ display: block; margin-bottom: 20px; }
 
 .state-call{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-weight: 500;
   font-size: clamp(27px, 5.6vw, 40px);
   line-height: 1.14;
@@ -860,13 +892,13 @@ fieldset.scale{
 }
 
 .state-name{
-  font-style: italic;
+  font-style: normal;
   font-weight: 600;
 }
 
 .state-desc,
 .gap-body{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(17px, 3.6vw, 19px);
   line-height: 1.62;
   color: var(--ink-2);
@@ -898,7 +930,7 @@ fieldset.scale{
 /* signal score */
 
 .signal-headline{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(19px, 4vw, 23px);
   line-height: 1.38;
   letter-spacing: -0.012em;
@@ -917,7 +949,7 @@ fieldset.scale{
 }
 
 .signal-copy{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(16px, 3.4vw, 18px);
   line-height: 1.6;
   color: var(--ink-2);
@@ -947,7 +979,7 @@ fieldset.scale{
 }
 
 .area-name{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-weight: 500;
   font-size: 19px;
   letter-spacing: -0.012em;
@@ -956,7 +988,7 @@ fieldset.scale{
 
 /* the scannable answer: five of these down the page is the skim */
 .area-answer{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: 17px;
   font-weight: 500;
   white-space: nowrap;
@@ -989,13 +1021,13 @@ fieldset.scale{
   max-width: 40em;
 }
 
-.fact-3{ color: #17161A; }
-.fact-2{ color: #3D3A34; }
-.fact-1{ color: #6F6A60; }
-.fact-0{ color: #918B7E; }
+.fact-3{ color: #F4F7FB; }
+.fact-2{ color: #D5DCE6; }
+.fact-1{ color: #A8B4C4; }
+.fact-0{ color: #8E9AAD; }
 
 .area-callout{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: 16.5px;
   line-height: 1.58;
   color: var(--ink);
@@ -1007,7 +1039,7 @@ fieldset.scale{
 }
 
 .areas-summary{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: 17px;
   line-height: 1.58;
   color: var(--ink);
@@ -1022,7 +1054,7 @@ fieldset.scale{
 
 .action-body,
 .closing-body{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(17px, 3.6vw, 19px);
   line-height: 1.62;
   color: var(--ink-2);
@@ -1080,7 +1112,9 @@ fieldset.scale{
 /* ---------- responsive ---------- */
 
 @media (max-width: 560px){
-  .masthead .wrap{ align-items: baseline; }
+  .masthead .wrap{ align-items: center; }
+  .wordmark-mark{ width: 52px; height: 27px; }
+  .wordmark{ font-size: 14px; }
   /* the strapline wraps to a ragged stack on a phone, and the
      wordmark already says what this is */
   .masthead .meta{ display: none; }
@@ -1122,7 +1156,7 @@ fieldset.scale{
 }
 
 .sight-value{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: 26px;
   line-height: 1.15;
   font-weight: 600;
@@ -1130,7 +1164,7 @@ fieldset.scale{
 }
 
 .sight-copy{
-  font-family: var(--serif);
+  font-family: var(--ui);
   color: var(--ink-2);
   font-size: 16px;
   line-height: 1.6;
@@ -1149,7 +1183,7 @@ fieldset.scale{
 /* the action names the area it addresses, so a skimming reader still
    knows what this week is for */
 .action-area{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: 21px;
   font-weight: 500;
   letter-spacing: -0.012em;
@@ -1210,7 +1244,7 @@ fieldset.scale{
    is set in the report's reading face, not the muted UI one. */
 
 .cohort-figure{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(46px, 11vw, 64px);
   line-height: 1;
   font-weight: 500;
@@ -1231,7 +1265,7 @@ fieldset.scale{
 }
 
 .people-intro{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(16px, 3.4vw, 17.5px);
   line-height: 1.62;
   color: var(--ink-2);
@@ -1250,7 +1284,7 @@ fieldset.scale{
 }
 
 .people-premise{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(17px, 3.6vw, 18.5px);
   line-height: 1.5;
   font-weight: 600;
@@ -1259,7 +1293,7 @@ fieldset.scale{
 }
 
 .people-inference{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(16px, 3.4vw, 17px);
   line-height: 1.6;
   color: var(--ink-2);
@@ -1267,7 +1301,7 @@ fieldset.scale{
 }
 
 .people-situational{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(16px, 3.4vw, 17px);
   line-height: 1.6;
   color: var(--ink-2);
@@ -1280,7 +1314,7 @@ fieldset.scale{
 .people-situational[hidden]{ display: none; }
 
 .discovery-lag{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(16px, 3.4vw, 17px);
   line-height: 1.6;
   color: var(--ink-2);
@@ -1290,7 +1324,7 @@ fieldset.scale{
 
 /* the close */
 .closing-body{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(16px, 3.4vw, 17.5px);
   line-height: 1.62;
   color: var(--ink-2);
@@ -1299,7 +1333,7 @@ fieldset.scale{
 }
 
 .closing-fork{
-  font-family: var(--serif);
+  font-family: var(--ui);
   font-size: clamp(17px, 3.6vw, 18.5px);
   line-height: 1.55;
   color: var(--ink);
@@ -1327,11 +1361,11 @@ fieldset.scale{
 .sent-view .eyebrow{ display: block; margin-bottom: 20px; }
 
 .sent-view h2{
-  font-size: 34px;
-  line-height: 1.16;
-  letter-spacing: -0.015em;
-  font-weight: 400;
-  margin: 0 0 40px;
+  font-size: clamp(36px, 8vw, 52px);
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  font-weight: 800;
+  margin: 0 0 28px;
   max-width: 14em;
 }
 
@@ -1366,7 +1400,7 @@ fieldset.scale{
 
 @media (max-width: 560px){
   .sent-view{ padding: 44px 0 72px; }
-  .sent-view h2{ font-size: 27px; margin-bottom: 30px; }
+  .sent-view h2{ font-size: 36px; margin-bottom: 22px; }
   .teaser{ margin-bottom: 34px; padding: 30px 0 26px; }
   .teaser-note{ margin-top: 24px; }
   .sent-view .lede{ font-size: 17px; }

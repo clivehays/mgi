@@ -84,7 +84,7 @@
     '.internal-note{margin:0;padding:6px 16px;text-align:center;',
     'font-family:"JetBrains Mono",ui-monospace,monospace;',
     'font-size:11px;letter-spacing:0.04em;line-height:1.4;',
-    'color:#6F6A60;background:#E8E2D6}',
+    'color:#D5DCE6;background:#121A28;border-bottom:1px solid rgba(255,43,42,.45)}',
     '@media print{.internal-note{display:none !important}}'
   ].join('');
 
