@@ -72,10 +72,11 @@ function holding(res, code) {
     '<meta name="viewport" content="width=device-width,initial-scale=1">' +
     '<meta name="robots" content="noindex, nofollow">' +
     '<title>Manager Gap Index</title><style>' +
-    'body{margin:0;background:#F1ECE3;color:#17161A;font:16px/1.6 Georgia,serif;' +
+    'body{margin:0;background:#070B12;color:#F4F7FB;font:17px/1.6 "Inter Tight",system-ui,sans-serif;' +
     'display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px}' +
-    '.b{max-width:30em}h1{font-size:23px;font-weight:400;margin:0 0 14px}' +
-    'a{color:#1A3565}@media(prefers-color-scheme:dark){body{background:#0F1214;color:#EBE6DC}a{color:#4FA6F5}}' +
+    '.b{max-width:30em}h1{font:800 32px/0.95 "Barlow Condensed","Arial Narrow",Impact,sans-serif;' +
+    'letter-spacing:.01em;text-transform:uppercase;margin:0 0 16px}' +
+    'a{color:#FF2B2A}' +
     '</style></head><body><div class="b">' +
     '<h1>' + head + '</h1>' +
     '<p>' + body + '</p>' +

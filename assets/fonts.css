@@ -3,13 +3,31 @@
    LinkedIn, when it loads, is a different script and only runs after
    the visitor accepts cookies.
 
-   Source Serif 4, Inter Tight and JetBrains Mono are all under the SIL Open
-   Font License 1.1, which permits redistribution.
+   Source Serif 4, Inter Tight, JetBrains Mono and Barlow Condensed are all
+   under the SIL Open Font License 1.1, which permits redistribution.
+   Barlow Condensed is the display face: heavy, condensed, the ad headlines.
 
    These are variable fonts: one file covers the whole weight range, so the
    weight is declared as a range rather than duplicating the file per weight.
    Latin subsets only, gated by unicode-range, so latin-ext is fetched only
-   when a page actually contains those characters. */
+   when a page actually contains those characters. Barlow Condensed is two
+   static weights, latin only, because the headlines do not need the rest. */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/assets/fonts/barlow-condensed-latin-700-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('/assets/fonts/barlow-condensed-latin-800-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 @font-face {
   font-family: 'Inter Tight';
   font-style: normal;
