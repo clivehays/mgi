@@ -783,6 +783,11 @@ function render(numbers, token, code) {
     '<meta name="robots" content="noindex, nofollow, noarchive">\n' +
     '<meta name="referrer" content="no-referrer">\n' +
     '<title>Manager Gap Index</title>\n' +
+    '<link rel="icon" href="/images/favicon.svg?v=a8b31e60" type="image/svg+xml">\n' +
+    '<link rel="icon" href="/images/favicon.ico?v=105c32f2" sizes="any">\n' +
+    '<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=c79e00c8">\n' +
+    '<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=becf1dc2">\n' +
+    '<link rel="apple-touch-icon" href="/images/apple-touch-icon.png?v=78953469">\n' +
     '<link rel="stylesheet" href="/assets/fonts.css">\n' +
     '<style>\n' + CSS + '\n</style>\n' +
     '</head>\n<body>\n' +
