@@ -570,6 +570,7 @@ fieldset.scale{
   position: relative;
   border-top: 1px solid var(--rule-soft);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .scale-option:last-of-type{ border-bottom: 1px solid var(--rule-soft); }
@@ -604,7 +605,13 @@ fieldset.scale{
   text-align: left;
 }
 
-.scale-option:hover .face{ color: var(--ink); background: rgba(255,255,255,0.04); }
+/* A filled row is the chosen answer. Hover used to fill the row too,
+   and the pointer is still over the list when the next question is
+   drawn, so that row loaded looking chosen. Color only, and only on
+   devices that actually hover, so a tap cannot leave the wash behind. */
+@media (hover: hover) and (pointer: fine) {
+  .scale-option:hover .face{ color: var(--ink); }
+}
 .scale-option input:checked ~ .face{
   color: var(--ink);
   font-weight: 600;
@@ -619,8 +626,11 @@ fieldset.scale{
   flex: 0 0 7px;
 }
 
+.scale-option input:focus-visible{
+  outline: none;
+}
 .scale-option input:focus-visible ~ .face{
-  outline: 2px solid var(--accent);
+  outline: 2px solid rgba(244, 247, 251, 0.55);
   outline-offset: -2px;
 }
 

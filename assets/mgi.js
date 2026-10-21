@@ -574,9 +574,20 @@
     el['btn-next'].hidden = state.values[i] === null;
   }
 
+  /* A click already moved the pointer onto an answer. Focusing the
+     first radio on the next question drew the focus ring on an
+     answer that was not chosen, which read as preselected, and the
+     only click that cleared it also advanced. Pointer entry leaves
+     focus alone. Keyboard entry focuses the question, or the stored
+     answer when there is one. */
   function focusScale() {
-    var first = el['q-scale'].querySelector('input:checked') || el['q-scale'].querySelector('input');
-    if (first) first.focus({ preventScroll: true });
+    if (lastInputWasPointer) return;
+    var checked = el['q-scale'].querySelector('input:checked');
+    if (checked) {
+      checked.focus({ preventScroll: true });
+      return;
+    }
+    if (el['q-text']) el['q-text'].focus({ preventScroll: true });
   }
 
   function choose(value) {
@@ -615,6 +626,15 @@
   document.addEventListener('pointerdown', function () { lastInputWasPointer = true; }, true);
   document.addEventListener('keydown', function () { lastInputWasPointer = false; }, true);
 
+  function chooseInput(target) {
+    if (!target) return;
+    if (!target.checked) {
+      target.checked = true;
+      target.dispatchEvent(new Event('change'));
+    }
+    target.focus({ preventScroll: true });
+  }
+
   function onKeydown(e) {
     if (state.view !== 'questions') return;
     if (e.key === 'Enter') {
@@ -622,16 +642,32 @@
       next();
       return;
     }
+    var inputs = el['q-scale'].querySelectorAll('input');
     if (['1', '2', '3', '4'].indexOf(e.key) !== -1) {
-      var inputs = el['q-scale'].querySelectorAll('input');
-      var target = inputs[Number(e.key) - 1];
-      if (target) {
+      var numbered = inputs[Number(e.key) - 1];
+      if (numbered) {
         e.preventDefault();
-        target.checked = true;
-        target.dispatchEvent(new Event('change'));
-        target.focus({ preventScroll: true });
+        chooseInput(numbered);
       }
+      return;
     }
+    /* Arrow keys used to rely on a radio being focused. Questions no
+       longer open with one focused, so the keys are handled here.
+       They select, and they do not advance. */
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    var dir = 0;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') dir = 1;
+    else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') dir = -1;
+    if (!dir || !inputs.length) return;
+    e.preventDefault();
+    var current = -1;
+    for (var i = 0; i < inputs.length; i++) {
+      if (inputs[i].checked) current = i;
+    }
+    var nextIndex = current === -1
+      ? (dir > 0 ? 0 : inputs.length - 1)
+      : (current + dir + inputs.length) % inputs.length;
+    chooseInput(inputs[nextIndex]);
   }
 
   /* ---------- contact ---------- */
