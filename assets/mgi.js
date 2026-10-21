@@ -405,9 +405,9 @@
        history without ever stepping off the site */
     history.replaceState({ view: state.view === 'sent' ? 'sent' : 'landing', index: 0 }, '');
 
-    el['btn-start'].addEventListener('click', function () { funnelStart(); go(0); });
+    el['btn-start'].addEventListener('click', startAssessment);
     if (el['btn-start-2']) {
-      el['btn-start-2'].addEventListener('click', function () { funnelStart(); go(0); });
+      el['btn-start-2'].addEventListener('click', startAssessment);
     }
     el['btn-back'].addEventListener('click', back);
     el['btn-next'].addEventListener('click', next);
@@ -514,6 +514,15 @@
   }
 
   /* ---------- questions ---------- */
+
+  /* sessionStorage keeps this tab's answers so Back can show the one
+     just picked. Start is a new run, and must not open question 1
+     with an answer left over from the last one. */
+  function startAssessment() {
+    state.values = new Array(TOTAL).fill(null);
+    state.index = 0;
+    funnelStart(); go(0);
+  }
 
   function go(i) {
     state.index = i;
