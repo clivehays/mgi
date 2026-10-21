@@ -34,7 +34,7 @@ var MGI_IDS = [
   'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
   'contact-form', 'form-error', 'f-industry', 'field-industry-other', 'f-industry-other',
   'f-consent', 'sent-email', 'sent-note', 'teaser', 'teaser-rings',
-  'sent-by-email', 'sent-by-link', 'sent-link', 'sent-url', 'sent-wait'
+  'sent-by-email', 'f-email', 'field-freemail', 'f-company', 'f-linkedin'
 ];
 
 function makePage(opts) {
@@ -263,7 +263,7 @@ function makePage(opts) {
 }
 
 function fill(form) {
-  ['firstName', 'email', 'company', 'role', 'industry', 'industryOther',
+  ['firstName', 'email', 'company', 'linkedin', 'role', 'industry', 'industryOther',
     'currentlyLeading', 'teamSize', 'tenure', 'left6m', 'joined6m', 'website'
   ].forEach(function (name) { form[name] = { value: '' }; });
   form.firstName.value = 'Clive';

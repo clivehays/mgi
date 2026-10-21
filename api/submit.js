@@ -39,6 +39,7 @@
 
 var MGI = require('../assets/scoring.js');
 var applySource = require('./source.js').applySource;
+var FREEMAIL = require('../assets/freemail.js');
 
 var NOTIFY_TO = process.env.MGI_NOTIFY_EMAIL || 'contact@cloverera.com';
 var FROM = process.env.MGI_FROM_EMAIL || 'The Manager Gap Index <mgi@cloverera.com>';
@@ -100,6 +101,7 @@ module.exports = async function handler(req, res) {
     firstName: clean(body.firstName, 80),
     email: clean(body.email, 160),
     company: clean(body.company, 120),
+    linkedin: clean(body.linkedin, 200),
     role: clean(body.role, 120),
     industry: clean(body.industry, 60),
     industryOther: clean(body.industryOther, 80),
@@ -130,12 +132,29 @@ module.exports = async function handler(req, res) {
   if (!contact.firstName || !contact.teamSize) {
     return res.status(400).json({ ok: false, error: 'Missing contact fields' });
   }
-  /* An address is optional: without one the reading is reached from the
-     confirmation page instead, and the link in that response is the only
-     copy of it that will exist. Something typed that is not an address is
-     still rejected, because a typo loses the report silently. */
-  if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
+  /* Assessment form change, 21 Oct 2026: an address is required, because
+     the reading is emailed and there is no private link any more. A
+     personal address is allowed, never blocked, but it must come with a
+     company; a LinkedIn link is optional. A work address needs neither:
+     its domain stands in for the company. */
+  if (!contact.email) {
+    return res.status(400).json({ ok: false, error: 'Missing email' });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
     return res.status(400).json({ ok: false, error: 'Invalid email' });
+  }
+  contact.freeEmail = FREEMAIL.isFree(contact.email);
+  if (contact.freeEmail) {
+    if (!contact.company) {
+      return res.status(400).json({ ok: false, error: 'Missing company' });
+    }
+    if (contact.linkedin && !FREEMAIL.isLinkedIn(contact.linkedin)) {
+      return res.status(400).json({ ok: false, error: 'Invalid LinkedIn URL' });
+    }
+    contact.linkedin = FREEMAIL.normaliseLinkedIn(contact.linkedin);
+  } else {
+    contact.company = FREEMAIL.domainOf(contact.email);
+    contact.linkedin = '';
   }
 
   var submittedAt = new Date().toISOString();
@@ -235,8 +254,17 @@ module.exports = async function handler(req, res) {
     record.internal = true;
   }
 
+  /* LinkedIn link and the free-address flag. Written only when the table
+     already has both columns (linkedin_url, email_free_domain); this file
+     does not change the schema, and an unknown column would fail the
+     insert and lose the lead. Until then they reach Clive in the
+     notification and the log line below. */
+  var extras = { linkedin_url: contact.linkedin || null, email_free_domain: contact.freeEmail };
+
   // always leave a durable trace in the platform log, whatever else fails
-  console.log('MGI_SUBMISSION ' + JSON.stringify(record));
+  console.log('MGI_SUBMISSION ' + JSON.stringify(Object.assign({}, record, extras)));
+
+  if (await contactColumnsExist()) Object.assign(record, extras);
 
   /* ---------- the submit sequence, spec section 6 ----------
      Strictly this order, and only step 1 may fail the request. Steps 3
@@ -285,8 +313,8 @@ module.exports = async function handler(req, res) {
      notification above. */
   var finish = (async function () {
     if (!token || !payload) {
-      /* No address and nothing to point at. Clive still holds the lead from
-         the notification above, and it is his to chase. */
+      /* Nothing to point at. Clive still holds the lead from the
+         notification above, and it is his to chase. */
       if (!contact.email) return false;
       return sendEmail(mail.pending(contact));
     }
@@ -314,11 +342,11 @@ module.exports = async function handler(req, res) {
 
   /* sending is what the client tells them about, not sent: the message
      goes out behind this response and cannot be reported on here. */
-  /* The token is withheld from anyone who gave an address: for them the email
-     is the destination, and it is sent once the reading is written so that its
-     arrival is the signal the page is ready. With no address there is no such
-     signal and no second chance, so the link goes back in this response. */
-  var readingUrl = (!contact.email && token) ? ORIGIN + '/r/' + token : null;
+  /* The token is never returned: the email is the destination, sent once
+     the reading is written so that its arrival is the signal the page is
+     ready. The private link for readings without an address was removed
+     on 21 Oct 2026. readingUrl stays in the response, always null. */
+  var readingUrl = null;
 
   return res.status(200).json({
     ok: true,
@@ -418,6 +446,24 @@ async function internalColumnExists() {
   }
 }
 
+/* True only when PostgREST accepts both linkedin_url and email_free_domain.
+   A 400 (a column is missing) or no store configured is false, and the
+   row is written without them. */
+async function contactColumnsExist() {
+  var url = process.env.SUPABASE_URL;
+  var key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return false;
+  try {
+    var res = await fetch(url.replace(/\/$/, '') + '/rest/v1/' + TABLE + '?select=linkedin_url,email_free_domain&limit=1', {
+      method: 'GET',
+      headers: { apikey: key, Authorization: 'Bearer ' + key, Accept: 'application/json' }
+    });
+    return !!res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
 /* Returns the new row's id, or null if nothing was stored. The id is read
    back from the insert rather than found afterwards: the lookup this
    replaced matched on email, which is optional now, and an address that is
@@ -509,7 +555,9 @@ function notification(contact, result, submittedAt, token) {
   lines.push('Name: ' + contact.firstName);
   lines.push('Email: ' + (contact.email || 'not given, reading is on the link only'));
   if (!contact.email && token) lines.push('Reading: ' + ORIGIN + '/r/' + token);
-  lines.push('Company: ' + (contact.company || 'not given'));
+  lines.push('Company: ' + (contact.company || 'not given') + (contact.freeEmail ? '' : ' (from the email domain)'));
+  lines.push('Email type: ' + (contact.freeEmail ? 'personal (free provider)' : 'work domain'));
+  if (contact.freeEmail) lines.push('LinkedIn: ' + (contact.linkedin || 'not given'));
   lines.push('Role: ' + (contact.role || 'not given'));
   lines.push('Industry: ' + (contact.industryLabel || 'not given'));
   lines.push('Leading this team now: ' + (contact.currentlyLeading || 'not given'));
