@@ -181,8 +181,16 @@ p{ margin: 0 0 18px; }
 .landing{ padding: 18px 0 56px; }
 .landing h1{
   margin-bottom: 12px;
-  max-width: 14em;
-  font-size: clamp(28px, 7.2vw, 44px);
+  max-width: 100%;
+  /* Each question is its own line. The size tracks the column so the
+     first question stays on one line wherever the column can hold it,
+     and never grows past the point where that line would break. */
+  font-size: clamp(28px, 7.2vw, 39px);
+  font-size: clamp(28px, calc(100cqw / 17.7), 39px);
+}
+.landing h1 .hero-line{
+  display: block;
+  text-wrap: balance;
 }
 .landing-time{
   font-family: var(--ui);
@@ -199,6 +207,7 @@ p{ margin: 0 0 18px; }
 .hero{
   min-height: calc(100vh - 96px);
   min-height: calc(100dvh - 96px);
+  container-type: inline-size;
 }
 .proof{
   font-family: var(--serif);
@@ -251,7 +260,6 @@ p{ margin: 0 0 18px; }
   .landing h1{ margin-bottom: 14px; }
   .landing-time{ margin-bottom: 20px; }
   .proof{ margin-top: 20px; font-size: 18px; max-width: 32em; }
-  .landing h1{ font-size: clamp(30px, 7.4vw, 48px); max-width: 13.5em; text-wrap: balance; }
   .landing-time{ font-size: 17px; margin-bottom: 24px; }
   .btn-hero{ font-size: 16px; padding: 16px 30px; }
   .hero .proof{ margin-top: 24px; }
