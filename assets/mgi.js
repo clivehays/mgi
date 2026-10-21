@@ -392,7 +392,7 @@
       'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
       'contact-form', 'form-error', 'f-industry', 'field-industry-other', 'f-industry-other',
       'f-consent', 'sent-email', 'sent-note', 'teaser', 'teaser-rings',
-      'sent-by-email', 'sent-by-link', 'sent-link', 'sent-url', 'sent-wait'
+      'sent-by-email', 'f-email', 'field-freemail', 'f-company', 'f-linkedin'
     ].forEach(function (id) {
       el[id] = document.getElementById(id);
     });
@@ -414,74 +414,28 @@
     el['contact-form'].addEventListener('submit', onSubmit);
     el['f-industry'].addEventListener('change', onIndustryChange);
     el['f-consent'].addEventListener('change', onConsentChange);
+    el['f-email'].addEventListener('input', onEmailChange);
+    el['f-email'].addEventListener('change', onEmailChange);
 
     document.addEventListener('keydown', onKeydown);
     window.addEventListener('popstate', onPopState);
 
     if (state.view === 'sent' && state.contact && complete()) {
-      showDestination(state.contact.email, state.readingUrl);
-      if (!state.contact.email && state.readingUrl) awaitReading(state.readingUrl);
+      showDestination(state.contact.email);
       show('sent', false);
     } else {
       show('landing', false);
     }
   }
 
-  /* ---------- the confirmation, two ways ----------
-     With an address, the email is the destination and no link is handed
-     over before the reading is written. Without one, this page is the
-     only destination there is, so the link goes here and is said plainly
-     to be the only way back. */
-  function showDestination(email, url) {
-    var byEmail = !!email;
-    if (el['sent-by-email']) el['sent-by-email'].hidden = !byEmail;
-    if (el['sent-by-link']) el['sent-by-link'].hidden = byEmail;
-    if (byEmail) {
-      el['sent-email'].textContent = email;
-    } else if (url) {
-      el['sent-link'].href = url;
-      el['sent-url'].textContent = url;
-    }
-  }
-
-  /* ---------- waiting for the reading ----------
-     Someone who left no address has no email arriving to tell them the page
-     is ready, so this page waits on their behalf and then shows them the
-     reading itself. The status route answers from the stored row and never
-     computes, so polling it is cheap and cannot start Eran twice.
-
-     The link is on the page throughout. If the poll never succeeds, because
-     the tab slept or the network went, nothing is lost: they still hold the
-     only address their reading has. */
-  function awaitReading(url) {
-    if (!url) return;
-    var every = 4000;
-    var giveUpAt = Date.now() + 4 * 60 * 1000;
-
-    function tick() {
-      if (Date.now() > giveUpAt) return done(false);
-      fetch(url + '?status=1', { headers: { Accept: 'application/json' } })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (d) {
-          if (d && d.ready) return done(true);
-          window.setTimeout(tick, every);
-        })
-        .catch(function () { window.setTimeout(tick, every); });
-    }
-
-    function done(ready) {
-      if (ready) {
-        /* replace, so Back from the reading does not land on a dead wait */
-        window.location.replace(url);
-        return;
-      }
-      if (el['sent-wait']) {
-        el['sent-wait'].textContent = 'Your reading is taking longer than usual. ' +
-          'It is not lost. Open it with the link below, and keep the link.';
-      }
-    }
-
-    window.setTimeout(tick, 6000);
+  /* ---------- the confirmation ----------
+     The email is the destination. No link is handed over before the
+     reading is written; the email's arrival is the signal it is ready.
+     (The private link for readings without an address was removed with
+     the assessment form change of 21 Oct 2026: an address is required.) */
+  function showDestination(email) {
+    if (el['sent-by-email']) el['sent-by-email'].hidden = !email;
+    if (email) el['sent-email'].textContent = email;
   }
 
   function toAnswers() {
@@ -517,8 +471,6 @@
         state.index = prev.index || 0;
         state.contact = prev.contact || null;
         state.view = prev.view || 'landing';
-        /* without an address this is the only record of where the reading is */
-        state.readingUrl = prev.readingUrl || null;
       }
     } catch (e) { /* ignore corrupt state */ }
   }
@@ -695,6 +647,25 @@
     else el['f-industry-other'].value = '';
   }
 
+  /* A personal address (Gmail, iCloud and the like) brings up Company,
+     required, and a LinkedIn link, optional. A work address brings up
+     nothing: its domain stands in for the company. The address is never
+     refused for being personal. */
+  function freeEmail() {
+    var v = el['f-email'].value.trim();
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) && !!(window.MGIFreemail && window.MGIFreemail.isFree(v));
+  }
+
+  function onEmailChange() {
+    var free = freeEmail();
+    el['field-freemail'].hidden = !free;
+    el['f-company'].required = free;
+    if (!free) {
+      el['f-company'].value = '';
+      el['f-linkedin'].value = '';
+    }
+  }
+
   /* the button is the gate: nothing can be submitted until consent is given,
      and the submit handler checks again in case the two ever drift apart */
   function onConsentChange() {
@@ -709,6 +680,7 @@
       firstName: form.firstName.value.trim(),
       email: form.email.value.trim(),
       company: form.company.value.trim(),
+      linkedin: form.linkedin.value.trim(),
       role: form.role.value.trim(),
       industry: form.industry.value,
       industryOther: form.industryOther.value.trim(),
@@ -722,16 +694,17 @@
     };
 
     var missing = [];
+    var free = freeEmail();
+    if (!contact.email) missing.push('your work email');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) missing.push('a valid email address');
+    else if (free && !contact.company) missing.push('the company you work for');
+    if (free && contact.linkedin && !window.MGIFreemail.isLinkedIn(contact.linkedin)) missing.push('a LinkedIn profile link, or leave it blank');
+    if (!free) { contact.company = ''; contact.linkedin = ''; }
     if (!contact.firstName) missing.push('first name');
     if (!contact.teamSize) missing.push('team size');
     if (!contact.consent) missing.push('your consent to take part');
-    /* An address is optional, and so is the rest of the research step.
-       Someone who leaves the address blank reads their reading on the page
-       instead. Something typed that is not an address is still an error,
-       because the likeliest cause is a typo in one they meant to give.
-       Other is the only research answer that becomes required, and only
-       once they have chosen it. */
-    if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) missing.push('a valid work email, or leave it blank');
+    /* The research step stays optional. Other is the only research answer
+       that becomes required, and only once they have chosen it. */
     if (contact.industry === 'Other' && !contact.industryOther) missing.push('which industry');
 
     if (missing.length) {
@@ -756,13 +729,14 @@
   function send(contact) {
     funnel.submitted = true;
     funnelSend(false);
-    showDestination(contact.email, null);
+    showDestination(contact.email);
 
     var answers = toAnswers();
     var payload = {
       firstName: contact.firstName,
       email: contact.email,
       company: contact.company,
+      linkedin: contact.linkedin,
       role: contact.role,
       industry: contact.industry,
       industryOther: contact.industryOther,
@@ -808,21 +782,6 @@
          A failed notification is ours to chase and says nothing to
          them. Only their own copy decides this message. */
       if (data && data.teaser) drawTeaser(data.teaser);
-      /* No address means the link in this response is the only copy of it
-         that will ever exist. Store it before anything else can throw, so a
-         reload still finds it.
-
-         This returns rather than falling through to the check below. A
-         reading whose numbers failed at submit is not a failure here: the
-         link still opens, because api/reading.js computes what is missing
-         on first view. Only the absence of a link is worth an apology. */
-      if (data && data.readingUrl) {
-        state.readingUrl = data.readingUrl;
-        save();
-        showDestination(null, data.readingUrl);
-        awaitReading(data.readingUrl);
-        return;
-      }
       /* An internal run is a success even when nothing was stored
          and nothing was sent. A normal visitor still hears about a
          reading that could not be sent. */

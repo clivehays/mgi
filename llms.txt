@@ -5,7 +5,7 @@
 ## Key facts
 - Questions ask when something last happened, not ratings or agreement. A behaviour that cannot be dated recently is the finding.
 - Output: the most likely team state, how much of the team's week reaches you, five areas scored on recency, one focus area, one move to make this week, and a conversation with Eran.
-- Free. Email is optional; the reading opens on a private link.
+- Free. The reading is emailed to you, so the last step asks for a work email. A personal address works too.
 - Answers are used anonymised and in aggregate for the research. Names and companies never appear.
 - Cohort: 40 completed readings as at October 2026.
 - Not the same as the earlier "Manager Gap Index" (a 10-minute company-level score published by Clover ERA in early 2026). This 20-question assessment is the current instrument.

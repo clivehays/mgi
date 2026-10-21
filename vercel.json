@@ -124,6 +124,17 @@
       "permanent": false
     },
     {
+      "source": "/assets/freemail.js",
+      "missing": [
+        {
+          "type": "query",
+          "key": "v"
+        }
+      ],
+      "destination": "/assets/freemail.js?v=80e48dec",
+      "permanent": false
+    },
+    {
       "source": "/assets/internal.js",
       "missing": [
         {
@@ -164,7 +175,7 @@
           "key": "v"
         }
       ],
-      "destination": "/assets/mgi.js?v=02ef7864",
+      "destination": "/assets/mgi.js?v=289c2854",
       "permanent": false
     },
     {
