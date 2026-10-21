@@ -71,7 +71,13 @@ function holding(res, code) {
   res.send('<!doctype html><html lang="en-GB"><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width,initial-scale=1">' +
     '<meta name="robots" content="noindex, nofollow">' +
-    '<title>Manager Gap Index</title><style>' +
+    '<title>Manager Gap Index</title>' +
+    '<link rel="icon" href="/images/favicon.svg?v=a8b31e60" type="image/svg+xml">' +
+    '<link rel="icon" href="/images/favicon.ico?v=105c32f2" sizes="any">' +
+    '<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=c79e00c8">' +
+    '<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=becf1dc2">' +
+    '<link rel="apple-touch-icon" href="/images/apple-touch-icon.png?v=78953469">' +
+    '<style>' +
     'body{margin:0;background:#070B12;color:#F4F7FB;font:17px/1.6 "Inter Tight",system-ui,sans-serif;' +
     'display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px}' +
     '.b{max-width:30em}h1{font:800 32px/0.95 "Barlow Condensed","Arial Narrow",Impact,sans-serif;' +
