@@ -732,6 +732,17 @@ fieldset.scale{
   background-size: 5px 5px, 5px 5px;
   background-repeat: no-repeat;
   padding-right: 26px;
+  /* The page asks for dark native widgets, and these options inherit the
+     light text colour with no background of their own. Windows Chrome and
+     Edge still paint the popup white, so the list is unreadable. A light
+     colour scheme on the select gives that popup dark text on a light
+     ground. The closed control keeps the colours set above. */
+  color-scheme: light;
+}
+
+.field select option{
+  color: #14080A;
+  background-color: #ffffff;
 }
 
 .field input::placeholder{ color: var(--ink-mute); opacity: 1; }
