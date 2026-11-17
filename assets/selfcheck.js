@@ -323,8 +323,15 @@
         if (data && data.token) {
           state.token = data.token;
           save();
+          return;
         }
-      }).catch(function () {});
+        /* No token means the row did not store, so there is nothing to
+           send the scorecard against and no worksheet to serve. Asking
+           for an address we cannot honour is worse than asking for
+           nothing, so the offer comes down and the scorecard is simply
+           given. They answered the questions; the failure is ours. */
+        withdrawOffer();
+      }).catch(withdrawOffer);
     } catch (e) { /* the state is already on the screen */ }
   }
 
@@ -372,6 +379,16 @@
          keep it from them. */
       reveal();
     });
+  }
+
+  /* Take the offer down and hand over what it was for. Only ever called
+     because something of ours failed, never because of anything the
+     person did. */
+  function withdrawOffer() {
+    if (state.claimed) return;
+    var offer = el['offer-form'] && el['offer-form'].parentNode;
+    if (offer) offer.hidden = true;
+    if (state.view === 'state' && complete()) reveal();
   }
 
   function fail(msg) {
