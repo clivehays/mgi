@@ -23,6 +23,15 @@
     "api/selfcheck.js": {
       "maxDuration": 15,
       "memory": 1024
+    },
+    "api/scorecard.js": {
+      "maxDuration": 30,
+      "memory": 1024
+    },
+    "api/sheet.js": {
+      "maxDuration": 30,
+      "memory": 1024,
+      "includeFiles": "worksheets/**"
     }
   },
   "headers": [
@@ -88,6 +97,23 @@
         {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/s/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
         }
       ]
     },
@@ -221,7 +247,7 @@
           "key": "v"
         }
       ],
-      "destination": "/assets/selfcheck-core.js?v=c425b46a",
+      "destination": "/assets/selfcheck-core.js?v=c50719f2",
       "permanent": false
     },
     {
@@ -232,7 +258,7 @@
           "key": "v"
         }
       ],
-      "destination": "/assets/selfcheck.css?v=0b5b6c0c",
+      "destination": "/assets/selfcheck.css?v=e54e11d9",
       "permanent": false
     },
     {
@@ -243,7 +269,7 @@
           "key": "v"
         }
       ],
-      "destination": "/assets/selfcheck.js?v=fa8769f8",
+      "destination": "/assets/selfcheck.js?v=02fcdbd0",
       "permanent": false
     },
     {
@@ -296,6 +322,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/s/:token/worksheet.pdf",
+      "destination": "/api/sheet?token=:token"
+    },
     {
       "source": "/r/:token/ask",
       "destination": "/api/ask?token=:token"

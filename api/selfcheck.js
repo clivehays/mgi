@@ -13,16 +13,23 @@
    a disagreement is logged loudly because it would mean the two copies
    of the instrument had drifted apart.
 
-   No name, no email, no company. This table is answers, campaign labels
-   and timings under a random per-visit number. Tying a row back to a
-   person is a separate, deliberate act, done outside the request by
-   scripts/join-linkedin-leads.py against a lead export.
+   Nothing identifying is sent here. The row is answers, campaign labels
+   and timings under a random per-visit number, written the moment the
+   state goes on the screen, so a visitor who stops there is still
+   counted and their answers still reach the research.
+
+   It mints and returns a token. That token is how the person asks for
+   the rest: api/scorecard.js takes it with an address, and api/sheet.js
+   serves the worksheet against it. It is a capability for one row and
+   carries no meaning of its own.
 
    Environment:
      SUPABASE_URL                 required to store anything
      SUPABASE_SERVICE_ROLE_KEY    required to store anything
      MGI_SELFCHECK_TABLE          default mgi_selfcheck
    ============================================================= */
+
+var crypto = require('crypto');
 
 var MGI = require('../assets/scoring.js');
 var SC = require('../assets/selfcheck-core.js');
@@ -88,6 +95,9 @@ module.exports = async function handler(req, res) {
   }
 
   var submittedAt = new Date().toISOString();
+  /* not `token`: there is already a token() validator below, and a local
+     of that name shadows it for the whole handler */
+  var rowToken = mintToken();
 
   var record = {
     form: SC.FORM,
@@ -116,6 +126,11 @@ module.exports = async function handler(req, res) {
     /* the question that has gone longest, named by the short form rather
        than by the client */
     focus: SC.ITEM_META[r.focus].name,
+    /* the move's worksheet, decided here from the state and the area so
+       the row records what was offered even if nobody claims it */
+    worksheet: r.worksheet.id,
+
+    token: rowToken,
 
     visit_id: token(body.visit_id, 64),
     lead_form: label(body.lf, 40),
@@ -140,8 +155,24 @@ module.exports = async function handler(req, res) {
     console.error('MGI selfcheck not stored, the log line above is the only copy');
   }
 
-  return res.status(200).json({ ok: true, stored: stored });
+  /* The token only means anything if the row carrying it exists. Handing
+     one back for a row that was never written would give the page a
+     scorecard it could not email and a worksheet link that 404s, so an
+     unstored row returns none and the page falls back to showing the
+     scorecard without them. */
+  return res.status(200).json({
+    ok: true,
+    stored: stored,
+    token: stored ? rowToken : null
+  });
 };
+
+/* 22 characters of url-safe random. The same shape api/submit.js uses for
+   a reading link, and checked against that shape wherever it is read. */
+function mintToken() {
+  return crypto.randomBytes(16).toString('base64')
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
 
 /* ---------- validation ----------
    Every answer is checked against the instrument's own option list, so

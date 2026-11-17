@@ -310,6 +310,94 @@ is(missingCols.length === 0, 'the table has a column for every item asked' +
   is(new RegExp('\\n\\s+' + col + '\\s').test(ddl), 'the table has ' + col);
 });
 
+/* ---------- 9. the worksheet table ----------
+   Twelve entries, one per move the short form can produce. Each must be
+   a real worksheet, with the title the library gives it, and a PDF that
+   actually ships in the bundle. A title typed here that has drifted from
+   the library would put a wrong name on the page and in the email, and an
+   id whose PDF is missing would hand someone a dead link straight after
+   they gave an address for it. */
+
+console.log('\n[9] Every move has a worksheet that exists');
+
+var LIBRARY = require(path.join(ROOT, 'report', 'library.json')).worksheets;
+var byId = {};
+LIBRARY.forEach(function (w) { byId[w.id] = w; });
+
+var pairs = 0;
+var badId = [];
+var badTitle = [];
+var missingPdf = [];
+var tooHard = [];
+var sheetAreas = {};
+SC.ITEMS.forEach(function (n) { sheetAreas[SC.ITEM_META[n].area] = 1; });
+
+/* the rule the full reading's picker is given: Cruise can take a level 3,
+   Stall needs the smallest move that works */
+var CEILING = { cruise: 3, drift: 2, headwinds: 2, stall: 1 };
+
+Object.keys(MGI.STATES).forEach(function (key) {
+  Object.keys(sheetAreas).forEach(function (area) {
+    pairs++;
+    var sheet = SC.WORKSHEETS[key] && SC.WORKSHEETS[key][area];
+    if (!sheet || !sheet.id) { badId.push(key + '/' + area + ' has none'); return; }
+    var w = byId[sheet.id];
+    if (!w) {
+      badId.push(key + '/' + area + ' -> ' + sheet.id + ' is not in the library');
+      return;
+    }
+    if (w.title !== sheet.title) {
+      badTitle.push(sheet.id + ': the table says "' + sheet.title +
+        '", the library says "' + w.title + '"');
+    }
+    if (!fs.existsSync(path.join(ROOT, 'worksheets', sheet.id + '.pdf'))) {
+      missingPdf.push(sheet.id);
+    }
+    if (w.difficulty > CEILING[key]) {
+      tooHard.push(key + '/' + area + ' -> ' + sheet.id + ' is level ' +
+        w.difficulty + ', above the ceiling of ' + CEILING[key] + ' for ' + key);
+    }
+  });
+});
+
+is(pairs === 12, 'twelve state and area pairs to cover (' + pairs + ')');
+is(badId.length === 0, 'every pair names a worksheet in the library' +
+  (badId.length ? ': ' + badId.join('; ') : ''));
+is(badTitle.length === 0, 'every title matches the library' +
+  (badTitle.length ? ': ' + badTitle.join('; ') : ''));
+is(missingPdf.length === 0, 'every chosen worksheet ships as a PDF' +
+  (missingPdf.length ? ': missing ' + missingPdf.join(', ') : ''));
+is(tooHard.length === 0, 'no state is given a worksheet harder than it should take' +
+  (tooHard.length ? ': ' + tooHard.join('; ') : ''));
+
+var noSheet = 0;
+sweep(function (values) {
+  var r = SC.read(values);
+  if (!r.worksheet || !r.worksheet.id || !byId[r.worksheet.id]) noSheet++;
+});
+is(noSheet === 0, 'every reachable scorecard carries a real worksheet');
+
+/* ---------- 10. the table holds the address and the worksheet ---------- */
+
+console.log('\n[10] The migration carries the address and the worksheet');
+
+['token', 'email', 'email_at', 'worksheet'].forEach(function (col) {
+  is(new RegExp('\\n\\s+' + col + '\\s').test(ddl), 'the table has ' + col);
+});
+is(/token\s+text\s+not null unique/.test(ddl), 'the token is unique and required');
+
+/* ---------- the page has the state view and the offer ---------- */
+
+console.log('\n[11] The page can hold the state and the offer');
+
+[['view-state', 'the state view'], ['offer-form', 'the address form'],
+ ['s-state-call', 'the state headline'], ['s-gap', 'the instinct gap'],
+ ['r-sheet-link', 'the worksheet link']].forEach(function (pair) {
+  is(html.indexOf('id="' + pair[0] + '"') !== -1, 'the page has ' + pair[1]);
+});
+is(!/No email, no signup/.test(html),
+  'the page no longer promises that no email is asked for');
+
 /* ---------- done ---------- */
 
 console.log('\n' + pass + ' passed, ' + fail + ' failed');
