@@ -631,6 +631,33 @@
     };
   }
 
+  /* ---------- a state from a partial item set ----------
+     The short self-check (self-check.html) asks five of the fifteen
+     evidence items. The state tree reads nothing but the behaviour mean
+     and the three trajectory answers, so a caller holding a partial set
+     can hand over that mean and get the same call from the same tree,
+     rather than reimplementing it or padding the item array to fool
+     score() into accepting it.
+
+     Only the state, the rule and the instinct gap come back. The areas,
+     the signal score and the gap width all need the full fifteen and are
+     deliberately absent: a caller cannot read a number here that its
+     answers did not earn.
+
+     behaviourMean is the mean of whatever subset the caller asked, and
+     may be fractional. Which subset is the caller's business; the agreement
+     between a given subset and the full instrument is measured by
+     scripts/test-selfcheck.js against the stored cohort. */
+
+  function partialState(behaviourMean, output, external, energy, gut) {
+    var decision = decideState(behaviourMean, output, external, energy);
+    return {
+      state: decision.state,
+      rule: decision.rule,
+      gap: decideGap(gut, decision.state)
+    };
+  }
+
   /* ---------- score ----------
      answers: { gut, evidence: [15 ints 0-3], output, external, energy, exposure } */
 
@@ -1314,9 +1341,16 @@
     LINE_OF_SIGHT: LINE_OF_SIGHT,
     GAP_BANDS: GAP_BANDS,
     GAP_FRAMING: GAP_FRAMING,
+    NARROW_SIGHT_ACTION: NARROW_SIGHT_ACTION,
+    /* the either/or that follows a thin count, and the case where being
+       close to the team settles it. Exported so the short self-check
+       says it in the same words rather than in its own. */
+    STALE_RESOLVED: STALE_RESOLVED,
+    STALE_UNRESOLVED: STALE_UNRESOLVED,
     lineOfSightFor: lineOfSightFor,
     gapWidthFor: gapWidthFor,
     score: score,
+    partialState: partialState,
     peopleSection: peopleSection,
     closingBlocks: closingBlocks,
     labelFor: labelFor,
