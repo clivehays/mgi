@@ -288,7 +288,7 @@
   function init() {
     [
       'view-landing', 'view-questions', 'view-result',
-      'btn-start', 'btn-back', 'btn-next',
+      'btn-start', 'btn-start-2', 'btn-back', 'btn-next',
       'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
       'r-state-call', 'r-state-desc', 'r-gap', 'r-score',
       'r-signal-headline', 'r-signal-copy', 'r-items',
@@ -312,6 +312,11 @@
     history.replaceState({ view: state.done ? 'result' : 'landing', index: 0 }, '');
 
     el['btn-start'].addEventListener('click', function () { go(0); });
+    /* the same button again at the foot of the page, for anyone who read
+       their way down rather than starting from the top */
+    if (el['btn-start-2']) {
+      el['btn-start-2'].addEventListener('click', function () { go(0); });
+    }
     el['btn-back'].addEventListener('click', back);
     el['btn-next'].addEventListener('click', next);
     document.addEventListener('keydown', onKeydown);

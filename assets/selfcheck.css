@@ -10,6 +10,17 @@
    of the views it covers */
 .landing .eyebrow{ display: block; margin-bottom: 14px; }
 
+/* ---------- the four states ----------
+   Each name in its own colour, the same four the dots in the hero use and
+   the same four a reading is later called by. The list is the first place
+   a reader meets them, so the association starts here rather than on the
+   scorecard. */
+
+.landing .states li[data-state="cruise"] .state-name{ color: var(--cruise); }
+.landing .states li[data-state="drift"] .state-name{ color: var(--drift); }
+.landing .states li[data-state="headwinds"] .state-name{ color: var(--headwinds); }
+.landing .states li[data-state="stall"] .state-name{ color: var(--stall); }
+
 /* ---------- the score ----------
    A number the size of a headline, because it is the thing the reader
    came for. Mono, so it reads as a measurement rather than a grade, and

@@ -31,7 +31,7 @@
 
 <link rel="stylesheet" href="/assets/fonts.css?v=df1bd87a">
 <link rel="stylesheet" href="/assets/mgi.css?v=279970c6">
-<link rel="stylesheet" href="/assets/selfcheck.css?v=b5935bad">
+<link rel="stylesheet" href="/assets/selfcheck.css?v=0b5b6c0c">
 </head>
 <body>
 
@@ -47,40 +47,109 @@
 <!-- ============ 1. LANDING ============ -->
 <section class="view is-active landing" id="view-landing" aria-labelledby="landing-title">
   <div class="wrap">
-    <span class="mono eyebrow">The Manager Gap self-check</span>
-    <h1 id="landing-title">Eight questions, about ninety seconds, and the state your team is most likely in.</h1>
 
-    <div class="lede body-serif">
-      <p>This is the short scorecard taken from the full assessment. It keeps the instinct
-        check the assessment opens with, three of its fifteen evidence questions, and the four
-        that place your team. For 44 of the first 50 managers who answered all twenty, these
-        eight named the same state. Where the two differed, the short version pointed at the
-        harder reading every time, never the easier one.</p>
+    <div class="hero">
+      <span class="mono eyebrow">The Manager Gap self-check</span>
+
+      <h1 id="landing-title"><span class="hero-line">Your team is in one of four states.</span><span class="hero-line">Two <span class="hero-hot">look identical</span> from where you sit.</span></h1>
+
+      <p class="landing-time"><strong class="sub-strong">Eight questions, about ninety seconds.</strong>
+        No email, no signup. Your scorecard appears on this page the moment you finish.</p>
+
+      <button type="button" class="btn btn-hero" id="btn-start">Start the self-check</button>
+
+      <p class="proof">For 44 of the first 50 managers, these eight questions named the same
+        state as the full twenty.</p>
+
+      <ul class="state-row" aria-label="The four team states">
+        <li><i class="state-dot" style="background:var(--cruise)" aria-hidden="true"></i>Cruise</li>
+        <li><i class="state-dot" style="background:var(--drift)" aria-hidden="true"></i>Drift</li>
+        <li><i class="state-dot" style="background:var(--headwinds)" aria-hidden="true"></i>Headwinds</li>
+        <li><i class="state-dot" style="background:var(--stall)" aria-hidden="true"></i>Stall</li>
+      </ul>
     </div>
 
-    <ol class="states" aria-label="The four states">
-      <li><span class="state-name">Cruise</span> <span class="state-line">Output holding, and the behaviours of a healthy team still reach you.</span></li>
-      <li><span class="state-name">Drift</span> <span class="state-line">Output holding while the conditions underneath it slide. Nothing in the numbers says anything is wrong.</span></li>
-      <li><span class="state-name">Headwinds</span> <span class="state-line">Output under pressure, with a real force outside the team acting on it.</span></li>
-      <li><span class="state-name">Stall</span> <span class="state-line">Output has stopped moving, and the signals went quiet long before it did.</span></li>
-    </ol>
+    <div class="below">
 
-    <button type="button" class="btn" id="btn-start">Start the self-check</button>
-    <p class="proof">Nothing is sent to you. Your scorecard appears on this page the moment you finish.</p>
+      <details class="fold">
+        <summary>The four states</summary>
+        <div class="fold-body">
+          <ol class="states" aria-label="The four states">
+            <li data-state="cruise"><span class="state-name">Cruise</span> <span class="state-line">Output holding, and the behaviours of a healthy team still reach you.</span></li>
+            <li data-state="drift"><span class="state-name">Drift</span> <span class="state-line">Output holding while the conditions underneath it slide. Nothing in the numbers says anything is wrong.</span></li>
+            <li data-state="headwinds"><span class="state-name">Headwinds</span> <span class="state-line">Output under pressure, with a real force outside the team acting on it.</span></li>
+            <li data-state="stall"><span class="state-name">Stall</span> <span class="state-line">Output has stopped moving, and the signals went quiet long before it did.</span></li>
+          </ol>
+        </div>
+      </details>
 
-    <div class="instruction">
-      <p><strong>Before you start:</strong> answer from memory of actual events. There are no
-        wrong answers. But a guessed answer makes the result meaningless.
-        &ldquo;Can&rsquo;t recall&rdquo; is a valid and useful answer.</p>
+      <details class="fold">
+        <summary>What you get</summary>
+        <div class="fold-body">
+          <ul class="findings-list">
+            <li>The state your team is most likely in, and what that state actually means.</li>
+            <li>Your instinct going in, set against what your own answers support.</li>
+            <li>A signal score out of nine, with each question and how far back your answer reached.</li>
+            <li>How much of your team&rsquo;s week you are positioned to see.</li>
+            <li>One move for this week, chosen for the question that has gone longest.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="fold">
+        <summary>Before you start</summary>
+        <div class="fold-body">
+          <div class="instruction">
+            <p>Answer from memory of actual events. There are no wrong answers. But a guessed
+              answer makes the result meaningless. &ldquo;Can&rsquo;t recall&rdquo; is a valid
+              and useful answer.</p>
+          </div>
+        </div>
+      </details>
+
+      <details class="fold">
+        <summary>How this compares with the full assessment</summary>
+        <div class="fold-body">
+          <section class="landing-note" aria-labelledby="compare-heading">
+            <h2 class="visually-hidden" id="compare-heading">How this compares with the full assessment</h2>
+            <p>The full assessment asks twenty questions. This one keeps the instinct check it
+              opens with, three of its fifteen evidence questions, and the four that place your
+              team.</p>
+            <p>For 44 of the first 50 managers who answered all twenty, these eight named the
+              same state. Where the two differed, the short version pointed at the harder
+              reading every time, never the easier one.</p>
+            <p>What it does not do: name which of the five areas your attention belongs in, or
+              how far your picture and your team&rsquo;s reality are likely to sit apart. Both
+              of those need all fifteen questions, which is what the full assessment is for.</p>
+          </section>
+        </div>
+      </details>
+
+      <button type="button" class="btn" id="btn-start-2">Start the self-check</button>
+
+      <p class="audience-line">For anyone who leads a team directly: managers, heads of
+        department, directors, and founders with people reporting to them. Company size does
+        not matter. It asks about one team, the one you lead now.</p>
+
+      <p class="privacy-line">No name, no email, no company. Nothing individual is ever published.</p>
+
+      <details class="fold">
+        <summary>What happens to your answers</summary>
+        <div class="fold-body">
+          <section class="landing-note" aria-labelledby="privacy-heading">
+            <h2 class="visually-hidden" id="privacy-heading">What happens to your answers</h2>
+            <p>Your answers are stored under a random number, so the short version can be
+              checked against the full one as more people take it. Nothing individual is ever
+              published, and nothing here is sold or passed to anyone else.</p>
+            <p>This page asks you for nothing about yourself. It does record which advert or
+              link brought you here, and nothing from LinkedIn loads unless you accept the
+              cookie banner. You can change that choice at any time from Cookie settings in the
+              footer, or write to <a href="mailto:contact@cloverera.com">contact@cloverera.com</a>.</p>
+          </section>
+        </div>
+      </details>
+
     </div>
-
-    <p class="audience-line">This is for anyone who leads a team directly: managers, heads of
-      department, directors, and founders with people reporting to them. Company size does not
-      matter. It asks about one team, the one you lead now.</p>
-
-    <p class="privacy-line">No name, no email, no company. Your answers are stored under a
-      random number so the short version can be checked against the full one, and nothing
-      individual is ever published.</p>
   </div>
 </section>
 
@@ -184,6 +253,6 @@
 <script src="/assets/linkedin.js?v=932b943b"></script>
 <script src="/assets/scoring.js?v=34c5b06e"></script>
 <script src="/assets/selfcheck-core.js?v=c425b46a"></script>
-<script src="/assets/selfcheck.js?v=e513a20a"></script>
+<script src="/assets/selfcheck.js?v=fa8769f8"></script>
 </body>
 </html>
