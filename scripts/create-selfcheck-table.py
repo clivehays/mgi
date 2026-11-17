@@ -1,4 +1,4 @@
-"""Create mgi_selfcheck, the table behind the ten-question self-check.
+"""Create mgi_selfcheck, the table behind the eight-question self-check.
 
 One row per completed scorecard at /self-check. It holds the answers, the
 recomputed reading, the campaign labels from the landing URL and the
@@ -80,10 +80,8 @@ create table if not exists %(t)s (
   -- question and can be compared directly.
   gut                    text        not null,
   q1                     smallint    not null,
-  q2                     smallint    not null,
-  q5                     smallint    not null,
-  q6                     smallint    not null,
-  q12                    smallint    not null,
+  q9                     smallint    not null,
+  q11                    smallint    not null,
   output                 text        not null,
   external_pressure      text        not null,
   energy                 text        not null,
@@ -113,10 +111,9 @@ create table if not exists %(t)s (
   internal               boolean     not null default false,
 
   constraint %(t)s_steps check (
-    q1 between 0 and 3 and q2 between 0 and 3 and q5 between 0 and 3 and
-    q6 between 0 and 3 and q12 between 0 and 3
+    q1 between 0 and 3 and q9 between 0 and 3 and q11 between 0 and 3
   ),
-  constraint %(t)s_signal check (signal between 0 and 15)
+  constraint %(t)s_signal check (signal between 0 and 9)
 );
 """ % {"t": TABLE}
 

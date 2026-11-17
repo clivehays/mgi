@@ -204,7 +204,7 @@
        repeat it */
     el['r-score'].innerHTML = '';
     el['r-score'].appendChild(document.createTextNode(String(r.signal) + ' '));
-    el['r-score'].appendChild(span('sc-of', 'of 15'));
+    el['r-score'].appendChild(span('sc-of', 'of ' + r.signalMax));
 
     el['r-signal-headline'].textContent = r.signalHeadline;
     el['r-signal-copy'].textContent = r.signalMeaning;

@@ -267,9 +267,9 @@ if (scan('self-check.html', scHtml)) ok('self-check.html carries no banned langu
   if (scan('assets/' + f, src)) ok('assets/' + f + ' carries no banned language');
 });
 
-/* every scorecard the form can produce. The full space is 786,432
-   readings, which test-selfcheck.js walks; here a seeded sweep plus the
-   corners is enough to reach every branch of the copy. */
+/* every scorecard the form can produce. test-selfcheck.js walks the whole
+   space; here a seeded sweep plus the corners is enough to reach every
+   branch of the copy. */
 var scFields = ['headline', 'signalHeadline', 'signalMeaning', 'focusLine',
   'cohortLine', 'action'];
 var scCases = [];
@@ -279,7 +279,9 @@ var scCases = [];
       EXTS.forEach(function (x) {
         ENES.forEach(function (n) {
           EXPS.forEach(function (p) {
-            scCases.push([g, v, v, v, v, v, o, x, n, p]);
+            var flat = [];
+            for (var fi = 0; fi < SC.ITEMS.length; fi++) flat.push(v);
+            scCases.push([g].concat(flat, [o, x, n, p]));
           });
         });
       });

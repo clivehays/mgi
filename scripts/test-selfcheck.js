@@ -29,15 +29,15 @@ function ok(msg) { pass++; console.log('  ok    ' + msg); }
 function bad(msg) { fail++; console.log('  FAIL  ' + msg); }
 function is(cond, msg) { if (cond) ok(msg); else bad(msg); }
 
-/* ---------- 1. the ten questions ---------- */
+/* ---------- 1. the eight questions ---------- */
 
-console.log('\n[1] The ten questions');
+console.log('\n[1] The eight questions');
 
 var Q = SC.questions();
 
-is(Q.length === 10, 'the short form asks ten questions (' + Q.length + ')');
+is(Q.length === 8, 'the short form asks eight questions (' + Q.length + ')');
 is(Q.length === SC.TOTAL, 'TOTAL agrees with questions(): ' + SC.TOTAL);
-is(SC.ITEMS.length === 5, 'five evidence items: q' + SC.ITEMS.join(', q'));
+is(SC.ITEMS.length === 3, 'three evidence items: q' + SC.ITEMS.join(', q'));
 
 /* every question must be an object the instrument owns, or built from its
    own text. Nothing may be restated here. */
@@ -46,7 +46,8 @@ var byRef = Q.filter(function (q) { return fromInstrument.indexOf(q) !== -1; });
 is(byRef.length === 5, 'the gut check and the four that place the team are the instrument\'s own objects');
 
 var evidenceQs = Q.filter(function (q) { return q.kind === 'evidence'; });
-is(evidenceQs.length === 5, 'five evidence questions in the set');
+is(evidenceQs.length === SC.ITEMS.length,
+  SC.ITEMS.length + ' evidence questions in the set');
 
 var wrong = evidenceQs.filter(function (q) { return q.text !== MGI.EVIDENCE[q.n - 1]; });
 is(wrong.length === 0, 'every evidence question reads its text straight from the instrument');
@@ -78,7 +79,7 @@ console.log('\n[2] Every chosen item feeds the state tree');
 
 var BEH = [1, 2, 5, 6, 9, 10, 11, 12];
 var strays = SC.ITEMS.filter(function (n) { return BEH.indexOf(n) === -1; });
-is(strays.length === 0, 'all five are behaviour items' +
+is(strays.length === 0, 'all ' + SC.ITEMS.length + ' are behaviour items' +
   (strays.length ? ', but q' + strays.join(', q') + ' are not' : ''));
 
 /* each item's area must be one the instrument knows, and must be the area
@@ -156,9 +157,16 @@ var statesSeen = {};
 var gapsSeen = {};
 
 function sweep(cb) {
-  var combos = [];
-  for (var a = 0; a < 4; a++) for (var b = 0; b < 4; b++) for (var c = 0; c < 4; c++) {
-    for (var d = 0; d < 4; d++) for (var e = 0; e < 4; e++) combos.push([a, b, c, d, e]);
+  /* every combination of answers to however many evidence items the short
+     form asks, built from the item count rather than written out, so this
+     still covers the whole space if the set changes size */
+  var combos = [[]];
+  for (var k = 0; k < SC.ITEMS.length; k++) {
+    var next = [];
+    combos.forEach(function (c) {
+      for (var v = 0; v < 4; v++) next.push(c.concat([v]));
+    });
+    combos = next;
   }
   GUTS.forEach(function (g) {
     combos.forEach(function (ev) {
@@ -195,13 +203,18 @@ sweep(function (values) {
   if (r.lineOfSight.score <= 1 && r.action.indexOf(MGI.NARROW_SIGHT_ACTION) === -1) {
     narrowWithoutNote++;
   }
-  if (r.items.length !== 5) empties.push('wrong number of items for ' + values.join(','));
-  if (r.signal < 0 || r.signal > 15) empties.push('signal out of range for ' + values.join(','));
+  if (r.items.length !== SC.ITEMS.length) {
+    empties.push('wrong number of items for ' + values.join(','));
+  }
+  if (r.signal < 0 || r.signal > SC.SIGNAL_MAX) {
+    empties.push('signal out of range for ' + values.join(','));
+  }
 });
 
 is(empties.length === 0, checked.toLocaleString() + ' scorecards, every part present' +
   (empties.length ? '\n          ' + empties.join('\n          ') : ''));
-is(focusOutside === 0, 'the question named is always one of the five asked');
+is(focusOutside === 0,
+  'the question named is always one of the ' + SC.ITEMS.length + ' asked');
 is(actionMissing === 0, 'every scorecard carries a move');
 is(narrowWithoutNote === 0, 'a narrow line of sight always adds the instruction to go and look');
 is(Object.keys(statesSeen).length === 4, 'all four states are reachable: ' +
@@ -237,7 +250,8 @@ is(c.aligned + c.feltWorse + c.feltBetter === c.n,
 is(Object.keys(c.states).sort().join() ===
    Object.keys(MGI.STATES).map(function (k) { return MGI.STATES[k].name; }).sort().join(),
   'the cohort names exactly the instrument\'s four states');
-is(c.medianSignal >= 0 && c.medianSignal <= 15, 'the median score is inside the scale');
+is(c.medianSignal >= 0 && c.medianSignal <= SC.SIGNAL_MAX,
+  'the median score is inside the scale, 0 to ' + SC.SIGNAL_MAX);
 var line = SC.cohortLine();
 is(line.indexOf(String(c.n)) !== -1 && line.indexOf(String(c.feltWorse)) !== -1,
   'the sentence on the page is built from that block, not written out again');

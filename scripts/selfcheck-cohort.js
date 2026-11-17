@@ -13,9 +13,11 @@
         block to paste into assets/selfcheck-core.js, which is the only
         place those numbers live.
 
-   It also scores every other five-item subset, so if a different five
-   overtakes the current choice you will see it here rather than find out
-   later.
+   It also scores every other subset of the same size, so if a different
+   set overtakes the current choice you will see it here rather than find
+   out later. Direction is reported as well as agreement: a set that is
+   right more often by telling a declining team it is fine is worse, not
+   better, and a raw count hides that.
 
    Reads the submissions table directly. No personal data is printed:
    answers, states and counts only.
@@ -112,6 +114,17 @@ function full(r) {
   });
 }
 
+/* Which way a disagreement goes. Saying Drift where the full instrument
+   said Cruise sends a manager to look harder at a team that was fine; the
+   reverse tells a team that is declining that it is not. They are not the
+   same mistake and must never be counted as one. */
+var SEVERITY = { Cruise: 0, Headwinds: 1, Drift: 1, Stall: 2 };
+
+function direction(fullName, shortName) {
+  if (fullName === shortName) return 'same';
+  return SEVERITY[shortName] < SEVERITY[fullName] ? 'easier' : 'harder';
+}
+
 /* the state the short form would have called, from a chosen subset */
 function shortState(r, items) {
   var e = evidence(r);
@@ -161,40 +174,63 @@ function median(a) {
 
   /* ---------- 1. does the current five still hold ---------- */
 
-  console.log('\n--- the five the short form asks: q' + SC.ITEMS.join(', q') + ' ---');
+  console.log('\n--- the items the short form asks: q' + SC.ITEMS.join(', q') + ' ---');
   var sameState = 0;
   var sameGap = 0;
+  var harder = 0;
+  var easier = 0;
   var misses = [];
   usable.forEach(function (r) {
     var f = full(r);
     var s = shortState(r, SC.ITEMS);
-    if (f.state.name === s.state.name) sameState++;
-    else misses.push('row ' + r.id + ': full ' + f.state.name + ', short ' + s.state.name);
+    var d = direction(f.state.name, s.state.name);
+    if (d === 'same') sameState++;
+    else {
+      if (d === 'harder') harder++; else easier++;
+      misses.push('row ' + r.id + ': full ' + f.state.name + ', short ' +
+        s.state.name + '  (' + d + ')');
+    }
     if (f.gap.key === s.gap.key) sameGap++;
   });
   console.log('  same state as the full fifteen: ' + sameState + ' of ' + usable.length);
   console.log('  same instinct gap:              ' + sameGap + ' of ' + usable.length);
+  console.log('  disagreed toward the harder reading: ' + harder);
+  console.log('  disagreed toward "everything is fine": ' + easier +
+    (easier ? '   <- the landing page says this is zero. Fix the copy or the set.' : ''));
   if (misses.length) console.log('  ' + misses.join('\n  '));
 
   /* ---------- 2. is a different five now better ---------- */
 
-  console.log('\n--- every five-item subset, best first ---');
-  var ranked = combos(BEHAVIOUR_ITEMS, 5).map(function (items) {
+  console.log('\n--- every subset of the same size, best first ---');
+  var ranked = combos(BEHAVIOUR_ITEMS, SC.ITEMS.length).map(function (items) {
     var n = 0;
+    var bad = 0;
     usable.forEach(function (r) {
-      if (shortState(r, items).state.name === full(r).state.name) n++;
+      var d = direction(full(r).state.name, shortState(r, items).state.name);
+      if (d === 'same') n++;
+      else if (d === 'easier') bad++;
     });
-    return { items: items, n: n };
-  }).sort(function (a, b) { return b.n - a.n; });
+    return { items: items, n: n, bad: bad };
+  }).sort(function (a, b) {
+    /* a set that never points the easier way comes first, whatever its raw
+       agreement. Buying two points of agreement by telling one manager in
+       Drift that they are in Cruise is not a better set. */
+    return a.bad - b.bad || b.n - a.n;
+  });
 
   ranked.slice(0, 8).forEach(function (s) {
     var mark = s.items.join() === SC.ITEMS.join() ? '  <- the current set' : '';
-    console.log('  q' + s.items.join(', q') + '   ' + s.n + ' of ' + usable.length + mark);
+    console.log('  q' + s.items.join(', q') + '   ' + s.n + ' of ' + usable.length +
+      '   told-a-declining-team-it-is-fine: ' + s.bad + mark);
   });
   var current = ranked.filter(function (s) { return s.items.join() === SC.ITEMS.join(); })[0];
   var place = ranked.indexOf(current) + 1;
   console.log('  the current set ranks ' + place + ' of ' + ranked.length +
-    (place === 1 ? ', still the best' : ', so a different five now does better'));
+    (place === 1 ? ', still the best'
+      : '. A higher-placed set is not automatically better: the current one is '
+        + 'chosen for what it asks as well as how it scores, and the reason is '
+        + 'in the comment at the top of assets/selfcheck-core.js. Check that '
+        + 'before changing it.'));
 
   /* ---------- 3. the block to paste ---------- */
 
@@ -233,10 +269,10 @@ function median(a) {
   console.log('    medianSignal: ' + median(signals));
   console.log('  };');
 
-  console.log('\n  (mean score on the five: ' + (signals.reduce(function (a, b) {
-    return a + b;
-  }, 0) / signals.length).toFixed(1) + ' of 15, range ' +
-    Math.min.apply(null, signals) + ' to ' + Math.max.apply(null, signals) + ')');
+  console.log('\n  (mean score on the ' + SC.ITEMS.length + ' items: ' +
+    (signals.reduce(function (a, b) { return a + b; }, 0) / signals.length).toFixed(1) +
+    ' of ' + SC.SIGNAL_MAX + ', range ' + Math.min.apply(null, signals) + ' to ' +
+    Math.max.apply(null, signals) + ')');
 
   var sum = states.Cruise + states.Drift + states.Headwinds + states.Stall;
   if (sum !== usable.length || gaps.aligned + gaps.ahead + gaps.behind !== usable.length) {

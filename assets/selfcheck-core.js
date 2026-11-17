@@ -1,7 +1,7 @@
 /* =============================================================
    The Manager Gap self-check: the short form itself.
 
-   Which ten questions it asks, and everything it says about the
+   Which eight questions it asks, and everything it says about the
    answers. No DOM, no network, no storage: loaded by the browser as a
    global (MGISelfCheck) and required by scripts/test-selfcheck.js as a
    module, so the thing under test is the thing that ships.
@@ -10,32 +10,37 @@
    description or a move. Every one of those is read from scoring.js, so
    the short version cannot drift from the long one.
 
-   WHICH TEN, AND WHY THOSE TEN
+   WHICH EIGHT, AND WHY THOSE EIGHT
 
    The state tree reads the behaviour mean and the three trajectory
-   answers, and nothing else. So the short set keeps all four of those
-   questions and five of the fifteen evidence items, chosen by running
-   every subset against the stored cohort and keeping the one that
-   reproduced the full instrument's state call most often.
+   answers, and nothing else. So the short set keeps all four of the
+   questions that place the team and three of the fifteen evidence
+   items, chosen by running every subset against the stored cohort.
 
-   q1, q2, q5, q6 and q12 named the same state as the full twenty for 49
-   of the first 50 managers, and the same instinct gap for 49 of 50. The
-   single disagreement sat exactly on a threshold. Of the 56 five-item
-   subsets available, this one ranks first. Dropping the energy question
-   instead costs ten of those, because five managers in Drift would be
-   told Cruise; dropping external pressure costs eleven, because ten in
-   Headwinds would be told Stall. Ten questions is the floor, not a
-   preference. Re-measure with: node scripts/selfcheck-cohort.js
+   The four placing questions are not negotiable. Without the energy
+   question five managers in Drift are told Cruise; without external
+   pressure ten in Headwinds are told Stall. They are also the fastest
+   questions on the form. The length is in the evidence items, so that
+   is where it was taken from.
+
+   q1, q9 and q11 named the same state as the full twenty for 44 of the
+   first 50 managers and the same instinct gap for 46 of 50. The six
+   disagreements were all in one direction: the short form said Drift
+   where the full one said Cruise. On this cohort it never once told a
+   team that was declining that it was fine, and that is the property
+   worth protecting, not the raw agreement. Two other sets score a point
+   or two higher and buy it by making exactly that error.
+
+   Re-measure, including the direction, with:
+     node scripts/selfcheck-cohort.js
 
    WHAT IT DELIBERATELY DOES NOT CLAIM
 
    The weakest of the five areas, and the gap width. Both need the full
-   fifteen items. On the stored cohort the short set agreed with the full
-   instrument about the thinnest area for only 30 of 50, with a tie at
-   the bottom for 12 of them, so this form never names an area. It names
-   the one question that has gone longest without being answered by
-   something real, which it can stand behind, and it takes the move from
-   the instrument's own matrix.
+   fifteen items. So this form never names an area. It names the one
+   question that has gone longest without being answered by something
+   real, which it can stand behind, and it takes the move from the
+   instrument's own matrix.
    ============================================================= */
 
 (function (root, factory) {
@@ -47,21 +52,26 @@
 }(typeof self !== 'undefined' ? self : this, function (MGI) {
   'use strict';
 
-  var FORM = 'self-check 1.0.0';
+  var FORM = 'self-check 2.0.0';
 
-  /* the five evidence items, by their position in MGI.EVIDENCE */
-  var ITEMS = [1, 2, 5, 6, 12];
+  /* the three evidence items, by their position in MGI.EVIDENCE */
+  var ITEMS = [1, 9, 11];
 
   /* A short name for each, for the list on the scorecard, and the area it
      belongs to in the instrument. The area name is never shown: it selects
-     the move from MGI.ACTIONS, which is keyed by state and area. */
+     the move from MGI.ACTIONS, which is keyed by state and area.
+
+     The three sit in three different areas on purpose. Two items from one
+     area would read as the same question twice, which is a real cost in a
+     form this short and does not show up in any agreement figure. */
   var ITEM_META = {
     1: { name: 'A blocker reached you before it bit', area: 'equipped' },
-    2: { name: 'Someone asked a teammate for help rather than you', area: 'equipped' },
-    5: { name: 'An idea arrived that you did not ask for', area: 'invested' },
-    6: { name: 'Unhurried time with every person on the team', area: 'invested' },
-    12: { name: 'Something a team member said changed your mind', area: 'truth' }
+    9: { name: 'Someone disagreed with you openly, in front of others', area: 'truth' },
+    11: { name: 'A real conversation with the person you are least sure about', area: 'invested' }
   };
+
+  /* three answers at 0 to 3 */
+  var SIGNAL_MAX = ITEMS.length * 3;
 
   /* ---------- the cohort ----------
      The first 50 managers to complete the full twenty questions, as at
@@ -77,22 +87,23 @@
     aligned: 18,
     feltWorse: 22,
     feltBetter: 10,
-    medianSignal: 11
+    medianSignal: 6
   };
 
-  var NUMBER_WORD = ['none', 'One', 'Two', 'Three', 'Four', 'Five'];
+  var COUNT_WORD = ['none', 'One', 'Two', 'Three', 'Four', 'Five'];
+  var WHOLE_WORD = ['none', 'one', 'two', 'three', 'four', 'five'];
 
-  /* What the thin items mean, for five items rather than fifteen. The
-     tail that follows, which settles whether an absent signal has stopped
-     or is simply out of view, comes from the instrument. */
+  /* What the thin items mean. The tail that follows, which settles whether
+     an absent signal has stopped or is simply out of view, comes from the
+     instrument. Indexed by how many of the items are older than a month. */
   var STALE_MEANING = [
     'Nothing on this list is running on memory. When one of these changes, you are positioned to watch it happen rather than hear about it afterwards.',
-    'Almost all of this you have seen for yourself inside the month. The one you have not is where a change would reach you late, if it reached you at all.',
-    'A good part of what you believe about this team is memory rather than observation. Those parts could have moved without anything telling you.',
-    'Most of what you believe about this team is memory rather than observation. A team can travel a long way behind a picture this old, and the first sign tends to be the work itself rather than anything looking different.'
+    'Most of this you have seen for yourself inside the month. The one you have not is where a change would reach you late, if it reached you at all.',
+    'Most of what you believe about this team is memory rather than observation. Those parts could have moved without anything telling you, and the first sign would be something going wrong rather than something looking different.',
+    'None of this is observation. It is all memory, and a team can travel a long way behind a picture that old before anything reaches the work.'
   ];
 
-  /* ---------- the ten questions, built from the instrument ---------- */
+  /* ---------- the eight questions, built from the instrument ---------- */
 
   function questions() {
     var out = [MGI.GUT];
@@ -127,7 +138,7 @@
   }
 
   /* ---------- the reading ----------
-     values: the ten answers in the order questions() returns them. */
+     values: the eight answers in the order questions() returns them. */
 
   function read(values) {
     var gut = values[0];
@@ -172,6 +183,7 @@
       exposure: exposure,
 
       signal: signal,
+      signalMax: SIGNAL_MAX,
       mean: mean,
       stale: stale,
 
@@ -207,13 +219,14 @@
   }
 
   function staleHeadline(stale) {
+    var all = WHOLE_WORD[ITEMS.length];
     if (stale === 0) {
-      return 'All five of the things this asked about have reached you inside the last month.';
+      return 'All ' + all + ' of the things this asked about have reached you inside the last month.';
     }
     if (stale === ITEMS.length) {
-      return 'None of the five things this asked about has reached you inside a month.';
+      return 'None of the ' + all + ' things this asked about has reached you inside a month.';
     }
-    return NUMBER_WORD[stale] + ' of the five things this asked about ' +
+    return COUNT_WORD[stale] + ' of the ' + all + ' things this asked about ' +
       (stale === 1 ? 'has' : 'have') + ' not reached you inside a month.';
   }
 
@@ -224,27 +237,23 @@
   }
 
   /* The sentence above the move. It names what the move is for, and where
-     several items are level it says so rather than choosing silently.
-
-     Past two it stops listing them. The five are already on the screen
-     directly above this, each with the answer given, so a sentence that
-     reads them back is a sentence nobody finishes. */
+     several items are level it says so rather than choosing silently. */
   function focusLine(r) {
+    var all = WHOLE_WORD[ITEMS.length];
     if (r.low === 3) {
       return 'Everything on that list reached you inside the week, so this is about holding it.';
     }
     if (r.back.length === 1) {
       return 'Longest without reaching you: ' + lowerFirst(ITEM_META[r.focus].name) + '.';
     }
-    if (r.back.length === 2) {
-      return 'Two of the five are level at the back: ' +
-        lowerFirst(ITEM_META[r.back[0]].name) + ' and ' +
-        lowerFirst(ITEM_META[r.back[1]].name) +
-        '. Take whichever is closer to the truth of this team. The move below is for the first.';
+    if (r.back.length === ITEMS.length) {
+      return 'All ' + all + ' are level at the back, so where to start is your call. ' +
+        'The move below is for one of them: ' + lowerFirst(ITEM_META[r.focus].name) + '.';
     }
-    return NUMBER_WORD[r.back.length] + ' of the five are level at the back, so where to ' +
-      'start is your call. The move below is for one of them: ' +
-      lowerFirst(ITEM_META[r.focus].name) + '.';
+    var names = r.back.map(function (n) { return lowerFirst(ITEM_META[n].name); });
+    return COUNT_WORD[r.back.length] + ' of the ' + all + ' are level at the back: ' +
+      names.join(' and ') +
+      '. Take whichever is closer to the truth of this team. The move below is for the first.';
   }
 
   function lowerFirst(s) {
@@ -260,8 +269,8 @@
       (c.n - c.aligned) + ' of them, instinct and evidence did not agree: ' +
       c.feltWorse + ' had been carrying more worry than their own answers supported, and ' +
       c.feltBetter + ' had been reading the team more generously than their answers did. ' +
-      'The median score on these five questions was ' + c.medianSignal + ' of 15. ' +
-      'Figures as at ' + c.asAt + '.';
+      'The median score on these ' + WHOLE_WORD[ITEMS.length] + ' questions was ' +
+      c.medianSignal + ' of ' + SIGNAL_MAX + '. Figures as at ' + c.asAt + '.';
   }
 
   return {
@@ -270,6 +279,7 @@
     ITEM_META: ITEM_META,
     COHORT: COHORT,
     TOTAL: TOTAL,
+    SIGNAL_MAX: SIGNAL_MAX,
     questions: questions,
     read: read,
     scaleLabel: scaleLabel,
