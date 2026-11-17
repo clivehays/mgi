@@ -1,6 +1,6 @@
 """Create mgi_selfcheck, the table behind the eight-question self-check.
 
-One row per completed scorecard at /self-check. It holds the answers, the
+One row per completed scorecard at /team-state. It holds the answers, the
 recomputed reading, the campaign labels from the landing URL and the
 timings. It holds NO name, email, company or role, and it never should:
 the page asks for none of those, and the privacy copy on it says so.

@@ -24,7 +24,7 @@ var path = require('path');
 var crypto = require('crypto');
 
 var ROOT = path.join(__dirname, '..');
-var PAGES = ['index.html', 'booked.html', 'self-check.html'];
+var PAGES = ['index.html', 'booked.html', 'team-state.html'];
 var check = process.argv.indexOf('--check') !== -1;
 
 /* Line endings are normalised before hashing. Git rewrites them on

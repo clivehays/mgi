@@ -3,4 +3,4 @@ Disallow: /r/
 Disallow: /api/
 Disallow: /worksheets/
 Disallow: /booked
-Disallow: /self-check
+Disallow: /team-state

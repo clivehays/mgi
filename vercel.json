@@ -83,7 +83,7 @@
       ]
     },
     {
-      "source": "/self-check",
+      "source": "/team-state",
       "headers": [
         {
           "key": "X-Robots-Tag",
@@ -210,7 +210,7 @@
           "key": "v"
         }
       ],
-      "destination": "/assets/scoring.js?v=34c5b06e",
+      "destination": "/assets/scoring.js?v=0671d4c5",
       "permanent": false
     },
     {
