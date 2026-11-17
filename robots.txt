@@ -4,3 +4,4 @@ Disallow: /api/
 Disallow: /worksheets/
 Disallow: /booked
 Disallow: /team-state
+Disallow: /s/

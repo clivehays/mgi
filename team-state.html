@@ -13,7 +13,7 @@
 <link rel="canonical" href="https://managergap.com/">
 
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://managergap.com/self-check">
+<meta property="og:url" content="https://managergap.com/team-state">
 <meta property="og:title" content="The Manager Gap self-check">
 <meta property="og:description" content="Eight questions, about ninety seconds, and the state your team is most likely in.">
 <meta property="og:site_name" content="The Manager Gap Index">
@@ -31,7 +31,7 @@
 
 <link rel="stylesheet" href="/assets/fonts.css?v=df1bd87a">
 <link rel="stylesheet" href="/assets/mgi.css?v=279970c6">
-<link rel="stylesheet" href="/assets/selfcheck.css?v=0b5b6c0c">
+<link rel="stylesheet" href="/assets/selfcheck.css?v=e54e11d9">
 </head>
 <body>
 
@@ -54,7 +54,8 @@
       <h1 id="landing-title"><span class="hero-line">Your team is in one of four states.</span><span class="hero-line">Two <span class="hero-hot">look identical</span> from where you sit.</span></h1>
 
       <p class="landing-time"><strong class="sub-strong">Eight questions, about ninety seconds.</strong>
-        No email, no signup. Your scorecard appears on this page the moment you finish.</p>
+        Your team&rsquo;s state appears on this page the moment you finish, before anything is
+        asked of you.</p>
 
       <button type="button" class="btn btn-hero" id="btn-start">Start the self-check</button>
 
@@ -86,12 +87,17 @@
       <details class="fold">
         <summary>What you get</summary>
         <div class="fold-body">
+          <p class="fold-intro">Straight away, with nothing asked of you:</p>
           <ul class="findings-list">
             <li>The state your team is most likely in, and what that state actually means.</li>
             <li>Your instinct going in, set against what your own answers support.</li>
+          </ul>
+          <p class="fold-intro">Then, if you want it sent to you:</p>
+          <ul class="findings-list">
             <li>A signal score out of nine, with each question and how far back your answer reached.</li>
             <li>How much of your team&rsquo;s week you are positioned to see.</li>
             <li>One move for this week, chosen for the question that has gone longest.</li>
+            <li>The worksheet from the methodology library that runs that move.</li>
           </ul>
         </div>
       </details>
@@ -131,7 +137,9 @@
         department, directors, and founders with people reporting to them. Company size does
         not matter. It asks about one team, the one you lead now.</p>
 
-      <p class="privacy-line">No name, no email, no company. Nothing individual is ever published.</p>
+      <p class="privacy-line">No name and no company. The state is yours either way. An email
+        address is only for the full scorecard and the worksheet, and nothing individual is
+        ever published.</p>
 
       <details class="fold">
         <summary>What happens to your answers</summary>
@@ -141,7 +149,10 @@
             <p>Your answers are stored under a random number, so the short version can be
               checked against the full one as more people take it. Nothing individual is ever
               published, and nothing here is sold or passed to anyone else.</p>
-            <p>This page asks you for nothing about yourself. It does record which advert or
+            <p>The only thing this page asks you for is an email address, and only once the
+              state is already on your screen. Give one and the scorecard is sent to you with
+              the worksheet. That is the only message, and your address is never sold or
+              passed on. It does record which advert or
               link brought you here, and nothing from LinkedIn loads unless you accept the
               cookie banner. You can change that choice at any time from Cookie settings in the
               footer, or write to <a href="mailto:contact@cloverera.com">contact@cloverera.com</a>.</p>
@@ -176,7 +187,61 @@
   </div>
 </section>
 
-<!-- ============ 3. THE SCORECARD ============ -->
+<!-- ============ 3. THE STATE ============
+     What they came for, the moment they finish, with nothing asked for
+     first. The scorecard underneath it is the thing an address buys. -->
+<section class="view report" id="view-state" aria-labelledby="s-state-call">
+  <div class="wrap">
+
+    <section>
+      <span class="mono eyebrow">Your team</span>
+      <h2 class="state-call" id="s-state-call"></h2>
+      <p class="state-desc" id="s-state-desc"></p>
+    </section>
+
+    <section aria-labelledby="s-gap-heading">
+      <h3 class="note-heading mono" id="s-gap-heading">Your instinct, against your own evidence</h3>
+      <p class="gap-body" id="s-gap"></p>
+    </section>
+
+    <section class="offer" aria-labelledby="s-offer-heading">
+      <h3 class="offer-head" id="s-offer-heading">Want your full scorecard and the worksheet
+        for this week&rsquo;s move?</h3>
+
+      <ul class="offer-list">
+        <li>Your signal score, and which of the three questions has gone longest without a
+          real answer.</li>
+        <li>How much of your team&rsquo;s week you are positioned to see.</li>
+        <li>One move for this week, taken from the methodology library, with the worksheet
+          that runs it.</li>
+      </ul>
+
+      <form id="offer-form" novalidate>
+        <p class="form-error" id="offer-error" role="alert" hidden></p>
+
+        <div class="field">
+          <label for="f-email">Your email</label>
+          <input type="email" id="f-email" name="email" autocomplete="email"
+            inputmode="email" placeholder="you@company.com" required>
+        </div>
+
+        <div class="hp" aria-hidden="true">
+          <label for="f-website">Website</label>
+          <input type="text" id="f-website" name="website" tabindex="-1" autocomplete="off">
+        </div>
+
+        <button type="submit" class="btn" id="btn-offer">Show my scorecard</button>
+        <p class="form-note">It opens on this page straight away, and a copy goes to that
+          address with the worksheet. One email. Nothing else is sent to you, and your
+          address is not sold or passed to anyone.</p>
+      </form>
+    </section>
+
+  </div>
+</section>
+
+<!-- ============ 4. THE SCORECARD ============
+     Behind the address. Everything the state view did not show. -->
 <section class="view report" id="view-result" aria-labelledby="r-state-call">
 
   <div class="wrap">
@@ -216,6 +281,13 @@
       <h3 class="note-heading mono" id="r-action-heading">One move this week</h3>
       <p class="action-area" id="r-action-area"></p>
       <p class="action-body" id="r-action-body"></p>
+
+      <div class="sheet" id="r-sheet" hidden>
+        <span class="sheet-label mono">The worksheet that runs it</span>
+        <a class="sheet-link" id="r-sheet-link" href="#" rel="noopener"><span id="r-sheet-title"></span></a>
+        <p class="sheet-note">One session from the methodology library, chosen for this move
+          and for the state your team is in. It is also in the email.</p>
+      </div>
     </section>
 
     <section aria-labelledby="r-cohort-heading">
@@ -251,8 +323,8 @@
 <script src="/assets/internal.js?v=ff8095c1"></script>
 <script src="/assets/consent.js?v=5e61d69b"></script>
 <script src="/assets/linkedin.js?v=932b943b"></script>
-<script src="/assets/scoring.js?v=34c5b06e"></script>
-<script src="/assets/selfcheck-core.js?v=c425b46a"></script>
-<script src="/assets/selfcheck.js?v=fa8769f8"></script>
+<script src="/assets/scoring.js?v=0671d4c5"></script>
+<script src="/assets/selfcheck-core.js?v=c50719f2"></script>
+<script src="/assets/selfcheck.js?v=38e4c46b"></script>
 </body>
 </html>

@@ -2,13 +2,25 @@
    The Manager Gap self-check: flow, rendering, the row.
 
    The short form itself is assets/selfcheck-core.js, which has no DOM
-   and is what the tests exercise. This file moves between the three
-   views, draws what the core returns, and posts one row once the
-   scorecard is already on the screen.
+   and is what the tests exercise. This file moves between the four
+   views and draws what the core returns.
+
+   THE SPLIT
+
+   The state is given the moment the last question is answered, with
+   nothing asked for first: it is what the person came for, and a page
+   that holds it back to collect an address has sold them something it
+   had already computed. The scorecard under it, the signal score, the
+   line of sight, the move and its worksheet, is what an address buys.
+
+   So there are two posts. The first writes the row when the state goes
+   on screen, so a visitor who stops there is still counted and their
+   answers still reach the research. The second adds the address, and
+   only that post can fail in a way the person sees, because it is the
+   only one they asked for.
 
    Answers stay in the page, and in sessionStorage so a reload does not
-   lose them, until the last question is answered. Nothing identifying
-   is collected at any point.
+   lose them, until the last question is answered.
    ============================================================= */
 
 (function () {
@@ -26,6 +38,10 @@
     values: new Array(TOTAL).fill(null),
     index: 0,
     done: false,
+    /* the row's own token, handed back by the first post. It is what the
+       second post and the worksheet link are keyed on. */
+    token: null,
+    claimed: false,
     view: 'landing'
   };
 
@@ -193,6 +209,17 @@
     } catch (e) { return false; }
   }
 
+  /* ---------- the state ----------
+     Everything the short form can say about which of the four a team is
+     in, and nothing it would have to be paid for. */
+
+  function renderState(r) {
+    el['s-state-call'].textContent = r.headline;
+    el['s-state-desc'].textContent = r.state.description;
+    el['s-gap'].textContent = r.gap.copy;
+    document.title = r.state.name + ' | The Manager Gap self-check';
+  }
+
   /* ---------- the scorecard ---------- */
 
   function renderResult(r) {
@@ -226,6 +253,17 @@
     el['r-action-body'].textContent = r.action;
 
     el['r-cohort'].textContent = r.cohortLine;
+
+    /* The worksheet is served through the row's token, so the library is
+       not sitting at guessable paths. No token means no link, and the
+       rest of the scorecard is unaffected. */
+    if (state.token && r.worksheet) {
+      el['r-sheet-title'].textContent = r.worksheet.title;
+      el['r-sheet-link'].href = '/s/' + state.token + '/worksheet.pdf';
+      el['r-sheet'].hidden = false;
+    } else {
+      el['r-sheet'].hidden = true;
+    }
 
     document.title = r.state.name + ' | The Manager Gap self-check';
   }
@@ -279,16 +317,100 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
         keepalive: true
-      }).catch(function () {});
-    } catch (e) { /* the scorecard is already on the screen */ }
+      }).then(function (res) {
+        return res.ok ? res.json() : null;
+      }).then(function (data) {
+        if (data && data.token) {
+          state.token = data.token;
+          save();
+          return;
+        }
+        /* No token means the row did not store, so there is nothing to
+           send the scorecard against and no worksheet to serve. Asking
+           for an address we cannot honour is worse than asking for
+           nothing, so the offer comes down and the scorecard is simply
+           given. They answered the questions; the failure is ours. */
+        withdrawOffer();
+      }).catch(withdrawOffer);
+    } catch (e) { /* the state is already on the screen */ }
+  }
+
+  /* ---------- the address ----------
+     The one request on this page a person is waiting for, so this one
+     reports what happened. The scorecard is drawn from answers already
+     in the browser, so a failure here costs the email and the worksheet,
+     never the reading itself. */
+  function claim(e) {
+    e.preventDefault();
+    if (el['f-website'] && el['f-website'].value) return;   /* honeypot */
+
+    var email = (el['f-email'].value || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return fail('That does not look like an email address. Check it and try again.');
+    }
+    if (!state.token) {
+      /* the first post has not landed, or could not. The scorecard is
+         still theirs: show it rather than make the address a gate they
+         cannot get through. */
+      reveal();
+      return;
+    }
+
+    el['btn-offer'].disabled = true;
+    el['btn-offer'].textContent = 'Sending';
+    el['offer-error'].hidden = true;
+
+    fetch('/api/scorecard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: state.token, email: email })
+    }).then(function (res) {
+      return res.json().then(function (d) { return { ok: res.ok, d: d }; });
+    }).then(function (out) {
+      if (!out.ok || !out.d || !out.d.ok) {
+        throw new Error((out.d && out.d.error) || 'that did not go through');
+      }
+      state.claimed = true;
+      save();
+      reveal();
+    }).catch(function () {
+      /* The address did not store. Hand over the scorecard anyway: they
+         answered the questions, and a failure of ours is not a reason to
+         keep it from them. */
+      reveal();
+    });
+  }
+
+  /* Take the offer down and hand over what it was for. Only ever called
+     because something of ours failed, never because of anything the
+     person did. */
+  function withdrawOffer() {
+    if (state.claimed) return;
+    var offer = el['offer-form'] && el['offer-form'].parentNode;
+    if (offer) offer.hidden = true;
+    if (state.view === 'state' && complete()) reveal();
+  }
+
+  function fail(msg) {
+    el['offer-error'].textContent = msg;
+    el['offer-error'].hidden = false;
+    el['f-email'].focus({ preventScroll: true });
+  }
+
+  function reveal() {
+    renderResult(SC.read(state.values));
+    show('result');
   }
 
   /* ---------- flow ---------- */
 
   function init() {
     [
-      'view-landing', 'view-questions', 'view-result',
+      'view-landing', 'view-questions', 'view-state', 'view-result',
       'btn-start', 'btn-start-2', 'btn-back', 'btn-next',
+      's-state-call', 's-state-desc', 's-gap',
+      'offer-form', 'offer-error', 'f-email', 'f-website', 'btn-offer',
+      'r-sheet', 'r-sheet-link', 'r-sheet-title',
       'q-count', 'q-bar-fill', 'q-number', 'q-text', 'q-scale',
       'r-state-call', 'r-state-desc', 'r-gap', 'r-score',
       'r-signal-headline', 'r-signal-copy', 'r-items',
@@ -319,16 +441,25 @@
     }
     el['btn-back'].addEventListener('click', back);
     el['btn-next'].addEventListener('click', next);
+    el['offer-form'].addEventListener('submit', claim);
     document.addEventListener('keydown', onKeydown);
     document.addEventListener('pointerdown', function () { lastInputWasPointer = true; }, true);
     document.addEventListener('keydown', function () { lastInputWasPointer = false; }, true);
     window.addEventListener('popstate', onPopState);
 
     if (state.done && complete()) {
-      /* a reload after finishing: the scorecard is rebuilt from the stored
-         answers rather than lost, and no second row is written */
-      renderResult(SC.read(state.values));
-      show('result', false);
+      /* A reload after finishing. The reading is rebuilt from the stored
+         answers rather than lost, and no second row is written. Someone
+         who already gave an address lands back on the scorecard; someone
+         who did not lands back on the state, with the offer still open. */
+      var held = SC.read(state.values);
+      if (state.claimed) {
+        renderResult(held);
+        show('result', false);
+      } else {
+        renderState(held);
+        show('state', false);
+      }
     } else {
       show('landing', false);
     }
@@ -344,6 +475,8 @@
         values: state.values,
         index: state.index,
         done: state.done,
+        token: state.token,
+        claimed: state.claimed,
         landed: timing.landed,
         started: timing.started
       }));
@@ -359,6 +492,8 @@
       state.values = held.values;
       state.index = Math.min(Math.max(Number(held.index) || 0, 0), TOTAL - 1);
       state.done = !!held.done;
+      state.token = typeof held.token === 'string' ? held.token : null;
+      state.claimed = !!held.claimed;
       if (held.landed) timing.landed = held.landed;
       if (held.started) timing.started = held.started;
     } catch (e) { /* unreadable: start fresh */ }
@@ -366,7 +501,7 @@
 
   function show(view, push) {
     state.view = view;
-    ['landing', 'questions', 'result'].forEach(function (v) {
+    ['landing', 'questions', 'state', 'result'].forEach(function (v) {
       var node = el['view-' + v];
       if (node) node.classList.toggle('is-active', v === view);
     });
@@ -466,9 +601,9 @@
     state.done = true;
     save();
     var r = SC.read(state.values);
-    renderResult(r);
-    show('result');
-    /* one row per completed scorecard, not one per visit to this view */
+    renderState(r);
+    show('state');
+    /* one row per completed form, not one per visit to this view */
     if (!already) send(r);
   }
 
@@ -487,6 +622,11 @@
       renderQuestion();
       show('questions', false);
       focusScale();
+      return;
+    }
+    if (s.view === 'state' && complete()) {
+      renderState(SC.read(state.values));
+      show('state', false);
       return;
     }
     if (s.view === 'result' && complete()) {

@@ -1,9 +1,13 @@
 """Create mgi_selfcheck, the table behind the eight-question self-check.
 
-One row per completed scorecard at /team-state. It holds the answers, the
-recomputed reading, the campaign labels from the landing URL and the
-timings. It holds NO name, email, company or role, and it never should:
-the page asks for none of those, and the privacy copy on it says so.
+One row per completed form at /team-state, written the moment the state
+goes on the screen. It holds the answers, the recomputed reading, the
+worksheet chosen for the move, the campaign labels from the landing URL
+and the timings.
+
+It holds an email address only where the person asked for their scorecard
+to be sent, which is the one thing that page asks for and only after the
+state has already been given. It holds no name, company or role.
 
 Tying a row back to a person happens outside this table, in
 scripts/join-linkedin-leads.py, against a lead export from LinkedIn
@@ -87,6 +91,15 @@ create table if not exists %(t)s (
   energy                 text        not null,
   exposure               text        not null,
 
+  -- what the row is reached by. The page gets this back when the state
+  -- is written, and it is what api/scorecard.js and api/sheet.js are
+  -- keyed on. A capability for one row, not a secret.
+  token                  text        not null unique,
+
+  -- only where the person asked for the scorecard to be sent
+  email                  text,
+  email_at               timestamptz,
+
   -- the reading, recomputed server side from the answers above
   signal                 smallint    not null,
   behaviour_mean         numeric(4,2) not null,
@@ -97,6 +110,8 @@ create table if not exists %(t)s (
   line_of_sight_score    smallint    not null,
   stale                  smallint    not null,
   focus                  text,
+  -- the worksheet the move was given, from the state and the area
+  worksheet              text,
 
   -- where the visit came from. source is utm_*, s and (after cookie
   -- consent only) li_fat_id. lead_form is the lf= label put on the
@@ -118,6 +133,10 @@ create table if not exists %(t)s (
 """ % {"t": TABLE}
 
 INDEXES = [
+    ("%s_token_idx" % TABLE,
+     "create index if not exists %s_token_idx on %s (token)" % (TABLE, TABLE)),
+    ("%s_email_idx" % TABLE,
+     "create index if not exists %s_email_idx on %s (email)" % (TABLE, TABLE)),
     ("%s_landed_at_idx" % TABLE,
      "create index if not exists %s_landed_at_idx on %s (landed_at)" % (TABLE, TABLE)),
     ("%s_lead_form_idx" % TABLE,
@@ -136,6 +155,30 @@ def exists():
 had = exists()
 cur.execute(DDL)
 print("%s %s" % (TABLE, "already existed, left as it was" if had else "created"))
+
+# `create table if not exists` does nothing to a table that is already
+# there, so a copy made from an earlier version of this script would be
+# missing the columns added since and every insert naming one would fail.
+# Say so here rather than let it surface as a lost row at three in the
+# morning. Adding them is safe: all of them are nullable except token,
+# which is why that one is named separately.
+REQUIRED = ("token", "email", "email_at", "worksheet", "source", "visit_id",
+            "lead_form", "referrer_host", "focus", "landed_at")
+cur.execute(
+    "select column_name from information_schema.columns where table_name = %s",
+    (TABLE,))
+present = set(r[0] for r in cur.fetchall())
+absent = [c for c in REQUIRED if c not in present]
+if absent:
+    print("")
+    print("  %s is missing: %s" % (TABLE, ", ".join(absent)))
+    print("  It was made by an earlier version of this script. Either drop it")
+    print("  and run this again, if it holds nothing worth keeping:")
+    print("")
+    print("      drop table %s;" % TABLE)
+    print("")
+    print("  or add the columns by hand. Nothing further has been changed.")
+    sys.exit(1)
 
 for name, sql in INDEXES:
     cur.execute(sql)

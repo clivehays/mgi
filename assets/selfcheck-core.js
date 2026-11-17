@@ -73,6 +73,51 @@
   /* three answers at 0 to 3 */
   var SIGNAL_MAX = ITEMS.length * 3;
 
+  /* ---------- the worksheet ----------
+     One from the methodology library for each move the short form can
+     produce, twelve in all. The full reading picks its worksheet with a
+     model call; this picks from a table, by the same two rules that call
+     is given: serve the area the move is for, and match the difficulty to
+     the state, so Cruise can take a level 3 and Stall gets the smallest
+     move that works.
+
+     A table rather than a model call because the choice here has only
+     twelve possible inputs. Reading them off a list is instant, free, and
+     can be checked by a test, which a generated answer cannot.
+
+     Each one was matched to the MOVE rather than to the area name, which
+     is why the pillars are not uniform down a column: the Headwinds move
+     for an equipped team is an inventory of what the weather has taken,
+     so it gets Tools and Resources Access, while the same area in Drift
+     is about blockers people have stopped raising.
+
+     The titles are repeated here so the browser does not have to load the
+     whole library to show one line. scripts/test-selfcheck.js checks every
+     id and title against report/library.json and that the PDF ships. */
+
+  var WORKSHEETS = {
+    cruise: {
+      equipped: { id: 'E6', title: 'Decision-Making Autonomy' },
+      truth: { id: 'V3', title: 'Structured Feedback Exchange' },
+      invested: { id: 'OP11', title: 'Project Ownership and Accountability' }
+    },
+    drift: {
+      equipped: { id: 'E4', title: 'Support Style Discovery' },
+      truth: { id: 'V10', title: 'Facilitating Respectful Disagreement' },
+      invested: { id: 'C17', title: 'The Honest One-to-One' }
+    },
+    headwinds: {
+      equipped: { id: 'E5', title: 'Tools and Resources Access' },
+      truth: { id: 'V11', title: 'Addressing Workload Struggles Openly' },
+      invested: { id: 'OP9', title: 'Recognition and Celebration' }
+    },
+    stall: {
+      equipped: { id: 'E1', title: 'Shared Struggles' },
+      truth: { id: 'V8', title: 'Balancing Personal and Professional Vulnerability' },
+      invested: { id: 'C2', title: 'Listening Circle' }
+    }
+  };
+
   /* ---------- the cohort ----------
      The first 50 managers to complete the full twenty questions, as at
      25 October 2026, excluding the founder's own submission. Every figure
@@ -167,9 +212,11 @@
       });
 
     var focus = back[0];
-    var action = MGI.ACTIONS[partial.state.key][ITEM_META[focus].area];
+    var area = ITEM_META[focus].area;
+    var action = MGI.ACTIONS[partial.state.key][area];
     /* one window a week or less: go and look before you go and fix */
     if (los.score <= 1) action = action + ' ' + MGI.NARROW_SIGHT_ACTION;
+    var worksheet = WORKSHEETS[partial.state.key][area];
 
     var closeUp = los.score >= 2;
 
@@ -196,7 +243,9 @@
       low: low,
       back: back,
       focus: focus,
-      action: action
+      area: area,
+      action: action,
+      worksheet: worksheet
     };
 
     r.headline = 'Based on what you have observed, your team is most likely in ' +
@@ -280,6 +329,7 @@
     COHORT: COHORT,
     TOTAL: TOTAL,
     SIGNAL_MAX: SIGNAL_MAX,
+    WORKSHEETS: WORKSHEETS,
     questions: questions,
     read: read,
     scaleLabel: scaleLabel,
