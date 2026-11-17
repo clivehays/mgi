@@ -19,6 +19,10 @@
     "api/ask.js": {
       "maxDuration": 120,
       "memory": 1024
+    },
+    "api/selfcheck.js": {
+      "maxDuration": 15,
+      "memory": 1024
     }
   },
   "headers": [
@@ -75,6 +79,15 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/self-check",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
         }
       ]
     },
@@ -197,7 +210,40 @@
           "key": "v"
         }
       ],
-      "destination": "/assets/scoring.js?v=d18296db",
+      "destination": "/assets/scoring.js?v=34c5b06e",
+      "permanent": false
+    },
+    {
+      "source": "/assets/selfcheck-core.js",
+      "missing": [
+        {
+          "type": "query",
+          "key": "v"
+        }
+      ],
+      "destination": "/assets/selfcheck-core.js?v=3f0d3de8",
+      "permanent": false
+    },
+    {
+      "source": "/assets/selfcheck.css",
+      "missing": [
+        {
+          "type": "query",
+          "key": "v"
+        }
+      ],
+      "destination": "/assets/selfcheck.css?v=b5935bad",
+      "permanent": false
+    },
+    {
+      "source": "/assets/selfcheck.js",
+      "missing": [
+        {
+          "type": "query",
+          "key": "v"
+        }
+      ],
+      "destination": "/assets/selfcheck.js?v=73462739",
       "permanent": false
     },
     {

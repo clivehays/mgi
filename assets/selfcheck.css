@@ -1,0 +1,112 @@
+/* =============================================================
+   The Manager Gap self-check.
+
+   Loaded only by self-check.html, on top of mgi.css. Everything the
+   scorecard needs that the full assessment did not already have, and
+   nothing else: the main page must not pay for this file.
+   ============================================================= */
+
+/* the eyebrow is styled per view in mgi.css, and the landing is not one
+   of the views it covers */
+.landing .eyebrow{ display: block; margin-bottom: 14px; }
+
+/* ---------- the score ----------
+   A number the size of a headline, because it is the thing the reader
+   came for. Mono, so it reads as a measurement rather than a grade, and
+   the denominator is smaller than the score so the pair cannot be
+   mistaken for a fraction out of a hundred. */
+
+.sc-score{
+  font-family: var(--mono);
+  font-size: clamp(38px, 9vw, 58px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  margin: 0 0 18px;
+}
+
+.sc-score .sc-of{
+  font-size: 0.42em;
+  letter-spacing: 0.02em;
+  font-weight: 400;
+  color: var(--ink-mute);
+  margin-left: 2px;
+}
+
+/* ---------- the five items ----------
+   The specific things, each with the answer the manager gave. This is
+   the part that is worth more than the number: a score is arguable, a
+   named thing nobody can remember is not. */
+
+.sc-items{
+  list-style: none;
+  margin: 26px 0 26px;
+  padding: 0;
+  max-width: 40em;
+  border-top: 1px solid var(--rule-soft);
+}
+
+.sc-items li{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 13px 0;
+}
+
+.sc-item-name{
+  font-family: var(--serif);
+  font-size: 16.5px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+/* the answer, coloured by how far back it reaches. Four steps, not a
+   traffic light: nothing here is a pass or a fail. */
+.sc-item-when{
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: right;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  color: var(--ink-mute);
+}
+
+.sc-when-3{ color: var(--cruise); }
+.sc-when-2{ color: var(--ink-2); }
+.sc-when-1{ color: var(--drift); }
+.sc-when-0{ color: var(--stall); font-weight: 600; }
+
+/* the one that has gone longest, marked so the eye lands on it */
+.sc-items li.sc-thinnest{
+  border-left: 2px solid var(--ink);
+  padding-left: 14px;
+  margin-left: -16px;
+}
+
+@media (max-width: 480px){
+  .sc-items li{
+    display: block;
+  }
+  .sc-item-when{
+    display: block;
+    text-align: left;
+    margin-top: 5px;
+  }
+  .sc-items li.sc-thinnest{ margin-left: 0; }
+}
+
+/* ---------- the cohort, and the way on ---------- */
+
+.sc-cohort,
+.sc-full{
+  font-family: var(--serif);
+  font-size: clamp(16px, 3.4vw, 18px);
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin: 0 0 24px;
+  max-width: 36em;
+}

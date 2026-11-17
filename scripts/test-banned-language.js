@@ -249,6 +249,75 @@ var elsewhere = ['api/submit.js', 'assets/mgi.js'].filter(function (f) {
 if (!elsewhere.length) ok('no gap-width threshold is duplicated outside the instrument');
 else bad('gap-width thresholds may be duplicated in: ' + elsewhere.join(', '));
 
+/* ---------- 6. the short self-check ----------
+   The ten-question scorecard at /self-check is a participant-facing
+   surface of its own. Its page, its two scripts, and every string it can
+   put on the screen across the whole answer space. */
+
+console.log('\n[6] The short self-check');
+
+var SC = require(path.join(ROOT, 'assets', 'selfcheck-core.js'));
+
+var scHtml = fs.readFileSync(path.join(ROOT, 'self-check.html'), 'utf8');
+if (scan('self-check.html', scHtml)) ok('self-check.html carries no banned language');
+
+['selfcheck-core.js', 'selfcheck.js'].forEach(function (f) {
+  var src = fs.readFileSync(path.join(ROOT, 'assets', f), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  if (scan('assets/' + f, src)) ok('assets/' + f + ' carries no banned language');
+});
+
+/* every scorecard the form can produce. The full space is 786,432
+   readings, which test-selfcheck.js walks; here a seeded sweep plus the
+   corners is enough to reach every branch of the copy. */
+var scFields = ['headline', 'signalHeadline', 'signalMeaning', 'focusLine',
+  'cohortLine', 'action'];
+var scCases = [];
+[0, 1, 2, 3].forEach(function (v) {
+  GUTS.forEach(function (g) {
+    OUTS.forEach(function (o) {
+      EXTS.forEach(function (x) {
+        ENES.forEach(function (n) {
+          EXPS.forEach(function (p) {
+            scCases.push([g, v, v, v, v, v, o, x, n, p]);
+          });
+        });
+      });
+    });
+  });
+});
+for (var sc = 0; sc < 3000; sc++) {
+  var items = [];
+  for (var si = 0; si < SC.ITEMS.length; si++) items.push(Math.floor(rnd() * 4));
+  scCases.push([pick(GUTS)].concat(items,
+    [pick(OUTS), pick(EXTS), pick(ENES), pick(EXPS)]));
+}
+
+var scChecked = 0;
+var scDirty = 0;
+scCases.forEach(function (values) {
+  var r = SC.read(values);
+  var strings = scFields.map(function (f) { return r[f]; })
+    .concat([r.state.description, r.gap.copy, r.lineOfSight.label, r.lineOfSight.copy])
+    .concat(r.items.map(function (it) { return it.name + ' ' + it.when; }));
+  strings.forEach(function (s) {
+    if (s === null || s === undefined) return;
+    scChecked++;
+    var s2 = String(s);
+    if (BANNED.some(function (b) { return b[0].test(s2); })) {
+      scDirty++;
+      if (scDirty <= 5) scan('self-check copy', s2);
+    }
+  });
+});
+
+if (scDirty === 0) {
+  ok(scChecked.toLocaleString() + ' strings across ' + scCases.length.toLocaleString() +
+     ' scorecards, all clean');
+} else {
+  bad(scDirty + ' self-check string(s) carry banned language');
+}
+
 /* ---------- */
 
 console.log('\n=====================================');

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Manager Gap self-check: 10 questions, about 2 minutes</title>
+<meta name="description" content="The short scorecard taken from the Manager Gap assessment. Ten questions, about two minutes, and the state your team is most likely in.">
+
+<!-- Reached from a LinkedIn form, not from search. Indexing it would put a
+     five-question version of the instrument in front of people who would
+     otherwise answer all fifteen, which thins the research cohort. -->
+<meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://managergap.com/">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://managergap.com/self-check">
+<meta property="og:title" content="The Manager Gap self-check">
+<meta property="og:description" content="Ten questions, about two minutes, and the state your team is most likely in.">
+<meta property="og:site_name" content="The Manager Gap Index">
+<meta property="og:image" content="https://managergap.com/images/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://managergap.com/images/og-card.png">
+
+<link rel="icon" href="/images/favicon.svg?v=a8b31e60" type="image/svg+xml">
+<link rel="icon" href="/images/favicon.ico?v=105c32f2" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=c79e00c8">
+<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=becf1dc2">
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png?v=78953469">
+
+<link rel="stylesheet" href="/assets/fonts.css?v=df1bd87a">
+<link rel="stylesheet" href="/assets/mgi.css?v=279970c6">
+<link rel="stylesheet" href="/assets/selfcheck.css?v=b5935bad">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="wordmark" href="/"><img class="wordmark-mark" src="/images/mg-mark.svg" alt="" width="62" height="32">The Manager Gap Index<span class="dot">.</span></a>
+    <div class="meta">A diagnostic<br>for managers</div>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ 1. LANDING ============ -->
+<section class="view is-active landing" id="view-landing" aria-labelledby="landing-title">
+  <div class="wrap">
+    <span class="mono eyebrow">The Manager Gap self-check</span>
+    <h1 id="landing-title">Ten questions, about two minutes, and the state your team is most likely in.</h1>
+
+    <div class="lede body-serif">
+      <p>This is the short scorecard taken from the full assessment. It keeps the instinct
+        check the assessment opens with, five of its fifteen evidence questions, and the four
+        that place your team. For 49 of the first 50 managers who answered all twenty, these
+        ten questions named the same state.</p>
+    </div>
+
+    <ol class="states" aria-label="The four states">
+      <li><span class="state-name">Cruise</span> <span class="state-line">Output holding, and the behaviours of a healthy team still reach you.</span></li>
+      <li><span class="state-name">Drift</span> <span class="state-line">Output holding while the conditions underneath it slide. Nothing in the numbers says anything is wrong.</span></li>
+      <li><span class="state-name">Headwinds</span> <span class="state-line">Output under pressure, with a real force outside the team acting on it.</span></li>
+      <li><span class="state-name">Stall</span> <span class="state-line">Output has stopped moving, and the signals went quiet long before it did.</span></li>
+    </ol>
+
+    <button type="button" class="btn" id="btn-start">Start the self-check</button>
+    <p class="proof">Nothing is sent to you. Your scorecard appears on this page the moment you finish.</p>
+
+    <div class="instruction">
+      <p><strong>Before you start:</strong> answer from memory of actual events. There are no
+        wrong answers. But a guessed answer makes the result meaningless.
+        &ldquo;Can&rsquo;t recall&rdquo; is a valid and useful answer.</p>
+    </div>
+
+    <p class="audience-line">This is for anyone who leads a team directly: managers, heads of
+      department, directors, and founders with people reporting to them. Company size does not
+      matter. It asks about one team, the one you lead now.</p>
+
+    <p class="privacy-line">No name, no email, no company. Your answers are stored under a
+      random number so the short version can be checked against the full one, and nothing
+      individual is ever published.</p>
+  </div>
+</section>
+
+<!-- ============ 2. QUESTIONS ============ -->
+<section class="view q-view" id="view-questions" aria-labelledby="q-text">
+  <div class="wrap">
+    <div class="q-progress">
+      <span class="count" id="q-count">1 of 10</span>
+      <div class="q-bar"><span id="q-bar-fill" style="width:0%"></span></div>
+    </div>
+
+    <span class="q-number" id="q-number">01</span>
+    <h2 class="q-text" id="q-text"></h2>
+
+    <fieldset class="scale" id="q-scale">
+      <legend class="visually-hidden">Choose one</legend>
+    </fieldset>
+
+    <div class="q-nav">
+      <button type="button" class="btn-quiet" id="btn-back">Back</button>
+      <button type="button" class="btn-quiet" id="btn-next" hidden>Next</button>
+    </div>
+    <p class="q-hint">Arrow keys to choose, Enter to continue</p>
+  </div>
+</section>
+
+<!-- ============ 3. THE SCORECARD ============ -->
+<section class="view report" id="view-result" aria-labelledby="r-state-call">
+
+  <div class="wrap">
+
+    <section>
+      <span class="mono eyebrow">Your self-check</span>
+      <h2 class="state-call" id="r-state-call"></h2>
+      <p class="state-desc" id="r-state-desc"></p>
+    </section>
+
+    <section aria-labelledby="r-gap-heading">
+      <h3 class="note-heading mono" id="r-gap-heading">Your instinct, against your own evidence</h3>
+      <p class="gap-body" id="r-gap"></p>
+    </section>
+
+    <section aria-labelledby="r-signal-heading">
+      <h3 class="note-heading mono" id="r-signal-heading">Signal</h3>
+      <p class="sc-score" id="r-score"></p>
+      <p class="signal-headline" id="r-signal-headline"></p>
+      <p class="signal-copy" id="r-signal-copy"></p>
+      <ul class="sc-items" id="r-items"></ul>
+      <p class="sight-framing">These five questions ask how recently real, first-hand signal
+        from this team has reached you. The score is what your current picture of the team is
+        built on, not a mark out of fifteen for how you manage.</p>
+    </section>
+
+    <section aria-labelledby="r-sight-heading">
+      <h3 class="note-heading mono" id="r-sight-heading">Line of sight</h3>
+      <p class="sight-value" id="r-sight-label"></p>
+      <p class="sight-copy" id="r-sight-copy"></p>
+      <p class="sight-framing">How much of your team&rsquo;s week you can see is what creates the
+        gap in the first place, so it is the first thing worth knowing. It is a fact about where
+        you sit, not about how well you are managing.</p>
+    </section>
+
+    <section aria-labelledby="r-action-heading">
+      <h3 class="note-heading mono" id="r-action-heading">One move this week</h3>
+      <p class="action-area" id="r-action-area"></p>
+      <p class="action-body" id="r-action-body"></p>
+    </section>
+
+    <section aria-labelledby="r-cohort-heading">
+      <h3 class="note-heading mono" id="r-cohort-heading">Where the first 50 landed</h3>
+      <p class="sc-cohort" id="r-cohort"></p>
+    </section>
+
+    <section aria-labelledby="r-full-heading">
+      <h3 class="note-heading mono" id="r-full-heading">What the other ten questions add</h3>
+      <p class="sc-full">The full assessment asks all fifteen evidence questions across five
+        areas rather than three, which is what lets it name the area your attention belongs in
+        and how far your picture and your team&rsquo;s reality are likely to sit apart. It writes
+        the reading out properly, and it sends you a worksheet for the move it picks. Five minutes.</p>
+      <p><a class="btn" href="/">Take the full assessment</a></p>
+      <p class="privacy-line">Your answers here are not carried over, so it starts from the
+        beginning. That is deliberate: the full twenty is the version the research is built on.</p>
+    </section>
+
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>The Manager Gap Index is a <a href="https://cloverera.com">Clover ERA</a> research instrument.</p>
+    <p><a href="mailto:contact@cloverera.com">contact@cloverera.com</a></p>
+    <p><button type="button" class="cookie-settings" data-cookie-settings>Cookie settings</button></p>
+  </div>
+</footer>
+
+<script src="/assets/tracking-config.js?v=60da3861"></script>
+<script src="/assets/internal.js?v=ff8095c1"></script>
+<script src="/assets/consent.js?v=5e61d69b"></script>
+<script src="/assets/linkedin.js?v=932b943b"></script>
+<script src="/assets/scoring.js?v=34c5b06e"></script>
+<script src="/assets/selfcheck-core.js?v=3f0d3de8"></script>
+<script src="/assets/selfcheck.js?v=73462739"></script>
+</body>
+</html>
