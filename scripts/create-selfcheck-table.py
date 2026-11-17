@@ -156,6 +156,30 @@ had = exists()
 cur.execute(DDL)
 print("%s %s" % (TABLE, "already existed, left as it was" if had else "created"))
 
+# `create table if not exists` does nothing to a table that is already
+# there, so a copy made from an earlier version of this script would be
+# missing the columns added since and every insert naming one would fail.
+# Say so here rather than let it surface as a lost row at three in the
+# morning. Adding them is safe: all of them are nullable except token,
+# which is why that one is named separately.
+REQUIRED = ("token", "email", "email_at", "worksheet", "source", "visit_id",
+            "lead_form", "referrer_host", "focus", "landed_at")
+cur.execute(
+    "select column_name from information_schema.columns where table_name = %s",
+    (TABLE,))
+present = set(r[0] for r in cur.fetchall())
+absent = [c for c in REQUIRED if c not in present]
+if absent:
+    print("")
+    print("  %s is missing: %s" % (TABLE, ", ".join(absent)))
+    print("  It was made by an earlier version of this script. Either drop it")
+    print("  and run this again, if it holds nothing worth keeping:")
+    print("")
+    print("      drop table %s;" % TABLE)
+    print("")
+    print("  or add the columns by hand. Nothing further has been changed.")
+    sys.exit(1)
+
 for name, sql in INDEXES:
     cur.execute(sql)
 print("%d index(es) in place" % len(INDEXES))
