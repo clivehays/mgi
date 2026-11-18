@@ -23,8 +23,8 @@
    questions on the form. The length is in the evidence items, so that
    is where it was taken from.
 
-   q1, q9 and q11 named the same state as the full twenty for 44 of the
-   first 50 managers and the same instinct gap for 46 of 50. The six
+   q1, q9 and q11 named the same state as the full twenty for 45 of the
+   first 51 managers and the same instinct gap for 47 of 51. The six
    disagreements were all in one direction: the short form said Drift
    where the full one said Cruise. On this cohort it never once told a
    team that was declining that it was fine, and that is the property
@@ -119,17 +119,17 @@
   };
 
   /* ---------- the cohort ----------
-     The first 50 managers to complete the full twenty questions, as at
-     25 October 2026, excluding the founder's own submission. Every figure
+     The first 51 managers to complete the full twenty questions, as at
+     25 October 2026, every row counted. Every figure
      the scorecard quotes comes from this block, so there is one place to
      change when the cohort grows.
 
      Regenerate with: node scripts/selfcheck-cohort.js */
   var COHORT = {
-    n: 50,
+    n: 51,
     asAt: '25 October 2026',
-    states: { Cruise: 23, Drift: 16, Headwinds: 10, Stall: 1 },
-    aligned: 18,
+    states: { Cruise: 24, Drift: 16, Headwinds: 10, Stall: 1 },
+    aligned: 19,
     feltWorse: 22,
     feltBetter: 10,
     medianSignal: 6
