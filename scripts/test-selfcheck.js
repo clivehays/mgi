@@ -392,11 +392,17 @@ console.log('\n[11] The page can hold the state and the offer');
 
 [['view-state', 'the state view'], ['offer-form', 'the address form'],
  ['s-state-call', 'the state headline'], ['s-gap', 'the instinct gap'],
- ['r-sheet-link', 'the worksheet link']].forEach(function (pair) {
+ ['r-sheet-link', 'the worksheet link'],
+ ['r-restart', 'a way back to the first screen']].forEach(function (pair) {
   is(html.indexOf('id="' + pair[0] + '"') !== -1, 'the page has ' + pair[1]);
 });
 is(!/No email, no signup/.test(html),
   'the page no longer promises that no email is asked for');
+
+is(/function freshNavigation/.test(client),
+  'the page can tell a fresh arrival from a reload');
+is(/sessionStorage\.removeItem\(STORE_KEY\)/.test(client),
+  'and clears the held answers when it is a fresh arrival');
 
 /* ---------- done ---------- */
 

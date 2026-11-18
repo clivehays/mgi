@@ -415,7 +415,7 @@
       'r-state-call', 'r-state-desc', 'r-gap', 'r-score',
       'r-signal-headline', 'r-signal-copy', 'r-items',
       'r-sight-label', 'r-sight-copy',
-      'r-action-area', 'r-action-body', 'r-cohort'
+      'r-action-area', 'r-action-body', 'r-cohort', 'r-restart'
     ].forEach(function (id) { el[id] = document.getElementById(id); });
 
     restore();
@@ -442,6 +442,15 @@
     el['btn-back'].addEventListener('click', back);
     el['btn-next'].addEventListener('click', next);
     el['offer-form'].addEventListener('submit', claim);
+    /* a way back to the first screen for anyone who wants to answer for
+       a second team, or who simply wants to start over */
+    if (el['r-restart']) {
+      el['r-restart'].addEventListener('click', function (e) {
+        e.preventDefault();
+        try { sessionStorage.removeItem(STORE_KEY); } catch (err) {}
+        location.replace(location.pathname);
+      });
+    }
     document.addEventListener('keydown', onKeydown);
     document.addEventListener('pointerdown', function () { lastInputWasPointer = true; }, true);
     document.addEventListener('keydown', function () { lastInputWasPointer = false; }, true);
@@ -483,8 +492,28 @@
     } catch (e) { /* private mode, carry on in memory */ }
   }
 
+  /* A reload, or a step back through history, should not cost somebody
+     their answers. A fresh navigation to the page should: a person
+     arriving from an advert is starting, not resuming, and finding a
+     finished report where the first screen should be reads as the site
+     being broken. sessionStorage is not scoped to a path either, so a
+     session finished under one URL would otherwise reopen under the
+     next one. */
+  function freshNavigation() {
+    try {
+      var nav = performance.getEntriesByType('navigation')[0];
+      if (nav && nav.type) return nav.type === 'navigate';
+      if (performance.navigation) return performance.navigation.type === 0;
+    } catch (e) {}
+    return false;   /* unknown: resume, the gentler of the two */
+  }
+
   function restore() {
     try {
+      if (freshNavigation()) {
+        sessionStorage.removeItem(STORE_KEY);
+        return;
+      }
       var raw = sessionStorage.getItem(STORE_KEY);
       if (!raw) return;
       var held = JSON.parse(raw);
