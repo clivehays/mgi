@@ -5,7 +5,7 @@ WHY THIS IS A JOIN AND NOT A LOOKUP
 A LinkedIn lead gen form sends everyone to the same thank-you URL. There is
 no per-lead parameter, token or macro to put in it, and li_fat_id is a click
 id for ad attribution that cannot be resolved to a person. So nothing arrives
-at /team-state carrying the identity of the lead who just submitted the form,
+at /self-check carrying the identity of the lead who just submitted the form,
 and the page asks for nothing, by design.
 
 What both sides do carry is a clock. LinkedIn's export stamps each lead with

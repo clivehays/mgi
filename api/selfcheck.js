@@ -1,7 +1,7 @@
 /* =============================================================
    POST /api/selfcheck  ->  one row for a short self-check
 
-   The eight-question scorecard at /team-state. The page has already shown
+   The eight-question scorecard at /self-check. The page has already shown
    the manager their result by the time this runs, so nothing here can
    cost them anything: a failure is logged and the visit is still a
    visit.

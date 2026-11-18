@@ -1,6 +1,6 @@
 """Create mgi_selfcheck, the table behind the eight-question self-check.
 
-One row per completed form at /team-state, written the moment the state
+One row per completed form at /self-check, written the moment the state
 goes on the screen. It holds the answers, the recomputed reading, the
 worksheet chosen for the move, the campaign labels from the landing URL
 and the timings.

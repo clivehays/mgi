@@ -15,7 +15,8 @@
    The token is a capability for one row. It is not a secret anyone
    needs to protect: the worst it allows is re-sending that row's own
    scorecard to a different address, which is why the address is written
-   once and a second attempt with a different one is refused.
+   once, a second attempt with a different one is refused, and the same
+   one again returns the worksheet without sending a second copy.
 
    Environment:
      SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY   required to do anything
@@ -68,11 +69,12 @@ module.exports = async function handler(req, res) {
     return res.status(404).json({ ok: false, error: 'Unknown scorecard' });
   }
 
-  /* Already claimed. Sending the same scorecard to the same address
-     again is a person pressing the button twice, so it succeeds. A
-     different address is someone else's reading being posted somewhere
-     else, so it does not. */
-  if (row.email && row.email.toLowerCase() !== email.toLowerCase()) {
+  /* A different address is someone else's reading being posted
+     somewhere else, so it is refused. The same address again is a person
+     pressing the button twice, or a retry, and that succeeds without
+     putting a second copy of the same message in their inbox. */
+  var already = (row.email || '').toLowerCase();
+  if (already && already !== email.toLowerCase()) {
     return res.status(409).json({ ok: false, error: 'This scorecard already has an address' });
   }
 
@@ -85,22 +87,47 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ ok: false, error: 'That did not go through' });
   }
 
-  var saved = await saveEmail(token, email);
-  if (!saved) {
-    /* The address is the whole point of the request, so a store that
-       will not take it is a failure worth reporting rather than hiding
-       behind a sent email. */
-    console.error('MGI scorecard could not store the address for ' + token);
-    return res.status(500).json({ ok: false, error: 'That did not go through' });
+  /* Whether this request is the one that claimed the row, and so the
+     one that owes a message. The write below only lands on a row with no
+     address on it, so of two requests racing exactly one comes back
+     having claimed it. */
+  var owes = true;
+
+  if (already) {
+    owes = false;
+  } else {
+    var claimed = await claimEmail(token, email);
+    if (claimed === null) {
+      /* The address is the whole point of the request, so a store that
+         will not take it is a failure worth reporting rather than hiding
+         behind a sent email. */
+      console.error('MGI scorecard could not store the address for ' + token);
+      return res.status(500).json({ ok: false, error: 'That did not go through' });
+    }
+    if (claimed === 0) {
+      /* Something claimed the row between the read above and the write.
+         Ask the row who won rather than assuming it was this request. */
+      var settled = await fetchRow(token);
+      var taken = (settled && settled.email || '').toLowerCase();
+      if (!taken) {
+        console.error('MGI scorecard claim landed nowhere for ' + token);
+        return res.status(500).json({ ok: false, error: 'That did not go through' });
+      }
+      if (taken !== email.toLowerCase()) {
+        return res.status(409).json({ ok: false, error: 'This scorecard already has an address' });
+      }
+      owes = false;
+    }
   }
 
   /* The message goes after the response. The page draws the scorecard
      from answers it already holds, so nobody is waiting on the send, and
      a slow mail API should not hold the button down. */
-  send.background(deliver(email, reading, token));
+  if (owes) send.background(deliver(email, reading, token));
 
   return res.status(200).json({
     ok: true,
+    sent: owes,
     worksheet: ORIGIN + '/s/' + token + '/worksheet.pdf'
   });
 };
@@ -204,21 +231,31 @@ async function fetchRow(token) {
   }
 }
 
-async function saveEmail(token, email) {
+/* Writes the address, but only onto a row that does not have one yet,
+   so the row decides which request was first instead of this handler
+   guessing from a read taken a moment earlier. Returns how many rows it
+   claimed, or null where the store would not answer at all.
+
+   email_at is written on that claim and never moved afterwards: it
+   records when the message went, not when somebody last pressed the
+   button. */
+async function claimEmail(token, email) {
   try {
-    var r = await rest(TABLE + '?token=eq.' + encodeURIComponent(token), {
+    var r = await rest(TABLE + '?token=eq.' + encodeURIComponent(token) +
+      '&email=is.null', {
       method: 'PATCH',
-      headers: { Prefer: 'return=minimal' },
+      headers: { Prefer: 'return=representation' },
       body: JSON.stringify({ email: email, email_at: new Date().toISOString() })
     });
     if (!r || !r.ok) {
       console.error('MGI scorecard address store failed: ' +
         (r ? r.status + ' ' + (await r.text()) : 'no store configured'));
-      return false;
+      return null;
     }
-    return true;
+    var rows = await r.json();
+    return Array.isArray(rows) ? rows.length : 0;
   } catch (e) {
     console.error('MGI scorecard address store threw: ' + e.message);
-    return false;
+    return null;
   }
 }
