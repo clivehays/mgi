@@ -92,7 +92,7 @@
       ]
     },
     {
-      "source": "/team-state",
+      "source": "/self-check",
       "headers": [
         {
           "key": "X-Robots-Tag",
@@ -236,7 +236,7 @@
           "key": "v"
         }
       ],
-      "destination": "/assets/scoring.js?v=0671d4c5",
+      "destination": "/assets/scoring.js?v=09681f13",
       "permanent": false
     },
     {
@@ -319,6 +319,11 @@
       "source": "/assessment/:path*",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/team-state",
+      "destination": "/self-check",
+      "permanent": false
     }
   ],
   "rewrites": [

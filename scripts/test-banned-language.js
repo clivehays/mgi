@@ -250,7 +250,7 @@ if (!elsewhere.length) ok('no gap-width threshold is duplicated outside the inst
 else bad('gap-width thresholds may be duplicated in: ' + elsewhere.join(', '));
 
 /* ---------- 6. the short self-check ----------
-   The eight-question scorecard at /team-state is a participant-facing
+   The eight-question scorecard at /self-check is a participant-facing
    surface of its own. Its page, its two scripts, and every string it can
    put on the screen across the whole answer space. */
 
@@ -258,8 +258,8 @@ console.log('\n[6] The short self-check');
 
 var SC = require(path.join(ROOT, 'assets', 'selfcheck-core.js'));
 
-var scHtml = fs.readFileSync(path.join(ROOT, 'team-state.html'), 'utf8');
-if (scan('team-state.html', scHtml)) ok('team-state.html carries no banned language');
+var scHtml = fs.readFileSync(path.join(ROOT, 'self-check.html'), 'utf8');
+if (scan('self-check.html', scHtml)) ok('self-check.html carries no banned language');
 
 ['selfcheck-core.js', 'selfcheck.js'].forEach(function (f) {
   var src = fs.readFileSync(path.join(ROOT, 'assets', f), 'utf8')

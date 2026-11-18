@@ -632,7 +632,7 @@
   }
 
   /* ---------- a state from a partial item set ----------
-     The short self-check (team-state.html) asks three of the fifteen
+     The short self-check (self-check.html) asks three of the fifteen
      evidence items. The state tree reads nothing but the behaviour mean
      and the three trajectory answers, so a caller holding a partial set
      can hand over that mean and get the same call from the same tree,

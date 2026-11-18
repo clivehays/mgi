@@ -264,7 +264,7 @@ is(line.indexOf(String(c.n)) !== -1 && line.indexOf(String(c.feltWorse)) !== -1,
 console.log('\n[7] The page has somewhere to put every part');
 
 var client = fs.readFileSync(path.join(ROOT, 'assets', 'selfcheck.js'), 'utf8');
-var html = fs.readFileSync(path.join(ROOT, 'team-state.html'), 'utf8');
+var html = fs.readFileSync(path.join(ROOT, 'self-check.html'), 'utf8');
 
 /* the id list is the array literal handed to .forEach(function (id). It
    holds no nested brackets, so the matching open bracket is simply the
@@ -285,15 +285,15 @@ if (head === -1) {
   });
   var absent = ids.filter(function (id) { return !present[id]; });
   is(ids.length > 15 && ids.length < 40, ids.length + ' ids looked up by the client');
-  is(absent.length === 0, 'every one of them exists in team-state.html' +
+  is(absent.length === 0, 'every one of them exists in self-check.html' +
     (absent.length ? ': missing ' + absent.join(', ') : ''));
 }
 
 /* the page must load the core, or the client has nothing to read */
-is(/selfcheck-core\.js/.test(html), 'team-state.html loads the short form module');
-is(/scoring\.js/.test(html), 'team-state.html loads the instrument');
+is(/selfcheck-core\.js/.test(html), 'self-check.html loads the short form module');
+is(/scoring\.js/.test(html), 'self-check.html loads the instrument');
 is(/name="robots" content="noindex/.test(html),
-  'team-state.html is noindex, so the short version does not compete with the full one');
+  'self-check.html is noindex, so the short version does not compete with the full one');
 
 /* ---------- 8. the table has a column for every answer ---------- */
 
