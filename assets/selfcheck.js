@@ -209,6 +209,57 @@
     } catch (e) { return false; }
   }
 
+  /* ---------- the two LinkedIn conversions ----------
+     selfCheckCompleted is the state going on screen after the eighth
+     question. selfCheckEmailSubmitted is the address being taken.
+     That request is /api/scorecard, and it only exists once
+     /api/selfcheck has stored the row and handed back a token. The
+     conversion waits for the scorecard post to succeed. A failure
+     still shows the scorecard, and it must not count as an address.
+
+     Same gate as the full assessment and /booked. The id lives in
+     tracking-config.js, cookies have to be accepted already, and an
+     internal browser stays quiet. A miss is not remembered, so
+     accepting cookies afterwards can still send it. A hit is
+     remembered for the tab, so a refresh of this result does not
+     send it again. A fresh arrival drops both flags with the
+     answers. Nothing here is awaited, and a missing tag changes
+     nothing on the page. */
+
+  var LI_COMPLETED = 'mgi-li-page-selfCheckCompleted';
+  var LI_EMAIL = 'mgi-li-page-selfCheckEmailSubmitted';
+
+  function conversionFired(key) {
+    try { return sessionStorage.getItem(key) === '1'; }
+    catch (e) { return false; }
+  }
+
+  function rememberConversion(key) {
+    try { sessionStorage.setItem(key, '1'); } catch (e) {}
+  }
+
+  function clearConversionFlags() {
+    try {
+      sessionStorage.removeItem(LI_COMPLETED);
+      sessionStorage.removeItem(LI_EMAIL);
+    } catch (e) {}
+  }
+
+  function trackConversion(name, key) {
+    if (conversionFired(key)) return;
+    if (isInternal()) return;
+    if (!window.MGILinkedIn || typeof window.MGILinkedIn.track !== 'function') return;
+    var sent = false;
+    try { sent = window.MGILinkedIn.track(name) === true; }
+    catch (e) { sent = false; }
+    if (sent) rememberConversion(key);
+  }
+
+  function trackConversionsNow() {
+    if (state.done) trackConversion('selfCheckCompleted', LI_COMPLETED);
+    if (state.claimed) trackConversion('selfCheckEmailSubmitted', LI_EMAIL);
+  }
+
   /* ---------- the state ----------
      Everything the short form can say about which of the four a team is
      in, and nothing it would have to be paid for. */
@@ -372,6 +423,7 @@
       }
       state.claimed = true;
       save();
+      trackConversion('selfCheckEmailSubmitted', LI_EMAIL);
       reveal();
     }).catch(function () {
       /* The address did not store. Hand over the scorecard anyway: they
@@ -425,7 +477,9 @@
     persistFirstTouch();
     if (window.MGIConsent && window.MGIConsent.onChange) {
       window.MGIConsent.onChange(function (choice) {
-        if (choice === 'accepted') persistFirstTouch();
+        if (choice !== 'accepted') return;
+        persistFirstTouch();
+        trackConversionsNow();
       });
     }
 
@@ -448,6 +502,7 @@
       el['r-restart'].addEventListener('click', function (e) {
         e.preventDefault();
         try { sessionStorage.removeItem(STORE_KEY); } catch (err) {}
+        clearConversionFlags();
         location.replace(location.pathname);
       });
     }
@@ -472,6 +527,9 @@
     } else {
       show('landing', false);
     }
+    /* a reload of a result that could not fire yet, because cookies
+       were still unset. A hit already stored in the tab is skipped. */
+    trackConversionsNow();
   }
 
   function complete() {
@@ -512,6 +570,7 @@
     try {
       if (freshNavigation()) {
         sessionStorage.removeItem(STORE_KEY);
+        clearConversionFlags();
         return;
       }
       var raw = sessionStorage.getItem(STORE_KEY);
@@ -633,7 +692,10 @@
     renderState(r);
     show('state');
     /* one row per completed form, not one per visit to this view */
-    if (!already) send(r);
+    if (!already) {
+      send(r);
+      trackConversion('selfCheckCompleted', LI_COMPLETED);
+    }
   }
 
   function back() {

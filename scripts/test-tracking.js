@@ -140,6 +140,9 @@ else bad('partner id is not 9887058');
 if (/assessmentCompleted:\s*31367050\b/.test(config) && /callBooked:\s*31367058\b/.test(config)) {
   ok('assessment completed is 31367050 and call booked is 31367058');
 } else bad('a conversion id is wrong');
+if (/selfCheckCompleted:\s*32413530\b/.test(config) && /selfCheckEmailSubmitted:\s*32413538\b/.test(config)) {
+  ok('self-check completed is 32413530 and the address is 32413538');
+} else bad('a self-check conversion id is wrong');
 
 var loader = fs.readFileSync(path.join(ROOT, 'assets', 'linkedin.js'), 'utf8');
 if (loader.indexOf('https://snap.licdn.com/li.lms-analytics/insight.min.js') !== -1) {
@@ -217,6 +220,14 @@ else bad('a withdrawal leaves the first touch');
 var booked = read('booked.html');
 if (/data-conversion="callBooked"/.test(booked)) ok('the booked page names its conversion');
 else bad('the booked page has no conversion');
+
+var selfcheck = read('assets/selfcheck.js');
+if (selfcheck.indexOf("trackConversion('selfCheckCompleted'") !== -1) {
+  ok('the state view fires the self-check conversion');
+} else bad('the state view does not fire the self-check conversion');
+if (selfcheck.indexOf("trackConversion('selfCheckEmailSubmitted'") !== -1) {
+  ok('a successful address fires the self-check email conversion');
+} else bad('the address does not fire the self-check email conversion');
 
 var consent = read('assets/consent.js');
 if (consent.indexOf(">That\\'s fine</button>") !== -1 && consent.indexOf('>No thanks</button>') !== -1 &&
